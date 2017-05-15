@@ -1,0 +1,40 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+#carte, #map, #mapUI {
+  width: inherit;
+  height: inherit;
+  background-color: #000;
+}
+.filterUserLines {
+  position: absolute;
+  z-index: 10;
+  width: auto;
+  height: auto;
+  background: hsla(0,100%,100%,0.8);
+  margin: 10px;
+  font-family: sans-serif;
+  font-size: 13px;
+  padding: 5px;
+  padding-bottom: 10px;
+  border-radius: 5px;
+}
+.filterUserLines hr {
+  border: 1px solid #000;
+  margin: 5px;
+}
+.filterUserLines h3 {
+  margin-top: 0;
+  padding-left: 5px;
+}
+.filterUserLines p {
+  padding-left: 5px;
+}
+.filterUserLines select {
+  display: block;
+  margin: 5px;
+
+}
