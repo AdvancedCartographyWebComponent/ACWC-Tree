@@ -18,8 +18,6 @@ npm run build
 Find the index.html in the dossier build, change the href of the generated js and css in the html file:
 delete the first "/" in the href.
 
-json
-
 
 
 
