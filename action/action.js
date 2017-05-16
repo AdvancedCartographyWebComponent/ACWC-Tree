@@ -19,9 +19,9 @@ let actions = {
       newdata
     }
   },
- useDefaultData() {
+ useDefaultTreeData() {
     return {
-      type: actionTypes.UseDefaultData
+      type: actionTypes.UseDefaultTreeData
     }
   },
   updateServerData(serverData) {
@@ -30,10 +30,23 @@ let actions = {
       serverData
     }
   },
-  getDataFromUrl(urlData) {
+  getDataFromUrlForMap(urlDataForMap) {
     return {
-      type: actionTypes.GetDataFromUrl,
-      urlData
+      type: actionTypes.GetDataFromUrlForMap,
+      urlDataForMap
+    }
+  },
+  getDataFromUrlForTree(urlDataForTree) {
+    return {
+      type: actionTypes.GetDataFromUrlForTree,
+      urlDataForTree
+    }
+  },
+  getDataFromUrlForTreeAndMap(urlDataForTree,urlDataForMap) {
+    return {
+      type: actionTypes.getDataFromUrlForTreeAndMap,
+      urlDataForTree,
+      urlDataForMap
     }
   }
 };

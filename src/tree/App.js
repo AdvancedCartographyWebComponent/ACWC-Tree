@@ -23,7 +23,7 @@ var App = React.createClass({
     //console.log("app this props",this.props);
 
     if(!this.props.urlQuery&&!isQuery){
-      this.props.actions.useDefaultData();
+      this.props.actions.useDefaultTreeData();
       isQuery = true;
     }
     var dynamicExample = this._getExamplePanel("Dynamic Thésaurus", this._getDynamicTreeExample());
@@ -72,7 +72,7 @@ var App = React.createClass({
 
   _getUrlData: function(url){
     var cur = this;
-    //console.log("search head",url.slice(1,4));
+    console.log("Tree _getUrlData",url.slice(5));
     this.geoCollection = {
       "type": "FeatureCollection",
       "features": []
@@ -87,26 +87,8 @@ var App = React.createClass({
           'Content-Type': 'application/ld+json, application/json'
       }
     }).then(function(res) {
-      if(url.slice(1,4)==="sql"){
-        //console.log("data from url",res.data.results.bindings);
-        //cur.transformSparqlQueryToGeoJSON(res.data.results.bindings);
-        //cur.props.actions.getDataFromUrl(cur.geoCollection);
-        //console.log(cur.geoCollection);
-        /*cur.setState({
-          numUser: cur.geoCollection.features.length,
-          geojson: cur.geoCollection
-        });*/}
-        else{
-          //console.log("data from url",res.data);
-          /*cur.props.actions.getDataFromUrl(res.data);
-          cur.setState({
-            numUser: res.data.features.length,
-            geojson: res.data
-          });*/
-          isQuery=true;
-          cur.props.actions.updateTreeData(res.data);
-
-        }
+        isQuery=true;
+        cur.props.actions.getDataFromUrlForTree(res.data);
     });}
   },
 

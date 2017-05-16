@@ -1,5 +1,4 @@
 const actionTypes = require('../actiontype/actionType');
-const defaultGeoData = require('json!../data/user.geojson');
 const defaultTreeData = require('json!../data/World_Heritage_Sites.skos.jsonld');
 const defaultMapData = require('json!../data/exemple_villes.jsonld');
 var treeConstructor = function (rawData,countList){
@@ -135,9 +134,9 @@ var checkedItem = function(treeData){
   console.log("List",checkedList);
   return checkedList;
 }
-var countItem = function(){
+var countItem = function(geoData){
   //console.log("call checkedItem, show treeData",treeData);
-  var countList = defaultMapData["@graph"].reduce(function (allNames, instance) {
+  var countList = geoData["@graph"].reduce(function (allNames, instance) {
     var name = instance["subject"];
     if (name in allNames) {
       allNames[name]++;
@@ -147,12 +146,12 @@ var countItem = function(){
     }
     return allNames;
   }, {});
-  console.log("countList",countList);
+  //console.log("countList",countList);
   return countList;
 
 }
 
-const defaultTree = treeConstructor(defaultTreeData,countItem());
+const defaultTree = treeConstructor(defaultTreeData,countItem(defaultMapData));
 const defaultGeoJson = geojsonConstructor(defaultMapData);
 console.log("defaultTree",defaultTree);
 console.log("defaultGeoJson",defaultGeoJson);
@@ -160,8 +159,9 @@ const initialState = {
   content: "hello",
   lastChange:null,
   treeData : {},
-  urlData :null,
-  defaultGeoData : defaultGeoJson,
+  urlDataForMap :null,
+  urlDataForTree :null,
+  geoData : defaultGeoJson,
   serverData:null
   // Loads default language content (en) as an initial state
 };
@@ -181,21 +181,38 @@ var reducer = function (state = initialState, action) {
     case actionTypes.UpdateTreeData:
       //console.log("UpdateTreeData :",action.newdata);
 
-      var geojson = geojsonConstructor(defaultMapData,checkedItem(action.newdata));
+      var geojson = geojsonConstructor(state.urlDataForMap?state.urlDataForMap:defaultMapData,checkedItem(action.newdata));
       console.log("new geojson",geojson);
       return Object.assign({}, state, {
         treeData:action.newdata,
-        defaultGeoData: geojson
+        geoData: geojson
       })
-    case actionTypes.UseDefaultData:
+    case actionTypes.UseDefaultTreeData :
       ////console.log("UseDefaultData",defaultTreeData);
       return Object.assign({}, state, {
         treeData:defaultTree
       })
-    case actionTypes.GetDataFromUrl:
-      //console.log("GetDataFromUrl",action.urlData);
+    case actionTypes.GetDataFromUrlForMap:
+      console.log("GetDataFromUrlForMap",action.urlDataForMap);
+      console.log("treeConstructor",treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(action.urlDataForMap)));
+      var geojson = geojsonConstructor(action.urlDataForMap,checkedItem(state.treeData));
+      console.log("geojson",geojson);
       return Object.assign({}, state, {
-        urlData:action.urlData
+        urlDataForMap:action.urlDataForMap,
+        treeData:treeConstructor(defaultTreeData,countItem(action.urlDataForMap)),
+        geojson:geojson
+      })
+    case actionTypes.GetDataFromUrlForTree:
+      console.log("GetDataFromUrlForTree",action.urlDataForTree);
+      return Object.assign({}, state, {
+        urlDataForTree:action.urlDataForTree,
+        treeData:treeConstructor(action.urlDataForTree,countItem(state.urlDataForMap?state.urlDataForMap:defaultMapData))
+      })
+    case actionTypes.GetDataFromUrlForTreeAndMap:
+      console.log("GetDataFromUrlForTreeAndMap",action.urlDataForTree,action.urlDataForMap);
+
+      return Object.assign({}, state, {
+        treeData:treeConstructor(action.urlDataForTree,countItem(action.urlDataForMap))
       })
     case actionTypes.UpdateServerData:
       //console.log("UpdateServerData :",action.serverData);

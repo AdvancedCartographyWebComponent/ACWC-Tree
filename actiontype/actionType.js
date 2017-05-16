@@ -1,8 +1,10 @@
 module.exports = {
   CLICK: 'CLICK',
   SetLastChangeState: 'SetLastChangeState',
-  UpdateTreeData : "UpdateTreeData",  
-  UseDefaultData : "UseDefaultData",
-  GetDataFromUrl : "GetDataFromUrl",
-  UpdateServerData : "UpdateServerData"
+  UpdateTreeData : "UpdateTreeData",
+  UseDefaultTreeData : "UseDefaultTreeData",
+  GetDataFromUrlForMap : "GetDataFromUrlForMap",
+  GetDataFromUrlForTree : "GetDataFromUrlForTree",
+  UpdateServerData : "UpdateServerData",
+  GetDataFromUrlForTreeAndMap : "GetDataFromUrlForTreeAndMap"
 };

@@ -92,9 +92,10 @@ class Map extends Component {
     // code to run when the component receives new props or state
     // check to see if geojson is stored, map is created, and geojson overlay needs to be added
     ////console.log("hello");
-    if(this.urlQuery&&this.props.urlData&&!this.state.geojson){
+    if(this.urlQuery&&this.props.geoData&&!this.state.geojson){
+      console.log("urlQuery",this.props.geoData);
       this.setState({
-        geojson:this.props.urlData
+        geojson:this.props.geoData
       });
     }
     if (!this.state.map&&this.state.geojson) {
@@ -129,12 +130,12 @@ class Map extends Component {
       UserNames=[];
       this.filterGeoJSONLayer();
     }
-    if(md5(JSON.stringify(prevProps.defaultGeoData))!==md5(JSON.stringify(this.props.defaultGeoData))){
-      console.log("defaultGeoData changed");
-      console.log("prev",prevProps.defaultGeoData);
-      console.log("this",this.props.defaultGeoData);
+    if(md5(JSON.stringify(prevProps.geoData))!==md5(JSON.stringify(this.props.geoData))){
+      console.log("geoData changed");
+      console.log("prev",prevProps.geoData);
+      console.log("this",this.props.geoData);
       this.setState({
-        geojson:this.props.defaultGeoData
+        geojson:this.props.geoData
       });
     }
     if(prevState.geojson&&md5(JSON.stringify(prevState.geojson))!==md5(JSON.stringify(this.state.geojson))){
@@ -156,20 +157,21 @@ class Map extends Component {
   getData() {
     // could also be an AJAX request that results in setting state with the geojson data
     // for simplicity sake we are just importing the geojson data using webpack's json loader
-    //console.log("hello redux defaultGeoData",this.props.defaultGeoData);
+    //console.log("hello redux geoData",this.props.geoData);
     if(this.urlQuery){
       this.getDataFromUrl(this.urlQuery);
     }
     else{
       this.setState({
-        numUser: this.props.defaultGeoData.features.length,
-        geojson: this.props.defaultGeoData
+        numUser: this.props.geoData.features.length,
+        geojson: this.props.geoData
       });
     }
   }
   getDataFromUrl(url){
     var cur = this;
     //console.log(url.slice(1,4));
+    console.log("map data from url",url);
     this.geoCollection = {
       "type": "FeatureCollection",
       "features": []
@@ -185,18 +187,18 @@ class Map extends Component {
       if(url.slice(1,4)==="sql"){
         //console.log(res.data.results.bindings);
         cur.transformSparqlQueryToGeoJSON(res.data.results.bindings);
-        cur.props.actions.getDataFromUrl(cur.geoCollection);
+        cur.props.actions.getDataFromUrlForMap(cur.geoCollection);
         //console.log(cur.geoCollection);
         cur.setState({
           numUser: cur.geoCollection.features.length,
           geojson: cur.geoCollection
         });}
         else{
-          cur.props.actions.getDataFromUrl(res.data);
-          cur.setState({
+          cur.props.actions.getDataFromUrlForMap(res.data);
+          /*cur.setState({
             numUser: res.data.features.length,
             geojson: res.data
-          });
+          });*/
         }
     });
   }
@@ -521,8 +523,8 @@ class Map extends Component {
 }
 
 const mapStateToProps = state => ({
-  urlData:state.urlData,
-  defaultGeoData:state.defaultGeoData,
+  urlDataForMap:state.urlDataForMap,
+  geoData:state.geoData,
   serverData:state.serverData
 })
 
