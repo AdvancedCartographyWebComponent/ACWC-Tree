@@ -18,7 +18,7 @@ npm run build
 Find the index.html in the dossier build, change the href of the generated js and css in the html file:
 delete the first "/" in the href.
 # Get data from URL 
-Use ?sko for tree data and ?geo for geolocation data
+Use ?sko for tree data and ?geo for geolocation data, if you use both, add "&&"between two url
 
 For example, 
 
