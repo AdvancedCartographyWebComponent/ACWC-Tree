@@ -200,7 +200,7 @@ var reducer = function (state = initialState, action) {
       return Object.assign({}, state, {
         urlDataForMap:action.urlDataForMap,
         treeData:treeConstructor(defaultTreeData,countItem(action.urlDataForMap)),
-        geojson:geojson
+        geoData:geojson
       })
     case actionTypes.GetDataFromUrlForTree:
       console.log("GetDataFromUrlForTree",action.urlDataForTree);
