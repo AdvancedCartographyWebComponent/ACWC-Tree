@@ -1,21 +1,20 @@
 const actionTypes = require('../actiontype/actionType');
 const defaultTreeData = require('json!../data/World_Heritage_Sites.skos.jsonld');
 const defaultMapData = require('json!../data/exemple_villes.jsonld');
+var _ = require('lodash');
 var treeConstructor = function (rawData,countList){
   ////console.log("treeConstructor");
-  var treeData = rawData["@graph"].reduce(function (treeData, instance, index, array) {
+  var results = findRoot(rawData);
+  var tree ={};
+  //console.log("results",results[0][0],results[2]);
+  var treeData = buildTree(tree,results[0][0],rawData["@graph"],countList);
+  countParentsNum(treeData,results[0][0]);
+  /*var treeData = rawData["@graph"].reduce(function (treeData, instance, index, array) {
     var id = instance["@id"];
     var broader = instance["broader"];
-    ////console.log("typeof broader === 'object'",typeof broader === 'object');
     if(typeof broader === 'object'){
       broader.map((value)=>{
         if (value in treeData) {
-          /*var temp = {};
-          temp[id]={
-            checked: false,
-            checkbox: true,
-            children:null
-          };*/
           var num = countList[id]?countList[id]:0;
           treeData[value]["num"]=treeData[value]["num"]+num;
           treeData[value]["children"][id]={
@@ -27,8 +26,6 @@ var treeConstructor = function (rawData,countList){
           };
         }
         else {
-          ////console.log("broader",broader);
-          ////console.log("id",id);
           var temp={}
           var num = countList[id]?countList[id]:0;
           temp[id]={
@@ -38,7 +35,6 @@ var treeConstructor = function (rawData,countList){
             children:null,
             num:num
           };
-          ////console.log("temp",temp);
           treeData[value] = {
             checked: false,
             checkbox: true,
@@ -51,9 +47,6 @@ var treeConstructor = function (rawData,countList){
     }
     else{
       if (broader in treeData) {
-        ////console.log("broader",broader);
-        ////console.log("id",id);
-        ////console.log("treeData[broader]",treeData[broader]);
         var num = countList[id]?countList[id]:0;
         treeData[broader]["num"]=treeData[broader]["num"]+num;
         treeData[broader]["children"][id]={
@@ -65,8 +58,6 @@ var treeConstructor = function (rawData,countList){
         };
       }
       else {
-        ////console.log("broader",broader);
-        ////console.log("id",id);
         var num = countList[id]?countList[id]:0;
         var temp={}
         temp[id]={
@@ -76,7 +67,6 @@ var treeConstructor = function (rawData,countList){
           children:null,
           num:num
         };
-        ////console.log("temp",temp);
         treeData[broader] = {
           checked: false,
           checkbox: true,
@@ -88,9 +78,91 @@ var treeConstructor = function (rawData,countList){
     }
 
     return treeData;
-  }, {});
-  ////console.log("treeData",treeData);
+  }, {});*/
   return treeData;
+}
+
+var buildTree = function(tree,parentId,rawData,countList){
+  //console.log("buildTree parent parentId object",parentId);
+  rawData.map((value)=>{
+    var id = value["@id"];
+    var broader = value["broader"];
+    ////console.log("typeof broader === 'object'",typeof broader === 'object');
+    if(typeof broader === 'object'){
+      broader.map((value)=>{
+        if (value === parentId) {
+          //console.log("value matched",value);
+          if(value in tree){
+            tree[value]["children"][id] = {
+              checked: false,
+              checkbox: true,
+              collapsed:true,
+              children:{},
+              num:countList[id]?countList[id]:0
+            };
+          }
+          else{
+            var child = {};
+            child[id]= {
+              checked: false,
+              checkbox: true,
+              collapsed:true,
+              children:{},
+              num:countList[id]?countList[id]:0
+            };
+            tree[value] = {
+            checked: false,
+            checkbox: true,
+            collapsed:true,
+            children:child,
+            num:0
+          };
+        }
+        buildTree(tree[value]["children"],id,rawData);
+        }
+      })
+    }
+    else{
+      if (broader === parentId) {
+        //console.log("broader matched",broader);
+        //console.log("broader matched",id);
+        if(broader in tree){
+          tree[broader]["children"][id] = {
+            checked: false,
+            checkbox: true,
+            collapsed:true,
+            children:{},
+            num:countList[id]?countList[id]:0
+          };
+        }
+        else
+        {
+          var child = {};
+          child[id]= {
+            checked: false,
+            checkbox: true,
+            collapsed:true,
+            children:{},
+            num:countList[id]?countList[id]:0
+          };
+          //console.log("buildTree parent child",child);
+          tree[broader]={
+            checked: false,
+            checkbox: true,
+            collapsed:true,
+            children:child,
+            num:0
+          };
+        //console.log("build branche",tree);
+      }
+      buildTree(tree[broader]["children"],id,rawData,countList);
+    }
+  }});//(parentId)==-1?null:parentId;
+  //if(!parent) return tree;
+  //tree[parentId]["children"]=child;
+  //console.log("buildTree parent tree",tree);
+  //console.log("buildTree parent children",child);
+  return tree
 }
 var geojsonConstructor = function(rawData,checkedItem){
   var geojson = {
@@ -131,7 +203,7 @@ var checkedItem = function(treeData){
       treeData[obj]["children"][obj2]["checked"]?checkedList.push(obj2):null;
     }
   }
-  console.log("List",checkedList);
+  //console.log("List",checkedList);
   return checkedList;
 }
 var countItem = function(geoData){
@@ -150,11 +222,46 @@ var countItem = function(geoData){
   return countList;
 
 }
+var findRoot = function(data){
+  //var t = _.flattenDeep(defaultTreeData);
+  //console.log("defaultTreeData",defaultTreeData);
+  var flattenId = [];
+  var flattenBroader = [];
+  data["@graph"].map((value)=>{
+    var id = value["@id"];
+    var broader = value["broader"];
+    if(typeof broader=="object"){
+      for(var obj in broader){
+        flattenBroader.indexOf(broader[obj])==-1?flattenBroader.push(broader[obj]):null;
+      }
+    }else {
+      flattenBroader.indexOf(broader)==-1?flattenBroader.push(broader):null;
+    }
+    flattenId.indexOf(id)==-1?flattenId.push(id):null;
 
+  })
+  var root =_.difference(flattenBroader,flattenId);
+  //console.log("flattenId",_.flatten(flattenId));
+  //console.log("flattenBroader",t);
+  return [root,flattenId,flattenBroader];
+
+}
+var countParentsNum = function(tree,parentId){
+  if(_.size(tree[parentId]["children"])>0){
+    console.log("countParentsNum parentId",parentId);
+    for(var obj in tree[parentId]["children"]){
+      tree[parentId]["num"]=tree[parentId]["num"]+countParentsNum(tree[parentId]["children"],obj);
+    }
+    return tree[parentId]["num"]
+  }
+  else{
+    return tree[parentId]["num"];
+  }
+}
 const defaultTree = treeConstructor(defaultTreeData,countItem(defaultMapData));
 const defaultGeoJson = geojsonConstructor(defaultMapData);
-console.log("defaultTree",defaultTree);
-console.log("defaultGeoJson",defaultGeoJson);
+//console.log("defaultTree",defaultTree);
+//console.log("defaultGeoJson",defaultGeoJson);
 const initialState = {
   content: "hello",
   lastChange:null,

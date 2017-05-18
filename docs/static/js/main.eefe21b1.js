@@ -37690,7 +37690,8 @@
 	    value: function getDataFromUrl(url) {
 	      var cur = this;
 	      //console.log(url.slice(1,4));
-	      console.log("map data from url", url);
+	
+	      console.log("map data from url", url.slice(5));
 	      this.geoCollection = {
 	        "type": "FeatureCollection",
 	        "features": []
@@ -76078,7 +76079,8 @@
 	  var results = findRoot(rawData);
 	  var tree ={};
 	  //console.log("results",results[0][0],results[2]);
-	  var treeData = buildTree(tree,results[0][0],rawData["@graph"]);
+	  var treeData = buildTree(tree,results[0][0],rawData["@graph"],countList);
+	  countParentsNum(treeData,results[0][0]);
 	  /*var treeData = rawData["@graph"].reduce(function (treeData, instance, index, array) {
 	    var id = instance["@id"];
 	    var broader = instance["broader"];
@@ -76152,7 +76154,7 @@
 	  return treeData;
 	}
 	
-	var buildTree = function(tree,parentId,rawData){
+	var buildTree = function(tree,parentId,rawData,countList){
 	  //console.log("buildTree parent parentId object",parentId);
 	  rawData.map((value)=>{
 	    var id = value["@id"];
@@ -76161,14 +76163,14 @@
 	    if(typeof broader === 'object'){
 	      broader.map((value)=>{
 	        if (value === parentId) {
-	          console.log("value matched",value);
+	          //console.log("value matched",value);
 	          if(value in tree){
 	            tree[value]["children"][id] = {
 	              checked: false,
 	              checkbox: true,
 	              collapsed:true,
 	              children:{},
-	              num:0
+	              num:countList[id]?countList[id]:0
 	            };
 	          }
 	          else{
@@ -76178,7 +76180,7 @@
 	              checkbox: true,
 	              collapsed:true,
 	              children:{},
-	              num:0
+	              num:countList[id]?countList[id]:0
 	            };
 	            tree[value] = {
 	            checked: false,
@@ -76202,7 +76204,7 @@
 	            checkbox: true,
 	            collapsed:true,
 	            children:{},
-	            num:0
+	            num:countList[id]?countList[id]:0
 	          };
 	        }
 	        else
@@ -76213,7 +76215,7 @@
 	            checkbox: true,
 	            collapsed:true,
 	            children:{},
-	            num:0
+	            num:countList[id]?countList[id]:0
 	          };
 	          //console.log("buildTree parent child",child);
 	          tree[broader]={
@@ -76225,7 +76227,7 @@
 	          };
 	        //console.log("build branche",tree);
 	      }
-	      buildTree(tree[broader]["children"],id,rawData);
+	      buildTree(tree[broader]["children"],id,rawData,countList);
 	    }
 	  }});//(parentId)==-1?null:parentId;
 	  //if(!parent) return tree;
@@ -76273,7 +76275,7 @@
 	      treeData[obj]["children"][obj2]["checked"]?checkedList.push(obj2):null;
 	    }
 	  }
-	  console.log("List",checkedList);
+	  //console.log("List",checkedList);
 	  return checkedList;
 	}
 	var countItem = function(geoData){
@@ -76316,10 +76318,22 @@
 	  return [root,flattenId,flattenBroader];
 	
 	}
+	var countParentsNum = function(tree,parentId){
+	  if(_.size(tree[parentId]["children"])>0){
+	    console.log("countParentsNum parentId",parentId);
+	    for(var obj in tree[parentId]["children"]){
+	      tree[parentId]["num"]=tree[parentId]["num"]+countParentsNum(tree[parentId]["children"],obj);
+	    }
+	    return tree[parentId]["num"]
+	  }
+	  else{
+	    return tree[parentId]["num"];
+	  }
+	}
 	const defaultTree = treeConstructor(defaultTreeData,countItem(defaultMapData));
 	const defaultGeoJson = geojsonConstructor(defaultMapData);
-	console.log("defaultTree",defaultTree);
-	console.log("defaultGeoJson",defaultGeoJson);
+	//console.log("defaultTree",defaultTree);
+	//console.log("defaultGeoJson",defaultGeoJson);
 	const initialState = {
 	  content: "hello",
 	  lastChange:null,
@@ -76523,4 +76537,4 @@
 
 /***/ }
 /******/ ])));
-//# sourceMappingURL=main.88dc936e.js.map
+//# sourceMappingURL=main.eefe21b1.js.map

@@ -171,7 +171,8 @@ class Map extends Component {
   getDataFromUrl(url){
     var cur = this;
     //console.log(url.slice(1,4));
-    console.log("map data from url",url);
+
+    console.log("map data from url",url.slice(5));
     this.geoCollection = {
       "type": "FeatureCollection",
       "features": []

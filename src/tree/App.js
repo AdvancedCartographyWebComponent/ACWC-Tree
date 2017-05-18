@@ -130,7 +130,7 @@ var App = React.createClass({
 
     //Get a node path that includes children, given a key
     function getNodePath(nodeKey) {
-
+      console.log("nodeKey",nodeKey);
       if (nodeKey.length === 1) return nodeKey;
       return _(nodeKey).zip(nodeKey.map(function () {
         return "children";
@@ -184,7 +184,7 @@ var App = React.createClass({
 
     //get new keyPaths
     //keyPaths[0] is the parent node and change all the children nodes with the parent's value
-    addChildKeys(oldState, nodePath);
+    if(propName!=="collapsed") addChildKeys(oldState, nodePath);
     //console.log({keySiblingPaths});
 
     function getParentPropState(keySiblingPaths){
@@ -224,7 +224,7 @@ var App = React.createClass({
 
     //mutation[stateKey]
     newState.toJS();
-    //console.log("newState",newState);
+    console.log("newState",newState.toJS());
     //console.log("change node state",mutation);
     this.props.actions.updateTreeData(newState.toJS());
     //this.setState(mutation);
