@@ -35,6 +35,12 @@ var App = React.createClass({
         </div>
       </div>
 
+
+    </div>;
+
+  },
+/*
+
       <div className="row">
         <div className="col-lg-3">
           <CSSTransitionGroup transitionEnterTimeout={500} transitionName="last-action" transitionLeave={false}>
@@ -42,11 +48,7 @@ var App = React.createClass({
           </CSSTransitionGroup>
         </div>
       </div>
-
-    </div>;
-
-  },
-
+*/
   _getLastActionNode: function () {
 
     var lastActionNode = <div className="text-center alert alert-success tree-event-alert">{"Waiting for interaction"}</div>;
@@ -180,7 +182,7 @@ var App = React.createClass({
 
     //get new keySiblingPaths
     //keySiblingPaths[0] is parent node
-    findSiblingKeys(oldState,nodeSiblingPath);
+    if(propName!=="collapsed") findSiblingKeys(oldState,nodeSiblingPath);
 
     //get new keyPaths
     //keyPaths[0] is the parent node and change all the children nodes with the parent's value

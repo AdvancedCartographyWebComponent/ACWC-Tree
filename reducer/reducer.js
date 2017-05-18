@@ -1,7 +1,8 @@
 const actionTypes = require('../actiontype/actionType');
-const defaultTreeData = require('json!../data/World_Heritage_Sites.skos.jsonld');
+const defaultTreeData = require('json!../data/test/World_Heritage_Sites.skos.jsonld');
 const defaultMapData = require('json!../data/exemple_villes.jsonld');
 var _ = require('lodash');
+var Immutable = require('immutable');
 var treeConstructor = function (rawData,countList){
   ////console.log("treeConstructor");
   var results = findRoot(rawData);
@@ -9,84 +10,16 @@ var treeConstructor = function (rawData,countList){
   //console.log("results",results[0][0],results[2]);
   var treeData = buildTree(tree,results[0][0],rawData["@graph"],countList);
   countParentsNum(treeData,results[0][0]);
-  /*var treeData = rawData["@graph"].reduce(function (treeData, instance, index, array) {
-    var id = instance["@id"];
-    var broader = instance["broader"];
-    if(typeof broader === 'object'){
-      broader.map((value)=>{
-        if (value in treeData) {
-          var num = countList[id]?countList[id]:0;
-          treeData[value]["num"]=treeData[value]["num"]+num;
-          treeData[value]["children"][id]={
-            checked: false,
-            checkbox: true,
-            collapsed:true,
-            children:null,
-            num:num
-          };
-        }
-        else {
-          var temp={}
-          var num = countList[id]?countList[id]:0;
-          temp[id]={
-            checked: false,
-            checkbox: true,
-            collapsed:true,
-            children:null,
-            num:num
-          };
-          treeData[value] = {
-            checked: false,
-            checkbox: true,
-            collapsed:true,
-            children:temp,
-            num:num
-          };
-        }
-      })
-    }
-    else{
-      if (broader in treeData) {
-        var num = countList[id]?countList[id]:0;
-        treeData[broader]["num"]=treeData[broader]["num"]+num;
-        treeData[broader]["children"][id]={
-          checked: false,
-          checkbox: true,
-          collapsed:true,
-          children:null,
-          num:num
-        };
-      }
-      else {
-        var num = countList[id]?countList[id]:0;
-        var temp={}
-        temp[id]={
-          checked: false,
-          checkbox: true,
-          collapsed:true,
-          children:null,
-          num:num
-        };
-        treeData[broader] = {
-          checked: false,
-          checkbox: true,
-          collapsed:true,
-          children:temp,
-          num:num
-        };
-      }
-    }
-
-    return treeData;
-  }, {});*/
   return treeData;
 }
-
 var buildTree = function(tree,parentId,rawData,countList){
   //console.log("buildTree parent parentId object",parentId);
+  var temp = rawData;
   rawData.map((value)=>{
     var id = value["@id"];
     var broader = value["broader"];
+    var name = value["prefLabel"]["@value"];
+    var language = value["prefLabel"]["@language"];
     ////console.log("typeof broader === 'object'",typeof broader === 'object');
     if(typeof broader === 'object'){
       broader.map((value)=>{
@@ -120,6 +53,7 @@ var buildTree = function(tree,parentId,rawData,countList){
         }
         buildTree(tree[value]["children"],id,rawData);
         }
+        //TODO delete used data
       })
     }
     else{
@@ -155,13 +89,10 @@ var buildTree = function(tree,parentId,rawData,countList){
           };
         //console.log("build branche",tree);
       }
+      //delete unnecessary data
       buildTree(tree[broader]["children"],id,rawData,countList);
     }
-  }});//(parentId)==-1?null:parentId;
-  //if(!parent) return tree;
-  //tree[parentId]["children"]=child;
-  //console.log("buildTree parent tree",tree);
-  //console.log("buildTree parent children",child);
+  }});
   return tree
 }
 var geojsonConstructor = function(rawData,checkedItem){
@@ -193,18 +124,29 @@ var geojsonConstructor = function(rawData,checkedItem){
   });
   return geojson;
 }
-var checkedItem = function(treeData){
+var checkedItem = function(treeData,checkedList){
   //console.log("call checkedItem, show treeData",treeData);
-  var checkedList = [];
+
   for(var obj in treeData){
     //console.log("obj in treeData",obj);
-    for(var obj2 in treeData[obj]["children"]){
-      //console.log("obj2",obj2);
-      treeData[obj]["children"][obj2]["checked"]?checkedList.push(obj2):null;
+    //console.log("checkedList",checkedList);
+    if(_.size(treeData[obj]["children"])>0){
+      //console.log("obj children find",treeData[obj]["children"]);
+      checkedItem(treeData[obj]["children"],checkedList);
+      //console.log("checkedList",checkedList);
+    }
+    else{
+      treeData[obj]["checked"]?checkedList.push(obj):null;
+      //console.log("i am in ",obj,"checked?",treeData[obj]["checked"]);
+      //console.log("checkedList",checkedList);
+      //console.log("checked?",treeData[obj]["checked"]);
+
     }
   }
-  //console.log("List",checkedList);
+  //console.log("checkedList",checkedList);
   return checkedList;
+  //console.log("List",checkedList);
+
 }
 var countItem = function(geoData){
   //console.log("call checkedItem, show treeData",treeData);
@@ -286,9 +228,11 @@ var reducer = function (state = initialState, action) {
         lastChange:action.change
       })
     case actionTypes.UpdateTreeData:
-      //console.log("UpdateTreeData :",action.newdata);
-
-      var geojson = geojsonConstructor(state.urlDataForMap?state.urlDataForMap:defaultMapData,checkedItem(action.newdata));
+      console.log("UpdateTreeData :",action.newdata);
+      var checkedlist=[];
+      //var temp = checkedItem(action.newdata,checkedlist);
+      //console.log("checkedItem", temp);
+      var geojson = geojsonConstructor(state.urlDataForMap?state.urlDataForMap:defaultMapData,checkedItem(action.newdata,checkedlist));
       console.log("new geojson",geojson);
       return Object.assign({}, state, {
         treeData:action.newdata,
@@ -302,7 +246,8 @@ var reducer = function (state = initialState, action) {
     case actionTypes.GetDataFromUrlForMap:
       console.log("GetDataFromUrlForMap",action.urlDataForMap);
       console.log("treeConstructor",treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(action.urlDataForMap)));
-      var geojson = geojsonConstructor(action.urlDataForMap,checkedItem(state.treeData));
+      var checkedlist=[];
+      var geojson = geojsonConstructor(action.urlDataForMap,checkedItem(state.treeData,checkedlist));
       console.log("geojson",geojson);
       return Object.assign({}, state, {
         urlDataForMap:action.urlDataForMap,
