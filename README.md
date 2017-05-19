@@ -7,27 +7,40 @@ https://docs.google.com/document/d/1GspWIZkBGzxHU_LtTYtv4HsamsKYgjFfydVKdPU8GUU/
 
 # Instruction
 To start, install npm and then run the following two commands:
-
+```
 npm install
 
 npm start
-
-# Build guide
-npm run build
-
-Find the index.html in the dossier build, change the href of the generated js and css in the html file:
-delete the first "/" in the href.
-# Get data from URL 
-Use ?sko for tree data and ?geo for geolocation data, if you use both, add "&&"between two url
-
-For example, 
-```url
-http://localhost:3000/?sko=https://api.myjson.com/bins/p9ytt&&?geo=https://api.myjson.com/bins/1fh1g1
 ```
-or using sparql
+# Build guide
+Assuming that you have already install the dependencies by **npm install**, or you should run it before build.
+```
+npm run build
+```
+Then:
+  1. Find the index.html in the folder **build**, 
+  2. Find the href of the generated js and css in the html file,
+  3. Delete the first "/" in the href.
+
+# Get data from URL 
+Use ?sko for tree-menu data and ?geo for geolocation data, if you use both, add "&&" between two url
+
+For example, when you want to set tree-menu data, add ?sko=(your url)
+```url
+http://localhost:3000/?sko=https://api.myjson.com/bins/p9ytt
+```
+when you want to set geo-location data, add ?geo=(your url)
+for example:
 ```url
 http://localhost:3000/?geo=https://semantic-forms.cc:8111/sparql?query=%0D%0APREFIX+rdfs%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2000%2F01%2Frdf-schema%23%3E%0D%0A%0D%0A%0D%0A%0D%0A%0D%0APrefix+geo%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2003%2F01%2Fgeo%2Fwgs84_pos%23%3E%0D%0A%0D%0ACONSTRUCT+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A%0D%0A%7D%0D%0AWHERE+%7B%0D%0A++GRAPH+%3FGRAPH+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A++%7D%0D%0A%7D
 ```
+Or you can use both url:
+```
+http://localhost:3000/?sko=https://api.myjson.com/bins/p9ytt&&?geo=https://semantic-forms.cc:8111/sparql?query=%0D%0APREFIX+rdfs%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2000%2F01%2Frdf-schema%23%3E%0D%0A%0D%0A%0D%0A%0D%0A%0D%0APrefix+geo%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2003%2F01%2Fgeo%2Fwgs84_pos%23%3E%0D%0A%0D%0ACONSTRUCT+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A%0D%0A%7D%0D%0AWHERE+%7B%0D%0A++GRAPH+%3FGRAPH+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A++%7D%0D%0A%7D
+```
+
+In this case, we use semantic form to query and structure geo-location data.
+See more info of semantic forms [**here**](semantic-forms.cc:9111/tools)
 
 The tree data should follow the structure like this:
 ```json
