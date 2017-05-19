@@ -7,11 +7,11 @@ https://docs.google.com/document/d/1GspWIZkBGzxHU_LtTYtv4HsamsKYgjFfydVKdPU8GUU/
 
 # Instruction
 To start, install npm and then run the following two commands:
-
+```
 npm install
 
 npm start
-
+```
 # Build guide
 npm run build
 
