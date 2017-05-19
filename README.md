@@ -24,6 +24,12 @@ For example,
 
 http://localhost:3000/?sko=https://api.myjson.com/bins/p9ytt&&?geo=https://api.myjson.com/bins/1fh1g1
 
+or using sparql
+
+http://localhost:3000/?geo=https://semantic-forms.cc:8111/sparql?query=%0D%0APREFIX+rdfs%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2000%2F01%2Frdf-schema%23%3E%0D%0A%0D%0A%0D%0A%0D%0A%0D%0APrefix+geo%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2003%2F01%2Fgeo%2Fwgs84_pos%23%3E%0D%0A%0D%0ACONSTRUCT+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A%0D%0A%7D%0D%0AWHERE+%7B%0D%0A++GRAPH+%3FGRAPH+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A++%7D%0D%0A%7D
+
+
+
 The tree data should follow the structure like this:
 {
   "@graph" : [ {
@@ -84,5 +90,9 @@ The geolocation data should follow the structure like this:
   }
 }
 
+# TODO
+Change markers style using following plugin:
+
+https://github.com/lvoogdt/Leaflet.awesome-markers
 
 

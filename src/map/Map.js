@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import L from 'leaflet';
+import 'leaflet.markercluster';
 // postCSS import of Leaflet's CSS
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 // using webpack json loader we can import our geojson file like this
 // import local components Filter and ForkMe
 import { connect } from 'react-redux'
@@ -392,7 +395,13 @@ class Map extends Component {
       filter: this.filterFeatures
     });
     // add our GeoJSON layer to the Leaflet map object
-    geojsonLayer.addTo(this.state.map);
+    //TODO Add marker here
+    var markers = L.markerClusterGroup({
+	      showCoverageOnHover: false
+    });
+    console.log("markers initial success?",markers?"yes":"no");
+    markers.addLayer(geojsonLayer).addTo(this.state.map);
+    //geojsonLayer.addTo(this.state.map);
     // store the Leaflet GeoJSON layer in our component state for use later
     this.setState({ geojsonLayer });
     // fit the geographic extent of the GeoJSON layer within the map's bounds / viewport
