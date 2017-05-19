@@ -42902,7 +42902,7 @@
 	      // an options object is passed to define functions for customizing the layer
 	      var geojsonLayer = _leaflet2.default.geoJson(geojson, {
 	        onEachFeature: this.onEachFeature,
-	
+	        pointToLayer: this.pointToLayer,
 	        filter: this.filterFeatures
 	      });
 	      // add our GeoJSON layer to the Leaflet map object
@@ -80863,4 +80863,4 @@
 
 /***/ }
 /******/ ])));
-//# sourceMappingURL=main.28bdaf89.js.map
+//# sourceMappingURL=main.e92e688c.js.map
