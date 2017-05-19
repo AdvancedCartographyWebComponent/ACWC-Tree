@@ -9,7 +9,9 @@ var treeConstructor = function (rawData,countList){
   var tree ={};
   //console.log("results",results[0][0],results[2]);
   var treeData = buildTree(tree,results[0],rawData["@graph"],countList);
-  countParentsNum(treeData,results[0][0]);
+  for(var num in results[0]){
+    countParentsNum(treeData,results[0][num]);
+  }
   return treeData;
 }
 var buildTree = function(tree,parentId,rawData,countList){
@@ -20,7 +22,7 @@ var buildTree = function(tree,parentId,rawData,countList){
     var broader = value["broader"];
     var name = value["prefLabel"]?value["prefLabel"]["@value"]:null;
     var language = value["prefLabel"]?value["prefLabel"]["@language"]:null;
-    ////console.log("typeof broader === 'object'",typeof broader === 'object');
+    ////console.log("typeof broader === 'object'",typeof broader === 'object');.
     if(typeof broader === 'object'){
       broader.map((value)=>{
         if (parentId.indexOf(value)!=-1) {
@@ -190,7 +192,7 @@ var findRoot = function(data){
 }
 var countParentsNum = function(tree,parentId){
   if(_.size(tree[parentId]["children"])>0){
-    console.log("countParentsNum parentId",parentId);
+    //console.log("countParentsNum parentId",parentId);
     for(var obj in tree[parentId]["children"]){
       tree[parentId]["num"]=tree[parentId]["num"]+countParentsNum(tree[parentId]["children"],obj);
     }
