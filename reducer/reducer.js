@@ -8,22 +8,22 @@ var treeConstructor = function (rawData,countList){
   var results = findRoot(rawData);
   var tree ={};
   //console.log("results",results[0][0],results[2]);
-  var treeData = buildTree(tree,results[0][0],rawData["@graph"],countList);
+  var treeData = buildTree(tree,results[0],rawData["@graph"],countList);
   countParentsNum(treeData,results[0][0]);
   return treeData;
 }
 var buildTree = function(tree,parentId,rawData,countList){
   //console.log("buildTree parent parentId object",parentId);
-  var temp = rawData;
+  //var temp = rawData;
   rawData.map((value)=>{
     var id = value["@id"];
     var broader = value["broader"];
-    var name = value["prefLabel"]["@value"];
-    var language = value["prefLabel"]["@language"];
+    var name = value["prefLabel"]?value["prefLabel"]["@value"]:null;
+    var language = value["prefLabel"]?value["prefLabel"]["@language"]:null;
     ////console.log("typeof broader === 'object'",typeof broader === 'object');
     if(typeof broader === 'object'){
       broader.map((value)=>{
-        if (value === parentId) {
+        if (parentId.indexOf(value)!=-1) {
           //console.log("value matched",value);
           if(value in tree){
             tree[value]["children"][id] = {
@@ -57,7 +57,7 @@ var buildTree = function(tree,parentId,rawData,countList){
       })
     }
     else{
-      if (broader === parentId) {
+      if (parentId.indexOf(broader)!=-1) {
         //console.log("broader matched",broader);
         //console.log("broader matched",id);
         if(broader in tree){
