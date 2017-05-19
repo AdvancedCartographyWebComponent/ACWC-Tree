@@ -10,13 +10,20 @@ var treeConstructor = function (rawData,countList){
   //console.log("results",results[0][0],results[2]);
   var treeData = buildTree(tree,results[0],rawData["@graph"],countList);
   for(var num in results[0]){
-    countParentsNum(treeData,results[0][num]);
+    countParentsNum(treeData,formatString(results[0][num]));
   }
   return treeData;
+}
+var formatString = function(string){
+  var temp = string.split(':');
+  var format =temp.length==1?string.split(':')[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g," "):string.split(':')[1].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g," ");
+  return format
 }
 var buildTree = function(tree,parentId,rawData,countList){
   //console.log("buildTree parent parentId object",parentId);
   //var temp = rawData;
+  //var punctuationless = s.split(':')[1].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g," ");
+
   rawData.map((value)=>{
     var id = value["@id"];
     var broader = value["broader"];
@@ -27,8 +34,8 @@ var buildTree = function(tree,parentId,rawData,countList){
       broader.map((value)=>{
         if (parentId.indexOf(value)!=-1) {
           //console.log("value matched",value);
-          if(value in tree){
-            tree[value]["children"][id] = {
+          if(formatString(value) in tree){
+            tree[formatString(value)]["children"][formatString(id)] = {
               checked: false,
               checkbox: true,
               collapsed:true,
@@ -38,14 +45,14 @@ var buildTree = function(tree,parentId,rawData,countList){
           }
           else{
             var child = {};
-            child[id]= {
+            child[formatString(id)]= {
               checked: false,
               checkbox: true,
               collapsed:true,
               children:{},
               num:countList[id]?countList[id]:0
             };
-            tree[value] = {
+            tree[formatString(value)] = {
             checked: false,
             checkbox: true,
             collapsed:true,
@@ -53,7 +60,7 @@ var buildTree = function(tree,parentId,rawData,countList){
             num:0
           };
         }
-        buildTree(tree[value]["children"],id,rawData);
+        buildTree(tree[formatString(value)]["children"],id,rawData);
         }
         //TODO delete used data
       })
@@ -62,8 +69,8 @@ var buildTree = function(tree,parentId,rawData,countList){
       if (parentId.indexOf(broader)!=-1) {
         //console.log("broader matched",broader);
         //console.log("broader matched",id);
-        if(broader in tree){
-          tree[broader]["children"][id] = {
+        if(formatString(broader) in tree){
+          tree[formatString(broader)]["children"][formatString(id)] = {
             checked: false,
             checkbox: true,
             collapsed:true,
@@ -74,7 +81,7 @@ var buildTree = function(tree,parentId,rawData,countList){
         else
         {
           var child = {};
-          child[id]= {
+          child[formatString(id)]= {
             checked: false,
             checkbox: true,
             collapsed:true,
@@ -82,7 +89,7 @@ var buildTree = function(tree,parentId,rawData,countList){
             num:countList[id]?countList[id]:0
           };
           //console.log("buildTree parent child",child);
-          tree[broader]={
+          tree[formatString(broader)]={
             checked: false,
             checkbox: true,
             collapsed:true,
@@ -92,7 +99,7 @@ var buildTree = function(tree,parentId,rawData,countList){
         //console.log("build branche",tree);
       }
       //delete unnecessary data
-      buildTree(tree[broader]["children"],id,rawData,countList);
+      buildTree(tree[formatString(broader)]["children"],id,rawData,countList);
     }
   }});
   return tree
@@ -103,8 +110,8 @@ var geojsonConstructor = function(rawData,checkedItem){
   "features": []
   };
   rawData["@graph"].map((instance,index) =>{
-    var name = instance["label"]["@value"];
-    var subject = instance["subject"];
+    var name = formatString(instance["label"]["@value"]);
+    var subject = formatString(instance["subject"]);
     var lat = instance["lat"];
     var long = instance["long"];
     //console.log("checkedItem",checkedItem);
