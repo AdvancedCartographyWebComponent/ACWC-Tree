@@ -173,11 +173,11 @@ The class for the element that wraps a nodes children (if any exist)
 		transition: all .2s;
 	}
 	[type="checkbox"]:not(:checked) + label .ui:before {
-		content: "no";
-		left: 23px
+		content: "Off";
+		left: 20px
 	}
 	[type="checkbox"]:checked + label .ui:after {
-		content: "yes";
+		content: "On";
 		color: #39D2B4;
 	}
 	[type="checkbox"]:focus + label:before {

@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet.markercluster';
 // postCSS import of Leaflet's CSS
 import 'leaflet/dist/leaflet.css';
+import 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 // using webpack json loader we can import our geojson file like this
@@ -53,6 +54,7 @@ class Map extends Component {
       map: null,
       tileLayer: null,
       geojsonLayer: null,
+      markerLayer : null,
       geojson: null,
       driversFilter: '*',
       numUser: null
@@ -142,7 +144,7 @@ class Map extends Component {
       });
     }
     if(prevState.geojson&&md5(JSON.stringify(prevState.geojson))!==md5(JSON.stringify(this.state.geojson))){
-      console.log("geojson changed");
+      console.log("geojson changed do filterGeoJSONLayer");
       console.log("prev",prevState.geojson);
       console.log("this",this.state.geojson);
       UserNames=[];
@@ -403,7 +405,11 @@ class Map extends Component {
     markers.addLayer(geojsonLayer).addTo(this.state.map);
     //geojsonLayer.addTo(this.state.map);
     // store the Leaflet GeoJSON layer in our component state for use later
-    this.setState({ geojsonLayer });
+    this.setState(
+      {
+        geojsonLayer,
+        markerLayer:markers
+     });
     // fit the geographic extent of the GeoJSON layer within the map's bounds / viewport
     this.zoomToFeature(geojsonLayer);
   }
@@ -413,10 +419,12 @@ class Map extends Component {
 
     //console.log("geojsonLayer:",this.state.geojsonLayer);
     this.state.geojsonLayer.clearLayers();
-
+    this.state.markerLayer.clearLayers();
     // re-add the geojson so that it filters out subway lines which do not match state.filter
     ////console.log("remove and add data");
     this.state.geojsonLayer.addData(this.state.geojson);
+    this.state.markerLayer.addLayer(this.state.geojsonLayer).addTo(this.state.map);
+    //markers.addLayer(geojsonLayer).addTo(this.state.map);
     // fit the map to the new geojson layer's geographic extent
     this.zoomToFeature(this.state.geojsonLayer);
   }
@@ -448,16 +456,22 @@ class Map extends Component {
   pointToLayer(feature, latlng) {
     // renders our GeoJSON points as circle markers, rather than Leaflet's default image markers
     // parameters to style the GeoJSON markers
-    var markerParams = {
+    /*var markerParams = {
       radius: 7,
       fillColor: 'red',
       color: '#fff',
       weight: 1,
       opacity: 1,
       fillOpacity: 1
+    };*/
+    var markerParams = {
+      opacity: 1,
+      fillOpacity: 1
     };
-
-    return L.circleMarker(latlng, markerParams);
+    return L.marker(latlng).on('click',()=>{
+      return console.log("alala");
+    });
+    //return L.circleMarker(latlng, markerParams);
   }
 
   onEachFeature(feature, layer) {
