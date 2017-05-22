@@ -6,6 +6,10 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
+import 'leaflet-extra-markers/dist/js/leaflet.extra-markers.min.js'
+import 'leaflet-extra-markers/dist/css/leaflet.extra-markers.min.css'
+import 'font-awesome/css/font-awesome.min.css'
+//import 'leaflet-extra-markers/dist/images'
 // using webpack json loader we can import our geojson file like this
 // import local components Filter and ForkMe
 import { connect } from 'react-redux'
@@ -464,11 +468,13 @@ class Map extends Component {
       opacity: 1,
       fillOpacity: 1
     };*/
-    var markerParams = {
-      opacity: 1,
-      fillOpacity: 1
-    };
-    return L.marker(latlng).on('click',()=>{
+    var redMarker = L.ExtraMarkers.icon({
+      icon: 'fa-book',
+      markerColor: 'red',
+      shape: 'square',
+      prefix: 'fa'
+    });
+    return L.marker(latlng, {icon: redMarker,}).on('click',()=>{
       return console.log("alala");
     });
     //return L.circleMarker(latlng, markerParams);
