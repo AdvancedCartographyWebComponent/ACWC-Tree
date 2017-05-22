@@ -98,17 +98,17 @@ var App = React.createClass({
 
   _getDynamicTreeExample: function () {
 
-    return this.props.treeData?
+    return _.size(this.props.treeData)>0?
     (
       <TreeMenu
-        expandIconClass="fa fa-chevron-right"
-        collapseIconClass="fa fa-chevron-down"
+        expandIconClass="fa fa-angle-double-right"
+        collapseIconClass="fa fa-angle-double-down"
         onTreeNodeClick={this._setLastActionState.bind(this, "clicked")}
         onTreeNodeCollapseChange={this._handleDynamicObjectTreeNodePropChange.bind(this,"collapsed")}
         onTreeNodeCheckChange={this._handleDynamicObjectTreeNodePropChange.bind(this,"checked")}
         data={this.props.treeData} />
     ):
-    (<h2>loading data from url</h2>);
+    (<div><i className="fa fa-circle-o-notch fa-spin fa-fw"></i>Loading...</div>);
 
 
   },
