@@ -105,6 +105,8 @@ var buildTree = function(tree,parentId,rawData,countList){
   return tree
 }
 var geojsonConstructor = function(rawData,checkedItem){
+  //var temp = checkedItem;
+  //console.log("geojsonConstructor checkedItem",checkedItem?checkedItem.toString:null);
   var geojson = {
   "type": "FeatureCollection",
   "features": []
@@ -114,8 +116,9 @@ var geojsonConstructor = function(rawData,checkedItem){
     var subject = formatString(instance["subject"]);
     var lat = instance["lat"];
     var long = instance["long"];
-    //console.log("checkedItem",checkedItem);
-    if(!checkedItem||checkedItem.length==0||checkedItem.indexOf(subject)>=0){
+    //console.log("geojsonConstructor checkedItem indexOf",_.indexOf(checkedItem,subject));
+    //console.log("geojsonConstructor checkedItem typeof",typeof temp);
+    if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
       //console.log("find it",subject);
       var feature = {
         "type": "Feature",
@@ -145,7 +148,7 @@ var checkedItem = function(treeData,checkedList){
       //console.log("checkedList",checkedList);
     }
     else{
-      treeData[obj]["checked"]?checkedList.push(obj):null;
+      treeData[obj]["checked"]&&checkedList.indexOf(obj)==-1?checkedList.push(obj):null;
       //console.log("i am in ",obj,"checked?",treeData[obj]["checked"]);
       //console.log("checkedList",checkedList);
       //console.log("checked?",treeData[obj]["checked"]);
@@ -239,9 +242,9 @@ var reducer = function (state = initialState, action) {
     case actionTypes.UpdateTreeData:
       console.log("UpdateTreeData :",action.newdata);
       var checkedlist=[];
-      //var temp = checkedItem(action.newdata,checkedlist);
-      //console.log("checkedItem", temp);
-      var geojson = geojsonConstructor(state.urlDataForMap?state.urlDataForMap:defaultMapData,checkedItem(action.newdata,checkedlist));
+      var tempCheckedItem = checkedItem(action.newdata,checkedlist);
+      console.log("checkedItem type",typeof tempCheckedItem);
+      var geojson = geojsonConstructor(state.urlDataForMap?state.urlDataForMap:defaultMapData,tempCheckedItem);
       console.log("new geojson",geojson);
       return Object.assign({}, state, {
         treeData:action.newdata,

@@ -42481,8 +42481,6 @@
 	
 	__webpack_require__(288);
 	
-	__webpack_require__(287);
-	
 	var _reactRedux = __webpack_require__(133);
 	
 	var _action = __webpack_require__(140);
@@ -42512,6 +42510,7 @@
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	// postCSS import of Leaflet's CSS
 	
+	//import 'font-awesome/css/font-awesome.min.css'
 	//import 'leaflet-extra-markers/dist/images'
 	// using webpack json loader we can import our geojson file like this
 	// import local components Filter and ForkMe
@@ -43099,6 +43098,8 @@
 	var _axios = __webpack_require__(142);
 	
 	var _axios2 = _interopRequireDefault(_axios);
+	
+	__webpack_require__(287);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -44555,9 +44556,9 @@
 
 /***/ },
 /* 309 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	module.exports = __webpack_require__.p + "static/media/marker-shadow.44a526ee.png";
+	module.exports = "../../static/media/marker-shadow.44a526ee.png";
 
 /***/ },
 /* 310 */
@@ -80912,4 +80913,4 @@
 
 /***/ }
 /******/ ])));
-//# sourceMappingURL=main.8597ce7a.js.map
+//# sourceMappingURL=main.7c6fa974.js.map

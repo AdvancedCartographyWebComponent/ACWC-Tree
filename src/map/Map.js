@@ -8,7 +8,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import 'leaflet-extra-markers/dist/js/leaflet.extra-markers.min.js'
 import 'leaflet-extra-markers/dist/css/leaflet.extra-markers.min.css'
-import 'font-awesome/css/font-awesome.min.css'
+//import 'font-awesome/css/font-awesome.min.css'
 //import 'leaflet-extra-markers/dist/images'
 // using webpack json loader we can import our geojson file like this
 // import local components Filter and ForkMe
