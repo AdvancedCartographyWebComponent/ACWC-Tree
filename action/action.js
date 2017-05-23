@@ -44,9 +44,15 @@ let actions = {
   },
   getDataFromUrlForTreeAndMap(urlDataForTree,urlDataForMap) {
     return {
-      type: actionTypes.getDataFromUrlForTreeAndMap,
+      type: actionTypes.GetDataFromUrlForTreeAndMap,
       urlDataForTree,
       urlDataForMap
+    }
+  },
+  globalSearch(keyword) {
+    return {
+      type: actionTypes.GlobalSearch,
+      keyword
     }
   }
 };

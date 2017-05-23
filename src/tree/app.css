@@ -32,3 +32,7 @@
 .tree-event-alert strong {
     font-size: 22px;
 }
+.global-search {
+  width: 400px;
+  margin-top: 12px
+}

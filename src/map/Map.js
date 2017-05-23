@@ -438,7 +438,7 @@ class Map extends Component {
     var fitBoundsParams = {
       paddingTopLeft: [10,10],
       paddingBottomRight: [10,10],
-      maxZoom : 12
+      maxZoom : 14
     };
     //console.log("zooming");
     // set the map's center & zoom so that it fits the geographic extent of the layer

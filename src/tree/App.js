@@ -27,9 +27,13 @@ var App = React.createClass({
       this.props.actions.useDefaultTreeData();
       isQuery = true;
     }
-    var dynamicExample = this._getExamplePanel("Dynamic Thésaurus", this._getDynamicTreeExample());
+    var dynamicExample = this._getExamplePanel(this._getDynamicTreeExample());
     //console.log(content);
     return <div className="container">
+      <div className="input-group margin-bottom-sm">
+        <span className="fa fa-search"></span>
+        <input className="global-search" type="text" placeholder="Search" onChange={(e)=>this.props.actions.globalSearch(e.target.value)}/>
+      </div>
       <div className="row">
         <div className="col-lg-3">
           {dynamicExample}{this.props.urlQuery?this._getUrlData(this.props.urlQuery):null}
@@ -115,10 +119,9 @@ var App = React.createClass({
 
 
 
-  _getExamplePanel: function (title, treeMenuNode) {
+  _getExamplePanel: function (treeMenuNode) {
     return <div>
       <div className="panel-thesaurus">
-        <div className="panel-heading">{title + " Menu"}</div>
         <div className="panel-body">
           {treeMenuNode}
         </div>

@@ -6,5 +6,6 @@ module.exports = {
   GetDataFromUrlForMap : "GetDataFromUrlForMap",
   GetDataFromUrlForTree : "GetDataFromUrlForTree",
   UpdateServerData : "UpdateServerData",
-  GetDataFromUrlForTreeAndMap : "GetDataFromUrlForTreeAndMap"
+  GetDataFromUrlForTreeAndMap : "GetDataFromUrlForTreeAndMap",
+  GlobalSearch : "GlobalSearch"
 };
