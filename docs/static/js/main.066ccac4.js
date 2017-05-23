@@ -11864,9 +11864,15 @@
 	  },
 	  getDataFromUrlForTreeAndMap(urlDataForTree,urlDataForMap) {
 	    return {
-	      type: actionTypes.getDataFromUrlForTreeAndMap,
+	      type: actionTypes.GetDataFromUrlForTreeAndMap,
 	      urlDataForTree,
 	      urlDataForMap
+	    }
+	  },
+	  globalSearch(keyword) {
+	    return {
+	      type: actionTypes.GlobalSearch,
+	      keyword
 	    }
 	  }
 	};
@@ -11905,7 +11911,8 @@
 	  GetDataFromUrlForMap : "GetDataFromUrlForMap",
 	  GetDataFromUrlForTree : "GetDataFromUrlForTree",
 	  UpdateServerData : "UpdateServerData",
-	  GetDataFromUrlForTreeAndMap : "GetDataFromUrlForTreeAndMap"
+	  GetDataFromUrlForTreeAndMap : "GetDataFromUrlForTreeAndMap",
+	  GlobalSearch : "GlobalSearch"
 	};
 
 
@@ -42960,7 +42967,7 @@
 	      var fitBoundsParams = {
 	        paddingTopLeft: [10, 10],
 	        paddingBottomRight: [10, 10],
-	        maxZoom: 12
+	        maxZoom: 14
 	      };
 	      //console.log("zooming");
 	      // set the map's center & zoom so that it fits the geographic extent of the layer
@@ -43121,19 +43128,21 @@
 	var CSSTransitionGroup = __webpack_require__(503);
 	var isQuery = false;
 	
-	var _ref = React.createElement(
+	var _ref = React.createElement('span', { className: 'fa fa-search' });
+	
+	var _ref2 = React.createElement(
 	  'div',
 	  { className: 'text-center alert alert-success tree-event-alert' },
 	  "Waiting for interaction"
 	);
 	
-	var _ref2 = React.createElement(
+	var _ref3 = React.createElement(
 	  'h3',
 	  null,
 	  'Event Received:'
 	);
 	
-	var _ref3 = React.createElement(
+	var _ref4 = React.createElement(
 	  'h3',
 	  null,
 	  React.createElement(
@@ -43144,7 +43153,7 @@
 	  ' Affected: '
 	);
 	
-	var _ref4 = React.createElement(
+	var _ref5 = React.createElement(
 	  'div',
 	  null,
 	  React.createElement('i', { className: 'fa fa-circle-o-notch fa-spin fa-fw' }),
@@ -43161,6 +43170,8 @@
 	  },
 	
 	  render: function render() {
+	    var _this = this;
+	
 	    //console.log("test router",this.props.urlQuery);
 	    //console.log("app this props",this.props);
 	
@@ -43168,11 +43179,19 @@
 	      this.props.actions.useDefaultTreeData();
 	      isQuery = true;
 	    }
-	    var dynamicExample = this._getExamplePanel("Dynamic Thésaurus", this._getDynamicTreeExample());
+	    var dynamicExample = this._getExamplePanel(this._getDynamicTreeExample());
 	    //console.log(content);
 	    return React.createElement(
 	      'div',
 	      { className: 'container' },
+	      React.createElement(
+	        'div',
+	        { className: 'input-group margin-bottom-sm' },
+	        _ref,
+	        React.createElement('input', { className: 'global-search', type: 'text', placeholder: 'Search', onChange: function onChange(e) {
+	            return _this.props.actions.globalSearch(e.target.value);
+	          } })
+	      ),
 	      React.createElement(
 	        'div',
 	        { className: 'row' },
@@ -43197,7 +43216,7 @@
 	  */
 	  _getLastActionNode: function _getLastActionNode() {
 	
-	    var lastActionNode = _ref;
+	    var lastActionNode = _ref2;
 	
 	    var action = this.props.lastChange;
 	    //console.log("lastchange",this.props);
@@ -43205,7 +43224,7 @@
 	      lastActionNode = React.createElement(
 	        'div',
 	        { className: 'text-center alert alert-success tree-event-alert', key: "lastAction_" + "_" + action.time },
-	        _ref2,
+	        _ref3,
 	        React.createElement(
 	          'div',
 	          null,
@@ -43215,7 +43234,7 @@
 	            action.event
 	          )
 	        ),
-	        _ref3,
+	        _ref4,
 	        React.createElement(
 	          'div',
 	          null,
@@ -43262,21 +43281,16 @@
 	      onTreeNodeClick: this._setLastActionState.bind(this, "clicked"),
 	      onTreeNodeCollapseChange: this._handleDynamicObjectTreeNodePropChange.bind(this, "collapsed"),
 	      onTreeNodeCheckChange: this._handleDynamicObjectTreeNodePropChange.bind(this, "checked"),
-	      data: this.props.treeData }) : _ref4;
+	      data: this.props.treeData }) : _ref5;
 	  },
 	
-	  _getExamplePanel: function _getExamplePanel(title, treeMenuNode) {
+	  _getExamplePanel: function _getExamplePanel(treeMenuNode) {
 	    return React.createElement(
 	      'div',
 	      null,
 	      React.createElement(
 	        'div',
 	        { className: 'panel-thesaurus' },
-	        React.createElement(
-	          'div',
-	          { className: 'panel-heading' },
-	          title + " Menu"
-	        ),
 	        React.createElement(
 	          'div',
 	          { className: 'panel-body' },
@@ -80496,20 +80510,33 @@
 	const defaultMapData = __webpack_require__(315);
 	var _ = __webpack_require__(214);
 	var Immutable = __webpack_require__(158);
-	var treeConstructor = function (rawData,countList){
+	var treeConstructor = function (rawData,countList,root){
 	  ////console.log("treeConstructor");
-	  var results = findRoot(rawData);
-	  var tree ={};
+	  if(!countList["Exclued Data"]||countList["Exclued Data"]==0){
+	    var tree ={};
+	  }else{
+	    var tree ={
+	      "Exclued Data":{
+	        checked: false,
+	        checkbox: false,
+	        collapsed:true,
+	        children:{},
+	        num:countList["Exclued Data"]
+	      }
+	    };
+	  }
 	  //console.log("results",results[0][0],results[2]);
-	  var treeData = buildTree(tree,results[0],rawData["@graph"],countList);
-	  for(var num in results[0]){
-	    countParentsNum(treeData,formatString(results[0][num]));
+	  var treeData = buildTree(tree,root,rawData["@graph"],countList);
+	  console.log("build tree",treeData);
+	  //treeData["Exclued Data"]=
+	  for(var num in root){
+	    countParentsNum(treeData,formatString(root[num]));
 	  }
 	  return treeData;
 	}
-	var formatString = function(string){
-	  var temp = string.split(':');
-	  var format =temp.length==1?string.split(':')[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g," "):string.split(':')[1].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g," ");
+	var formatString = function(strings){
+	  var temp = strings.split(':');
+	  var format =temp.length==1?temp[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g," "):temp[1].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g," ");
 	  return format
 	}
 	var buildTree = function(tree,parentId,rawData,countList){
@@ -80533,7 +80560,7 @@
 	              checkbox: true,
 	              collapsed:true,
 	              children:{},
-	              num:countList[id]?countList[id]:0
+	              num:countList[formatString(id)]?countList[formatString(id)]:0
 	            };
 	          }
 	          else{
@@ -80543,7 +80570,7 @@
 	              checkbox: true,
 	              collapsed:true,
 	              children:{},
-	              num:countList[id]?countList[id]:0
+	              num:countList[formatString(id)]?countList[formatString(id)]:0
 	            };
 	            tree[formatString(value)] = {
 	            checked: false,
@@ -80568,7 +80595,7 @@
 	            checkbox: true,
 	            collapsed:true,
 	            children:{},
-	            num:countList[id]?countList[id]:0
+	            num:countList[formatString(id)]?countList[formatString(id)]:0
 	          };
 	        }
 	        else
@@ -80579,7 +80606,7 @@
 	            checkbox: true,
 	            collapsed:true,
 	            children:{},
-	            num:countList[id]?countList[id]:0
+	            num:countList[formatString(id)]?countList[formatString(id)]:0
 	          };
 	          //console.log("buildTree parent child",child);
 	          tree[formatString(broader)]={
@@ -80596,38 +80623,6 @@
 	    }
 	  }});
 	  return tree
-	}
-	var geojsonConstructor = function(rawData,checkedItem){
-	  //var temp = checkedItem;
-	  //console.log("geojsonConstructor checkedItem",checkedItem?checkedItem.toString:null);
-	  var geojson = {
-	  "type": "FeatureCollection",
-	  "features": []
-	  };
-	  rawData["@graph"].map((instance,index) =>{
-	    var name = formatString(instance["label"]["@value"]);
-	    var subject = formatString(instance["subject"]);
-	    var lat = instance["lat"];
-	    var long = instance["long"];
-	    //console.log("geojsonConstructor checkedItem indexOf",_.indexOf(checkedItem,subject));
-	    //console.log("geojsonConstructor checkedItem typeof",typeof temp);
-	    if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
-	      //console.log("find it",subject);
-	      var feature = {
-	        "type": "Feature",
-	        "properties": {
-	          "NAME": name,
-	          "subject": subject
-	        },
-	        "geometry": {
-	          "type": "Point",
-	          "coordinates": [long,lat]
-	        }
-	      };
-	      geojson["features"].push(feature);
-	    }
-	  });
-	  return geojson;
 	}
 	var checkedItem = function(treeData,checkedList){
 	  //console.log("call checkedItem, show treeData",treeData);
@@ -80655,21 +80650,26 @@
 	}
 	var countItem = function(geoData){
 	  //console.log("call checkedItem, show treeData",treeData);
-	  var countList = geoData["@graph"].reduce(function (allNames, instance) {
-	    var name = instance["subject"];
-	    if (name in allNames) {
-	      allNames[name]++;
-	    }
-	    else {
-	      allNames[name] = 1;
-	    }
-	    return allNames;
-	  }, {});
+	  if(_.size(geoData["@graph"])>0){
+	    var countList = geoData["@graph"].reduce(function (allNames, instance) {
+	      //console.log("instance",instance["subject"]?instance["subject"]:"Exclued Data");
+	      var name = formatString(instance["subject"]?instance["subject"]:"Exclued Data");
+	      if (name in allNames) {
+	        allNames[name]++;
+	      }
+	      else {
+	        allNames[name] = 1;
+	      }
+	      return allNames;
+	    }, {});
+	  }else{
+	    var countList = {};
+	  }
 	  //console.log("countList",countList);
 	  return countList;
 	
 	}
-	var findRoot = function(data){
+	var findRoot = function(data,stateRoot){
 	  //var t = _.flattenDeep(defaultTreeData);
 	  //console.log("defaultTreeData",defaultTreeData);
 	  var flattenId = [];
@@ -80687,14 +80687,14 @@
 	    flattenId.indexOf(id)==-1?flattenId.push(id):null;
 	
 	  })
-	  var root =_.difference(flattenBroader,flattenId);
+	  var root =stateRoot?stateRoot:_.difference(flattenBroader,flattenId);
 	  //console.log("flattenId",_.flatten(flattenId));
 	  //console.log("flattenBroader",t);
 	  return [root,flattenId,flattenBroader];
 	
 	}
 	var countParentsNum = function(tree,parentId){
-	  if(_.size(tree[parentId]["children"])>0){
+	  if(tree[parentId]["children"]&&_.size(tree[parentId]["children"])>0){
 	    //console.log("countParentsNum parentId",parentId);
 	    for(var obj in tree[parentId]["children"]){
 	      tree[parentId]["num"]=tree[parentId]["num"]+countParentsNum(tree[parentId]["children"],obj);
@@ -80705,8 +80705,117 @@
 	    return tree[parentId]["num"];
 	  }
 	}
-	const defaultTree = treeConstructor(defaultTreeData,countItem(defaultMapData));
-	const defaultGeoJson = geojsonConstructor(defaultMapData);
+	var linkStringInLabel = function(labels){
+	  var stringFinal="";
+	  if(!labels["@value"]){
+	    for(var obj in labels){
+	      stringFinal =labels[obj]["@value"].concat(stringFinal);
+	    }
+	  }else{
+	    stringFinal = labels["@value"];
+	  }
+	  return stringFinal;
+	}
+	var globalContentSearch = function(rawData,checkedItem,keyword){
+	  //console.log("globalContentSearch");
+	  var geojson = {
+	  "type": "FeatureCollection",
+	  "features": []
+	  };
+	  var relatedRawData={
+	    "@graph":[]
+	  }
+	  var keyWordList = _.words(_.toLower(keyword));
+	  //console.log("keyWordList",keyWordList);
+	  rawData["@graph"].map((instance,index) =>{
+	    //console.log("linkStringInLabel",linkStringInLabel(instance["label"]));
+	    var name = formatString(linkStringInLabel(instance["label"]));
+	    //console.log("linkStringInLabel",linkStringInLabel(instance["label"]));
+	    //console.log("subject",instance["subject"]);
+	    var subject = formatString(instance["subject"]?instance["subject"]:"Exclued Data");
+	    //console.log("subject",subject);
+	    var lat = instance["lat"];
+	    var long = instance["long"];
+	    var related = false;
+	    //console.log("checkedItem",checkedItem);
+	    if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
+	      //console.log("checkedItem",checkedItem)
+	      var temp = (_.values(instance));
+	      //console.log("temp",temp);
+	      if(_.size(keyWordList)>0){
+	          for(var obj in temp){
+	          if(!related){
+	            if (typeof temp[obj] != 'object'){
+	              for(var index in keyWordList){
+	                if(!related){
+	                  //console.log("temp[obj].includes(keyWordList[index])",temp[obj],temp[obj].includes(keyWordList[index]));
+	                  if(_.toLower(temp[obj]).includes(keyWordList[index])){
+	                    related = true;
+	                  }
+	                }
+	              }
+	            }
+	            else{
+	              var value = (_.values(temp[obj]));
+	              for(var indexV in value){
+	                if(!related){
+	                  for(var indexK in keyWordList){
+	                  if(!related){
+	                    if(_.toLower(value[indexV]).includes(keyWordList[indexK])){
+	                        related = true;
+	                      }
+	                    }
+	                  }
+	                }
+	              }
+	            }
+	          }
+	        }
+	      }
+	      else{related=true;}
+	      //console.log("related after loop",related);
+	      if(related){
+	        var feature =
+	        {
+	          "type": "Feature",
+	          "properties": {
+	            "NAME": name,
+	            "subject": subject
+	          },
+	          "geometry": {
+	            "type": "Point",
+	            "coordinates": [long,lat]
+	          }
+	        };
+	        geojson["features"].push(feature);
+	        relatedRawData["@graph"].push(instance);
+	        //console.log("globalContentSearch geojson",geojson);
+	      }
+	  }});
+	
+	  return [geojson,relatedRawData];
+	}
+	var updateTreeNum = function(tree,countList){
+	  var temp ={};
+	  //console.log("in updateTreeNum tree",tree);
+	  //console.log("countList",countList);
+	  for(var obj in tree){
+	    temp[obj]={};
+	    for(var obj2 in tree[obj]){
+	      if(obj2=="children"){
+	        temp[obj][obj2]=_.size(tree[obj][obj2])>0?updateTreeNum(tree[obj][obj2],countList):{};
+	      }else if (obj2=="num") {
+	        //console.log("obj",obj);
+	        //console.log("countlist Amalfi Coast",countList["Amalfi Coast"]);
+	        temp[obj][obj2]=countList[obj]?countList[obj]:0;
+	      }else{
+	        temp[obj][obj2]=tree[obj][obj2];
+	      }
+	    }
+	  }
+	  return temp;
+	}
+	const defaultGeoJson = globalContentSearch(defaultMapData)[0];
 	//console.log("defaultTree",defaultTree);
 	//console.log("defaultGeoJson",defaultGeoJson);
 	const initialState = {
@@ -80716,7 +80825,9 @@
 	  urlDataForMap :null,
 	  urlDataForTree :null,
 	  geoData : defaultGeoJson,
-	  serverData:null
+	  serverData:null,
+	  keyword : null,
+	  root : null
 	  // Loads default language content (en) as an initial state
 	};
 	var reducer = function (state = initialState, action) {
@@ -80736,46 +80847,83 @@
 	      console.log("UpdateTreeData :",action.newdata);
 	      var checkedlist=[];
 	      var tempCheckedItem = checkedItem(action.newdata,checkedlist);
-	      console.log("checkedItem type",typeof tempCheckedItem);
-	      var geojson = geojsonConstructor(state.urlDataForMap?state.urlDataForMap:defaultMapData,tempCheckedItem);
-	      console.log("new geojson",geojson);
+	      var findRootResults = findRoot(state.urlDataForTree?state.urlDataForTree:defaultTreeData,state.root);
+	      var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,tempCheckedItem,state.keyword);
+	      //console.log("tempCheckedItem",tempCheckedItem);
+	      //console.log("countItem",countItem(globalContentSearchResult[1]));
 	      return Object.assign({}, state, {
+	        //TODO root problem
 	        treeData:action.newdata,
-	        geoData: geojson
+	        geoData: globalContentSearchResult[0],
+	        root:findRootResults[0]
 	      })
 	    case actionTypes.UseDefaultTreeData :
 	      ////console.log("UseDefaultData",defaultTreeData);
+	      var findRootResults = findRoot(defaultTreeData,state.root);
+	      var defaultTree = treeConstructor(defaultTreeData,countItem(defaultMapData),findRootResults[0]);
 	      return Object.assign({}, state, {
-	        treeData:defaultTree
+	        treeData:defaultTree,
+	        root:findRootResults[0]
 	      })
 	    case actionTypes.GetDataFromUrlForMap:
 	      console.log("GetDataFromUrlForMap",action.urlDataForMap);
-	      console.log("treeConstructor",treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(action.urlDataForMap)));
+	      //console.log("treeConstructor",treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(action.urlDataForMap),state.root));
 	      var checkedlist=[];
-	      var geojson = geojsonConstructor(action.urlDataForMap,checkedItem(state.treeData,checkedlist));
-	      console.log("geojson",geojson);
+	      var findRootResults = findRoot(state.urlDataForTree?state.urlDataForTree:defaultTreeData,state.root);
+	      var globalContentSearchResult = globalContentSearch(action.urlDataForMap,checkedItem(state.treeData,checkedlist),state.keyword);
+	      console.log("globalContentSearchResult",globalContentSearchResult,"countItem",countItem(globalContentSearchResult[1]),"checkedlist",checkedlist);
+	      //findRootResults[0].push("Exclued Data")
+	      console.log("findRootResults",findRootResults[0]);
 	      return Object.assign({}, state, {
 	        urlDataForMap:action.urlDataForMap,
-	        treeData:treeConstructor(defaultTreeData,countItem(action.urlDataForMap)),
-	        geoData:geojson
+	        treeData:treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(globalContentSearchResult[1]),findRootResults[0]),
+	        geoData:globalContentSearchResult[0],
+	        root:findRootResults[0]
 	      })
 	    case actionTypes.GetDataFromUrlForTree:
 	      console.log("GetDataFromUrlForTree",action.urlDataForTree);
+	      var checkedlist=[];
+	      var findRootResults = findRoot(action.urlDataForTree,state.root);
+	      var treeConstructorResult = treeConstructor(action.urlDataForTree,countItem(state.urlDataForMap?state.urlDataForMap:defaultMapData),findRootResults[0]);
 	      return Object.assign({}, state, {
 	        urlDataForTree:action.urlDataForTree,
-	        treeData:treeConstructor(action.urlDataForTree,countItem(state.urlDataForMap?state.urlDataForMap:defaultMapData))
+	        treeData:treeConstructorResult,
+	        root:findRootResults[0]
 	      })
 	    case actionTypes.GetDataFromUrlForTreeAndMap:
 	      console.log("GetDataFromUrlForTreeAndMap",action.urlDataForTree,action.urlDataForMap);
 	
 	      return Object.assign({}, state, {
-	        treeData:treeConstructor(action.urlDataForTree,countItem(action.urlDataForMap))
+	        treeData:treeConstructor(action.urlDataForTree,countItem(action.urlDataForMap),state.root)
 	      })
 	    case actionTypes.UpdateServerData:
 	      //console.log("UpdateServerData :",action.serverData);
 	      return Object.assign({}, state, {
 	        serverData:action.serverData
 	      })
+	    case actionTypes.GlobalSearch:
+	      console.log("GlobalSearch",action.keyword);
+	      var checkedlist=[];
+	      var tempCheckedItem = checkedItem(state.treeData,checkedlist);
+	      //console.log("keyword exists");
+	      var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,tempCheckedItem,action.keyword);
+	      var countItemResult = countItem(globalContentSearchResult[1]);
+	      console.log("countItem",countItemResult);
+	      console.log("new geojson from GlobalSearch",globalContentSearchResult[0]);
+	      var updateTreeNumResult = updateTreeNum(state.treeData,countItemResult)
+	      console.log("updateTreeNum",updateTreeNumResult);
+	
+	      for(var num in state.root){
+	        countParentsNum(updateTreeNumResult,formatString(state.root[num]));
+	      }
+	      console.log("countParentsNumResult",updateTreeNumResult);
+	      return Object.assign({}, state, {
+	        geoData:globalContentSearchResult[0],
+	        keyword:action.keyword,
+	        treeData:updateTreeNumResult
+	      })
+	
+	      //return
 	    default:
 	      return state;
 	  }
@@ -80915,4 +81063,4 @@
 
 /***/ }
 /******/ ])));
-//# sourceMappingURL=main.916785eb.js.map
+//# sourceMappingURL=main.066ccac4.js.map
