@@ -80844,16 +80844,23 @@
 	        lastChange:action.change
 	      })
 	    case actionTypes.UpdateTreeData:
+	      //TODO "check buttons -> unchecked all" The number does not change to original num
 	      console.log("UpdateTreeData :",action.newdata);
 	      var checkedlist=[];
 	      var tempCheckedItem = checkedItem(action.newdata,checkedlist);
 	      var findRootResults = findRoot(state.urlDataForTree?state.urlDataForTree:defaultTreeData,state.root);
-	      var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,tempCheckedItem,state.keyword);
-	      //console.log("tempCheckedItem",tempCheckedItem);
+	      var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,
+	        tempCheckedItem,state.keyword);
+	      var countItemResult = countItem(globalContentSearchResult[1]);
+	      var updateTreeNumResult = updateTreeNum(action.newdata,countItemResult)
+	      for(var num in state.root){
+	        countParentsNum(updateTreeNumResult,formatString(state.root[num]));
+	      }
+	      console.log("countItemResult",countItemResult);
 	      //console.log("countItem",countItem(globalContentSearchResult[1]));
 	      return Object.assign({}, state, {
 	        //TODO root problem
-	        treeData:action.newdata,
+	        treeData:updateTreeNumResult,
 	        geoData: globalContentSearchResult[0],
 	        root:findRootResults[0]
 	      })
@@ -80908,10 +80915,10 @@
 	      //console.log("keyword exists");
 	      var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,tempCheckedItem,action.keyword);
 	      var countItemResult = countItem(globalContentSearchResult[1]);
-	      console.log("countItem",countItemResult);
-	      console.log("new geojson from GlobalSearch",globalContentSearchResult[0]);
+	      //console.log("countItem",countItemResult);
+	      //console.log("new geojson from GlobalSearch",globalContentSearchResult[0]);
 	      var updateTreeNumResult = updateTreeNum(state.treeData,countItemResult)
-	      console.log("updateTreeNum",updateTreeNumResult);
+	      //console.log("updateTreeNum",updateTreeNumResult);
 	
 	      for(var num in state.root){
 	        countParentsNum(updateTreeNumResult,formatString(state.root[num]));
@@ -81063,4 +81070,4 @@
 
 /***/ }
 /******/ ])));
-//# sourceMappingURL=main.066ccac4.js.map
+//# sourceMappingURL=main.76122c7a.js.map
