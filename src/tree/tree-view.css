@@ -106,7 +106,7 @@ The class for the element that wraps a nodes children (if any exist)
   padding-left: 13px;
   font-size: 15px;
 }
-
+/*
   [type="checkbox"]:not(:checked),
 	[type="checkbox"]:checked {
 		position: absolute;
@@ -147,8 +147,9 @@ The class for the element that wraps a nodes children (if any exist)
 		background: #7F8C9A;
 		top: 2px; left: 5px;
 	}
-
+*/
 	/* on checked */
+  /*
 	[type="checkbox"]:checked + label:before {
 		background:#34495E;
 	}
@@ -188,3 +189,4 @@ The class for the element that wraps a nodes children (if any exist)
 		box-sizing: border-box;
 		margin-top: -1px;
 	}
+*/

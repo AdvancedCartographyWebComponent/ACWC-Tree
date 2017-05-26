@@ -9,7 +9,7 @@ import { bindActionCreators } from 'redux'
 import { withRouter } from 'react-router-dom'
 import axios from 'axios'
 import 'font-awesome/css/font-awesome.min.css'
-var CSSTransitionGroup = require('react-addons-css-transition-group');
+//var CSSTransitionGroup = require('react-addons-css-transition-group');
 var isQuery = false;
 var App = React.createClass({
 

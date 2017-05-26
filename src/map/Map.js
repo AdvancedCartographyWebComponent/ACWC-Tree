@@ -541,7 +541,7 @@ class Map extends Component {
 
           //TODO UserNames change after render filter again, so maybe send messages directly to the filter...
 
-          cur.state.geojson &&
+          cur.state.geojson &&false&&
             <Filter2
               curState={cur.state.geojson}
               filterUsers={cur.updateFilter} />

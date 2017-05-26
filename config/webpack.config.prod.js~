@@ -77,8 +77,8 @@ module.exports = {
         include: [paths.appSrc, paths.appNodeModules],
         loader: 'file',
         query: {
-          publicPath :'../../',
-          name: 'static/media/[name].[hash:8].[ext]'
+          publicPath :'../',
+          name: '../static/media/[name].[hash:8].[ext]'
         }
       },
       {
