@@ -9,6 +9,7 @@ import { bindActionCreators } from 'redux'
 import { withRouter } from 'react-router-dom'
 import axios from 'axios'
 import 'font-awesome/css/font-awesome.min.css'
+import { Scrollbars } from 'react-custom-scrollbars';
 //var CSSTransitionGroup = require('react-addons-css-transition-group');
 var isQuery = false;
 var App = React.createClass({
@@ -36,7 +37,7 @@ var App = React.createClass({
       </div>
       <div className="row">
         <div className="col-lg-3">
-          {dynamicExample}{this.props.urlQuery?this._getUrlData(this.props.urlQuery):null}
+          <Scrollbars style={{ width: "50vh", height: "90vh" }}>{dynamicExample}</Scrollbars>{this.props.urlQuery?this._getUrlData(this.props.urlQuery):null}
         </div>
       </div>
 
