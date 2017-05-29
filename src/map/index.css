@@ -5,13 +5,13 @@ html, body {
   width: 100%;
 }
 #carte, #map, #mapUI {
-  width: inherit;
-  height: inherit;
+  width: 100%;
+  height: 100%;
   background-color: #000;
 }
 #map{
-  width: inherit;
-  height: inherit;
+  width: 100%;
+  height: 100%;
   background-color: #000;
   z-index : 0;
 }

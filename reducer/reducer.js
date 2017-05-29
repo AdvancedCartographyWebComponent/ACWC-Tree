@@ -271,9 +271,9 @@ var globalContentSearch = function(rawData,checkedItem,keyword){
         var feature =
         {
           "type": "Feature",
-          "properties": {
-            "NAME": name,
-            "subject": subject
+          "properties": {      
+            "Subject": subject,
+            "NAME": name
           },
           "geometry": {
             "type": "Point",

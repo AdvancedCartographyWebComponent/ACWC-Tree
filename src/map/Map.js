@@ -1,13 +1,17 @@
 import React, { Component } from 'react';
 import L from 'leaflet';
-import 'leaflet.markercluster';
+import 'leaflet.markercluster'
+import Info from './Info'
 // postCSS import of Leaflet's CSS
+import ReactElementToString from 'react-element-to-string'
 import 'leaflet/dist/leaflet.css';
 import 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import 'leaflet-extra-markers/dist/js/leaflet.extra-markers.min.js'
 import 'leaflet-extra-markers/dist/css/leaflet.extra-markers.min.css'
+import 'leaflet-sidebar'
+import 'leaflet-sidebar/src/L.Control.Sidebar.css'
 import 'font-awesome/css/font-awesome.min.css'
 //import 'leaflet-extra-markers/dist/images'
 // using webpack json loader we can import our geojson file like this
@@ -61,7 +65,8 @@ class Map extends Component {
       markerLayer : null,
       geojson: null,
       driversFilter: '*',
-      numUser: null
+      numUser: null,
+      sidebar:null
     };
     //console.log("url search",this.props);
     this.isServer = this.props.isServer?this.props.isServer:"false";
@@ -91,6 +96,7 @@ class Map extends Component {
     }else{
       this.getData();
     }
+
     //this.postData();
     // create the Leaflet map object
     ////console.log(this._mapNode);
@@ -456,7 +462,16 @@ class Map extends Component {
       return true;
     }
   }
-
+  generateContent(feature){
+    var info = "";
+    for (var i in feature.properties) {
+      var temp = <div><p>{i}:{feature.properties[i]}</p></div>;
+      temp = ReactElementToString(temp);
+      info = info.concat(temp);
+    }
+    //console.log("info",info);
+    return (info);
+  }
   pointToLayer(feature, latlng) {
     // renders our GeoJSON points as circle markers, rather than Leaflet's default image markers
     // parameters to style the GeoJSON markers
@@ -468,19 +483,30 @@ class Map extends Component {
       opacity: 1,
       fillOpacity: 1
     };*/
+
     var redMarker = L.ExtraMarkers.icon({
       icon: 'fa-bars',
       markerColor: 'red',
       shape: 'square',
       prefix: 'fa'
     });
-    return L.marker(latlng, {icon: redMarker,}).on('click',()=>{
-      return console.log("alala");
+    //this.state.map.addControl(sidebar);
+    return L.marker(latlng,{icon: redMarker,riseOnHover:true}).on('click',(e)=>{
+      console.log("click button, show sidebar");
+      //console.log(feature);
+      var template = this.generateContent(feature);
+      //console.log("generateContent",ReactElementToString(template));
+      //console.log("template",template);
+      //var temp = ReactElementToString(template);
+      //console.log("temp",temp);
+      this.state.sidebar.setContent(template);
+      this.state.sidebar.show();
+      this.state.map.setView(e.target.getLatLng());
     });
     //return L.circleMarker(latlng, markerParams);
   }
 
-  onEachFeature(feature, layer) {
+  onEachFeature(feature, marker) {
     if (feature.properties && feature.properties.NAME) {
 
       // if the array for unique subway line names has not been made, create it
@@ -506,8 +532,13 @@ class Map extends Component {
               <strong>Is Here</strong>`;
       //console.log("add pop done:"+popupContent);
       // add our popups
-      layer.bindPopup(popupContent);
-
+      marker.bindPopup(popupContent);
+      marker.on('mouseover', function (e) {
+                 this.openPopup();
+               });
+      marker.on('mouseout', function (e) {
+                 this.closePopup();
+               });
   }
 }
 
@@ -516,14 +547,23 @@ class Map extends Component {
     if (this.state.map) return;
     // this function creates the Leaflet map object and is called after the Map component mounts
     let map = L.map(id, config.params);
+    var sidebar = L.control.sidebar('sidebar', {
+    position: 'right'
+    });
+    map.addControl(sidebar);
+    map.on('click',function () {
+      console.log("click map");
+      sidebar.hide();
+    })
     L.control.zoom({ position: "bottomleft"}).addTo(map);
     L.control.scale({ position: "bottomleft"}).addTo(map);
+
 
     // a TileLayer is used as the "basemap"
     const tileLayer = L.tileLayer(config.tileLayer.uri, config.tileLayer.params).addTo(map);
 
     // set our state to include the tile layer
-    this.setState({ map:map, tileLayer:tileLayer });
+    this.setState({ map:map, tileLayer:tileLayer, sidebar:sidebar});
   }
 
   render() {
@@ -546,6 +586,7 @@ class Map extends Component {
               curState={cur.state.geojson}
               filterUsers={cur.updateFilter} />
           }
+
         <div ref={(node) => { /*//console.log("hello"+node+this.count);this.count=this.count+1;*/cur._mapNode = node}} id="map" />
       </div>
     );
