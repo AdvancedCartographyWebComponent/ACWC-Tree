@@ -3,11 +3,12 @@ import L from 'leaflet';
 import 'leaflet.markercluster'
 import Info from './Info'
 // postCSS import of Leaflet's CSS
-import ReactElementToString from 'react-element-to-string'
+//import ReactElementToString from 'react-element-to-string'
 import 'leaflet/dist/leaflet.css';
 import 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
+import 'leaflet.icon.glyph'
 import 'leaflet-extra-markers/dist/js/leaflet.extra-markers.min.js'
 import 'leaflet-extra-markers/dist/css/leaflet.extra-markers.min.css'
 import 'leaflet-sidebar'
@@ -462,11 +463,11 @@ class Map extends Component {
       return true;
     }
   }
-  generateContent(feature){
+  generateContentFromGeoJson(feature){
     var info = "";
     for (var i in feature.properties) {
-      var temp = <div><p>{i}:{feature.properties[i]}</p></div>;
-      temp = ReactElementToString(temp);
+      var temp = `<div><p>${i}:${feature.properties[i]}</p></div>`;
+      //temp = ReactElementToString(temp);
       info = info.concat(temp);
     }
     //console.log("info",info);
@@ -494,7 +495,7 @@ class Map extends Component {
     return L.marker(latlng,{icon: redMarker,riseOnHover:true}).on('click',(e)=>{
       console.log("click button, show sidebar");
       //console.log(feature);
-      var template = this.generateContent(feature);
+      var template = this.generateContentFromGeoJson(feature);
       //console.log("generateContent",ReactElementToString(template));
       //console.log("template",template);
       //var temp = ReactElementToString(template);
@@ -514,7 +515,9 @@ class Map extends Component {
 
       //console.log("enter onEachFeature");
         // add subway line name if it doesn't yet exist in the array
-      if (UserNames.indexOf(feature.properties.NAME) === -1){
+
+
+      /*if (UserNames.indexOf(feature.properties.NAME) === -1){
         UserNames.push(feature.properties.NAME);
         if (this.state.geojson.features.indexOf(feature) === this.state.numUser - 1) {
           // use sort() to put our values in alphanumeric order
@@ -522,23 +525,49 @@ class Map extends Component {
           // finally add a value to represent all of the subway lines
           UserNames.unshift('All Info');
         }
-      }
+      }*/
 
-
+      //var redMarker2 = L.icon.glyph({ prefix: 'fa', glyph: 'fa-bars', glyphColor: 'red', bgSize: [2000, 200]});
+      var redMarker1 = L.ExtraMarkers.icon({
+        icon: 'fa-bars',
+        markerColor: 'red',
+        shape: 'square',
+        prefix: 'fa'
+      });
+      var redMarker2 = L.ExtraMarkers.icon({
+        icon: 'fa-bars',
+        markerColor: 'green',
+        shape: 'square',
+        prefix: 'fa'
+      });
+      //var mk = L.marker().setIcon(redMarker);
       // on the last GeoJSON feature
-
+      var icon_url = "../../../favicon.ico";
       // assemble the HTML for the markers' popups (Leaflet's bindPopup method doesn't accept React JSX)
-      const popupContent = `<h3>${feature.properties.NAME}</h3>
+      const popupContent = `<img src = ${icon_url}/><h3>${feature.properties.NAME}</h3>
               <strong>Is Here</strong>`;
       //console.log("add pop done:"+popupContent);
       // add our popups
-      marker.bindPopup(popupContent);
+      var popup = L.popup().setContent(popupContent);
+      //var markerPointer = null;
+      var isChanged = false;
+      marker.bindPopup(popup,{offset:L.point(0, 0),direction:"right"});
       marker.on('mouseover', function (e) {
-                 this.openPopup();
-               });
+        //markerPointer = this;
+        //console.log("mouse over",this);
+        if(!isChanged) {
+          this.setIcon(redMarker2);
+          this.openPopup();
+          isChanged = true;
+        }
+      });
       marker.on('mouseout', function (e) {
-                 this.closePopup();
-               });
+        //markerPointer = this;
+        //console.log("mouseout");
+        this.closePopup();
+        this.setIcon(redMarker1);
+        isChanged=false;
+      });
   }
 }
 

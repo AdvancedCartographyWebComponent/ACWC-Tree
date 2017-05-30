@@ -37,7 +37,7 @@ var App = React.createClass({
       </div>
       <div className="row">
         <div className="col-lg-3">
-          <Scrollbars style={{ width: "50vh", height: "90vh" }}>{dynamicExample}</Scrollbars>{this.props.urlQuery?this._getUrlData(this.props.urlQuery):null}
+          <Scrollbars style={{ width: "100%", height: "90vh" }}>{dynamicExample}</Scrollbars>{this.props.urlQuery?this._getUrlData(this.props.urlQuery):null}
         </div>
       </div>
 
