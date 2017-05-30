@@ -42830,9 +42830,9 @@
 	        });
 	        //var mk = L.marker().setIcon(redMarker);
 	        // on the last GeoJSON feature
-	        var icon_url = "../../../favicon.ico";
+	        var icon_url = "favicon.ico";
 	        // assemble the HTML for the markers' popups (Leaflet's bindPopup method doesn't accept React JSX)
-	        var popupContent = '<img src = ' + icon_url + '/><h3>' + feature.properties.NAME + '</h3>\n              <strong>Is Here</strong>';
+	        var popupContent = '<img src = ' + icon_url + '></img><h3>' + feature.properties.NAME + '</h3>\n              <strong>Is Here</strong>';
 	        //console.log("add pop done:"+popupContent);
 	        // add our popups
 	        var popup = _leaflet2.default.popup().setContent(popupContent);
@@ -82062,4 +82062,4 @@
 
 /***/ }
 /******/ ])));
-//# sourceMappingURL=main.d59994b5.js.map
+//# sourceMappingURL=main.260e9b01.js.map
