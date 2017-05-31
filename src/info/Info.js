@@ -4,24 +4,13 @@ import './info.css'
 import { CSSTransitionGroup } from 'react-transition-group'
 import { connect } from 'react-redux'
 import actions from '../../action/action';
-//import * as actions from '../action/action'
 import { bindActionCreators } from 'redux';
 
 class Info extends Component {
   constructor(props){
     super(props);
-    this.state = {
-      isShow : false
-    };
-    //this.hideSideBar.bind(this);
   }
-
-  componentDidUpdate(prevProps,prevState){
-
-  }
-
   render(){
-    console.log("isShow",this.state.isShow,"this.props.isInfo",this.props.isInfo,"info", this.props.Info);
     var classNameParent = "test";
     if(this.props.isInfo){
       classNameParent = classNameParent.concat(" show");

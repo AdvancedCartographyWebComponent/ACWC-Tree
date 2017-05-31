@@ -2,58 +2,28 @@ import React, { Component } from 'react';
 import L from 'leaflet';
 import 'leaflet.markercluster'
 import Info from '../info/Info'
-// postCSS import of Leaflet's CSS
-//import ReactElementToString from 'react-element-to-string'
+import serverContext from '../../Context/Server.config.js'
+import mapContext from '../../Context/Map.config.js'
 import 'leaflet/dist/leaflet.css';
 import 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
-import 'leaflet.icon.glyph'
 import 'leaflet-extra-markers/dist/js/leaflet.extra-markers.min.js'
 import 'leaflet-extra-markers/dist/css/leaflet.extra-markers.min.css'
-import 'leaflet-sidebar'
-import './css/L.Control.Sidebar.css'
 import 'font-awesome/css/font-awesome.min.css'
-//import 'leaflet-extra-markers/dist/images'
-// using webpack json loader we can import our geojson file like this
-// import local components Filter and ForkMe
 import { connect } from 'react-redux'
 import actions from '../../action/action';
-//import * as actions from '../action/action'
 import { bindActionCreators } from 'redux';
 import Filter2 from './Filter2';
 import axios from 'axios';
 import md5 from 'MD5';
 
-// store the map configuration properties in an object,
-// we could also move this to a separate file & import it if desired.
 let config = {};
-config.params = {
-  center: [2.334345,48.836703],
-  zoomControl: false,
-  zoom: 1,
-  maxZoom: 30,
-  minZoom: 1,
-  scrollwheel: false,
-  legends: true,
-  infoControl: false,
-  attributionControl: true
-};
-//48.836703, 2.334345
-config.tileLayer = {
-  uri: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  params: {
-    minZoom: 1,
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
-    id: '',
-    accessToken: ''
-  }
-};
-const USER_TYPE = "https://deductions.github.io/drivers.owl.ttl#Driver";
-const SERVICE_PORT = "http://localhost:9000/position";
+config.params = mapContext.params;
+config.tileLayer = mapContext.tileLayer;
+const USER_TYPE = serverContext.USER_TYPE;
+const SERVICE_PORT = serverContext.SERVICE_PORT;
 
-// array to store unique names of Brooklyn subway lines,
-// this eventually gets passed down to the Filter component
 let UserNames = [];
 
 class Map extends Component {
@@ -69,7 +39,6 @@ class Map extends Component {
       numUser: null,
       sidebar:null
     };
-    //console.log("url search",this.props);
     this.isServer = this.props.isServer?this.props.isServer:"false";
     this.urlQuery = this.props.urlQuery?this.props.urlQuery:null;
     this.geoCollection = {};
@@ -89,27 +58,15 @@ class Map extends Component {
   }
 
   componentDidMount() {
-    // code to run just after the component "mounts" / DOM elements are created
-    // we could make an AJAX request for the GeoJSON data here if it wasn't stored locally
-    //console.log("get data");
     if(this.isServer !=="false"){
       this.postData();
     }else{
       this.getData();
     }
-
-    //this.postData();
-    // create the Leaflet map object
-    ////console.log(this._mapNode);
-    //if (!this.state.map&&this.state.geojson) this.init(this._mapNode);
   }
 
   componentDidUpdate(prevProps, prevState) {
-    // code to run when the component receives new props or state
-    // check to see if geojson is stored, map is created, and geojson overlay needs to be added
-    ////console.log("hello");
     if(this.urlQuery&&this.props.geoData&&!this.state.geojson){
-      console.log("urlQuery",this.props.geoData);
       this.setState({
         geojson:this.props.geoData
       });
@@ -118,8 +75,6 @@ class Map extends Component {
       this.init(this._mapNode);
       this.postDataID = setInterval(
         () => {
-          //console.log("testInterval");
-          //console.log(Math.round(new Date().getTime()));
           if(this.isServer!=="false"){
             this.postData();
           }
@@ -128,21 +83,12 @@ class Map extends Component {
       );
     };
     if (this.state.geojson && this.state.map && !this.state.geojsonLayer) {
-      // add the geojson overlay
-      ////console.log("hello1");
       this.addGeoJSONLayer(this.state.geojson);
     }
-    // check to see if the filter has changed or data changes
     if (this.state.driversFilter !== prevState.driversFilter) {
-      // filter / re-render the geojson overlay
-      //console.log("hello2");
-      //console.log(this.geoCollection);
       this.filterGeoJSONLayer();
     }
     if (prevProps.serverData&&md5(JSON.stringify(this.props.serverData))!==md5(JSON.stringify(prevState.serverData))) {
-      // filter / re-render the geojson overlay
-      //console.log("hello3");
-      //console.log(this.geoCollection);
       UserNames=[];
       this.filterGeoJSONLayer();
     }
@@ -164,16 +110,11 @@ class Map extends Component {
   }
 
   componentWillUnmount() {
-    // code to run just before unmounting the component
-    // this destroys the Leaflet map object & related event listeners
     this.state.map.remove();
      clearInterval(this.postDataID);
   }
 
   getData() {
-    // could also be an AJAX request that results in setting state with the geojson data
-    // for simplicity sake we are just importing the geojson data using webpack's json loader
-    //console.log("hello redux geoData",this.props.geoData);
     if(this.urlQuery){
       this.getDataFromUrl(this.urlQuery);
     }
@@ -186,8 +127,6 @@ class Map extends Component {
   }
   getDataFromUrl(url){
     var cur = this;
-    //console.log(url.slice(1,4));
-
     console.log("map data from url",url.slice(5));
     this.geoCollection = {
       "type": "FeatureCollection",
@@ -202,20 +141,14 @@ class Map extends Component {
       }
     }).then(function(res) {
       if(url.slice(1,4)==="sql"){
-        //console.log(res.data.results.bindings);
         cur.transformSparqlQueryToGeoJSON(res.data.results.bindings);
         cur.props.actions.getDataFromUrlForMap(cur.geoCollection);
-        //console.log(cur.geoCollection);
         cur.setState({
           numUser: cur.geoCollection.features.length,
           geojson: cur.geoCollection
         });}
         else{
           cur.props.actions.getDataFromUrlForMap(res.data);
-          /*cur.setState({
-            numUser: res.data.features.length,
-            geojson: res.data
-          });*/
         }
     });
   }
@@ -230,33 +163,18 @@ class Map extends Component {
   }
 
   plot(cur,JSONData){
-      //console.log(JSONData);
       if (typeof JSONData['@graph'] === 'undefined') {
-        //console.log(cur.entityShortName(JSONData['@type']));
           if (cur.entityShortName(JSONData['@type']) === 'Driver') {
-          // if (typeof JSONData.name !== 'undefined') {
-              //console.log('chauffeur isolé');
               cur.transformToGeoJSON([JSONData],cur);
-              //Pins.unMark();
-              //Pins.mark(JSONData);
           } else {
-              //console.log('Impossible d’interpréter le format de données');
           }
       } else {
-          // var points = JSONData['@graph'].filter(function (objet) {return (typeof objet.name !== 'undefined')});
           var points = JSONData['@graph'].filter(function (objet) {return ( cur.entityShortName(objet['@type']) === 'Driver'); });
           if (points.length > 0) {
-              // TODO : la fonction plot n'affiche plus seulement les chauffeurs mais tous les
-              // points envoyés par le serveur quelle que soit leur nature
-              //console.log(points.length.toString()+' chauffeur(s) en activité');
-              //Pins.repaint(points);
-              //console.log(points);
               cur.transformToGeoJSON(points);
           } else {
-              //console.log('Aucun chauffeur à afficher sur la carte');
           }
       }
-      //$('#presents').html(Pins.markers.length + " chauffeur(s) en service");
   }
 
   transformToGeoJSON(data){
@@ -332,7 +250,7 @@ class Map extends Component {
   postData(){
 
     var current = {
-        "@context": "https://deductions.github.io/drivers.context.jsonld",
+        "@context": serverContext.ONTOLOGY,
         "@type": USER_TYPE,
         "lat": 48.826703 ,
         "long": 2.344345,
@@ -346,13 +264,6 @@ class Map extends Component {
       "type": "FeatureCollection",
       "features": []
     };
-    ////console.log("defalut geo",defaultGeoCollection);
-    /*//console.log("setDefault to geoCollection:",this.geoCollection);
-    //console.log("setDefault to geoCollection:",this.prevGeoCollection.features);
-    //console.log("geoCollection:",md5(JSON.stringify(this.geoCollection)));
-    //console.log("prevGeoCollection:",md5(JSON.stringify(this.prevGeoCollection)));*/
-    //console.log("currentPosition done start post");
-    //console.log("--current geoCollection",this.geoCollection);
     var cur = this;
     axios({
       method: 'post',
@@ -363,28 +274,17 @@ class Map extends Component {
           'Content-Type': 'application/json'
       }
     }).then(function(res) {
-      // Traitement des positions des chaffeurs
-      ////console.log(res);
-      ////console.log("this:",cur);
       cur.plot(cur,res.data);
-      ////console.log("plot done");
       if(md5(JSON.stringify(cur.geoCollection))!==md5(JSON.stringify(cur.prevGeoCollection))){
-        ////console.log("data diffs, reset state");
         cur.props.actions.updateServerData(cur.geoCollection);
         cur.setState({
           numUser: cur.geoCollection.features.length,
           geojson: cur.geoCollection
         });
-        ////console.log("get data done set state geojson");
       }
-
-
     })
     .catch(function (error) {
-      ////console.log(error);
     });
-
-
   }
 
   updateFilter(e) {
@@ -426,64 +326,29 @@ class Map extends Component {
   }
 
   filterGeoJSONLayer() {
-    // clear the geojson layer of its data
-
-    //console.log("geojsonLayer:",this.state.geojsonLayer);
     this.state.geojsonLayer.clearLayers();
     this.state.markerLayer.clearLayers();
-    // re-add the geojson so that it filters out subway lines which do not match state.filter
-    ////console.log("remove and add data");
     this.state.geojsonLayer.addData(this.state.geojson);
     this.state.markerLayer.addLayer(this.state.geojsonLayer).addTo(this.state.map);
-    //markers.addLayer(geojsonLayer).addTo(this.state.map);
-    // fit the map to the new geojson layer's geographic extent
     this.zoomToFeature(this.state.geojsonLayer);
   }
 
   zoomToFeature(target) {
-    // pad fitBounds() so features aren't hidden under the Filter UI element
     var fitBoundsParams = {
       paddingTopLeft: [10,10],
       paddingBottomRight: [10,10],
       maxZoom : 14
     };
-    //console.log("zooming");
-    // set the map's center & zoom so that it fits the geographic extent of the layer
     this.state.map.fitBounds(target.getBounds(), fitBoundsParams);
   }
-
   filterFeatures(feature, layer) {
-    // filter the subway entrances based on the map's current search filter
-    // returns true only if the filter value matches the value of feature.properties.LINE
     const test = (feature.properties.NAME===(this.state.driversFilter));
-    ////console.log("test:"+test+"---tt:"+(test !== false));
-    ////console.log("driverFilter:"+this.state.driversFilter+"-----dt:"+(this.state.driversFilter === '*'));
-    ////console.log(this.state.driversFilter === '*' || test !== false);
     if (this.state.driversFilter === '*' || test !== false) {
       return true;
     }
   }
-  /*generateContentFromGeoJson(feature){
-    var info = "";
-    for (var i in feature.properties) {
-      var temp = `<div><p>${i}:${feature.properties[i]}</p></div>`;
-      //temp = ReactElementToString(temp);
-      info = info.concat(temp);
-    }
-    //console.log("info",info);
-    return (info);
-  }*/
   pointToLayer(feature, latlng) {
-    // renders our GeoJSON points as circle markers, rather than Leaflet's default image markers
-    // parameters to style the GeoJSON markers
-    /*var markerParams = {
-      radius: 7,
-      fillColor: 'red',
-      color: '#fff',
-      weight: 1,
-      opacity: 1,
-      fillOpacity: 1
-    };*/
+
     var cur = this;
     var redMarker = L.ExtraMarkers.icon({
       icon: 'fa-bars',
@@ -491,39 +356,15 @@ class Map extends Component {
       shape: 'square',
       prefix: 'fa'
     });
-    //this.state.map.addControl(sidebar);
     return L.marker(latlng,{icon: redMarker,riseOnHover:true}).on('click',(e)=>{
       console.log("click button, show sidebar");
-      //console.log(feature);
-
-      //var template = this.generateContentFromGeoJson(feature);
       cur.props.actions.clickMarker(e.target,feature);
       this.state.map.setView(e.target.getLatLng());
     });
-    //return L.circleMarker(latlng, markerParams);
   }
 
   onEachFeature(feature, marker) {
     if (feature.properties && feature.properties.NAME) {
-
-      // if the array for unique subway line names has not been made, create it
-      // there are 19 unique names total
-
-      //console.log("enter onEachFeature");
-        // add subway line name if it doesn't yet exist in the array
-
-
-      /*if (UserNames.indexOf(feature.properties.NAME) === -1){
-        UserNames.push(feature.properties.NAME);
-        if (this.state.geojson.features.indexOf(feature) === this.state.numUser - 1) {
-          // use sort() to put our values in alphanumeric order
-          UserNames.sort();
-          // finally add a value to represent all of the subway lines
-          UserNames.unshift('All Info');
-        }
-      }*/
-
-      //var redMarker2 = L.icon.glyph({ prefix: 'fa', glyph: 'fa-bars', glyphColor: 'red', bgSize: [2000, 200]});
       var redMarker1 = L.ExtraMarkers.icon({
         icon: 'fa-bars',
         markerColor: 'red',
@@ -536,21 +377,13 @@ class Map extends Component {
         shape: 'square',
         prefix: 'fa'
       });
-      //var mk = L.marker().setIcon(redMarker);
-      // on the last GeoJSON feature
       var icon_url = "favicon.ico";
-      // assemble the HTML for the markers' popups (Leaflet's bindPopup method doesn't accept React JSX)
       const popupContent = `<img src = ${icon_url}></img><h3>${feature.properties.NAME}</h3>
               <strong>Is Here</strong>`;
-      //console.log("add pop done:"+popupContent);
-      // add our popups
       var popup = L.popup().setContent(popupContent);
-      //var markerPointer = null;
       var isChanged = false;
       marker.bindPopup(popup,{offset:L.point(0, 0),direction:"right"});
       marker.on('mouseover', function (e) {
-        //markerPointer = this;
-        //console.log("mouse over",this);
         if(!isChanged) {
           this.setIcon(redMarker2);
           this.openPopup();
@@ -558,8 +391,6 @@ class Map extends Component {
         }
       });
       marker.on('mouseout', function (e) {
-        //markerPointer = this;
-        //console.log("mouseout");
         this.closePopup();
         this.setIcon(redMarker1);
         isChanged=false;
@@ -568,52 +399,33 @@ class Map extends Component {
 }
 
   init(id) {
-    //console.log("hello init");
     var cur = this;
     if (this.state.map) return;
-    // this function creates the Leaflet map object and is called after the Map component mounts
     let map = L.map(id, config.params);
-    /*var sidebar = L.control.sidebar('sidebar', {
-    position: 'right'
-    });*/
-    //map.addControl(sidebar);
     map.on('click',function () {
       console.log("click map");
       cur.props.actions.closeSideBar();
     })
     L.control.zoom({ position: "bottomleft"}).addTo(map);
     L.control.scale({ position: "bottomleft"}).addTo(map);
-
-
-    // a TileLayer is used as the "basemap"
     const tileLayer = L.tileLayer(config.tileLayer.uri, config.tileLayer.params).addTo(map);
-
-    // set our state to include the tile layer
     this.setState({ map:map, tileLayer:tileLayer});
   }
 
   render() {
-    //console.log("hey");
-    //console.log(this.state.geojson);
-    //console.log("map url search",this.props);
     var cur = this;
-    //console.log(this);
     return (
 
       <div id="mapUI">
 
         {
-          /* render the Filter component only after the subwayLines array has been created */
-
-          //TODO UserNames change after render filter again, so maybe send messages directly to the filter...
-
           cur.state.geojson &&false&&
             <Filter2
               curState={cur.state.geojson}
               filterUsers={cur.updateFilter} />
           }
 
-        <div ref={(node) => { /*//console.log("hello"+node+this.count);this.count=this.count+1;*/cur._mapNode = node}} id="map" />
+        <div ref={(node) => { cur._mapNode = node}} id="map" />
       </div>
     );
   }

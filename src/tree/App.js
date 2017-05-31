@@ -4,32 +4,23 @@ var React = require('react'),
   _ = require('lodash');
 var ReactRedux = require('react-redux');
 var actions = require('../../action/action');
-//import * as actions from '../action/action'
 import { bindActionCreators } from 'redux'
 import { withRouter } from 'react-router-dom'
 import axios from 'axios'
 import 'font-awesome/css/font-awesome.min.css'
 import { Scrollbars } from 'react-custom-scrollbars';
-//var CSSTransitionGroup = require('react-addons-css-transition-group');
 var isQuery = false;
 var App = React.createClass({
-
   getInitialState: function() {
-    //console.log("app initial state called");
     return {
     };
   },
-
   render: function() {
-    //console.log("test router",this.props.urlQuery);
-    //console.log("app this props",this.props);
-
     if(!this.props.urlQuery&&!isQuery){
       this.props.actions.useDefaultTreeData();
       isQuery = true;
     }
     var dynamicExample = this._getExamplePanel(this._getDynamicTreeExample());
-    //console.log(content);
     return <div className="container">
       <div className="input-group margin-bottom-sm">
         <span className="fa fa-search"></span>
@@ -45,23 +36,12 @@ var App = React.createClass({
     </div>;
 
   },
-/*
-
-      <div className="row">
-        <div className="col-lg-3">
-          <CSSTransitionGroup transitionEnterTimeout={500} transitionName="last-action" transitionLeave={false}>
-            {this._getLastActionNode()}
-          </CSSTransitionGroup>
-        </div>
-      </div>
-*/
   _getLastActionNode: function () {
 
     var lastActionNode = <div className="text-center alert alert-success tree-event-alert">{"Waiting for interaction"}</div>;
 
 
     var action = this.props.lastChange;
-    //console.log("lastchange",this.props);
     if (action) {
       lastActionNode = (
         <div className="text-center alert alert-success tree-event-alert" key={"lastAction_" + "_" + action.time}>
@@ -85,7 +65,6 @@ var App = React.createClass({
       "type": "FeatureCollection",
       "features": []
     };
-    //console.log("state isQuery",isQuery);
     if(!isQuery){
       axios({
       method: 'get',
@@ -135,7 +114,6 @@ var App = React.createClass({
 
     this._setLastActionState(propName, lineage);
 
-    //Get a node path that includes children, given a key
     function getNodePath(nodeKey) {
       console.log("nodeKey",nodeKey);
       if (nodeKey.length === 1) return nodeKey;
@@ -157,7 +135,6 @@ var App = React.createClass({
       keyPaths = [nodePath.concat([propName])],
       keySiblingPaths = [nodeSiblingPath.concat([propName])];
 
-    //Build a list of key paths for all children
     function addChildKeys(state, parentPath) {
 
       var childrenPath = parentPath.concat('children'),
@@ -192,22 +169,16 @@ var App = React.createClass({
     //get new keyPaths
     //keyPaths[0] is the parent node and change all the children nodes with the parent's value
     if(propName!=="collapsed") addChildKeys(oldState, nodePath);
-    //console.log({keySiblingPaths});
 
     function getParentPropState(keySiblingPaths){
       var state = !oldState.getIn(keyPaths[0]);
       keySiblingPaths.forEach((val,index)=>{
-        /*console.log(val);
-        console.log(keyPaths[0]);
-        console.log(val[val.length-2]=== keyPaths[0][keyPaths[0].length-2]);
-        */
         if(index >0&&val[val.length-2]!== keyPaths[0][keyPaths[0].length-2]) {
           //console.log(oldState.getIn(keyPaths[0]));
           state = state && oldState.getIn(val);
 
         }
       });
-      //console.log(state);
       return state;
 
     }
@@ -215,9 +186,6 @@ var App = React.createClass({
     var newPropState = !oldState.getIn(keyPaths[0]);
     //Get the new prop state for parent's node
     var newParentPropState = getParentPropState(keySiblingPaths);
-    //console.log("newParentPropState:");
-    //console.log(newParentPropState);
-
 
     //Now create a new map w/ all the changes
     var newState = oldState.withMutations(function(state) {
@@ -227,14 +195,9 @@ var App = React.createClass({
       if(keySiblingPaths.length>1){state.setIn(keySiblingPaths[0], newParentPropState);}
     });
 
-    //var mutation = {};
-
-    //mutation[stateKey]
     newState.toJS();
     console.log("newState",newState.toJS());
-    //console.log("change node state",mutation);
     this.props.actions.updateTreeData(newState.toJS());
-    //this.setState(mutation);
 
   },
 
@@ -246,15 +209,11 @@ var App = React.createClass({
       action += "Changed";
     }
 
-    //console.log("Controller View received tree menu " + action + " action: " + node.join(" > "));
-
     var mutation = {
       event: action,
       node: node.join(" > "),
       time: new Date().getTime()
     };
-    //console.log("set last state",mutation);
-    //call redux
     this.props.actions.setLastChangeState(mutation);
   }
 });
