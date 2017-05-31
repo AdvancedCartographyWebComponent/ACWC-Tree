@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App_tree from './tree/App2'
 import App_map from './map/App'
+import Info from './info/Info'
 import './tree/index.css';
 import './tree/app.css';
 import './tree/tree-view.css';
@@ -27,7 +28,6 @@ ReactDOM.render(
   </Provider>,
   document.getElementById('tree')
 );
-
 ReactDOM.render(
   <Provider store={store}>
     <Router>
@@ -35,4 +35,10 @@ ReactDOM.render(
     </Router>
   </Provider>,
   document.getElementById('carte')
+);
+ReactDOM.render(
+  <Provider store={store}>
+    <Info/>
+  </Provider>,
+  document.getElementById('sidebar')
 );

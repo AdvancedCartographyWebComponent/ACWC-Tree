@@ -271,7 +271,7 @@ var globalContentSearch = function(rawData,checkedItem,keyword){
         var feature =
         {
           "type": "Feature",
-          "properties": {      
+          "properties": {
             "Subject": subject,
             "NAME": name
           },
@@ -320,7 +320,9 @@ const initialState = {
   geoData : defaultGeoJson,
   serverData:null,
   keyword : null,
-  root : null
+  root : null,
+  isInfo : false,
+  Info : null
   // Loads default language content (en) as an initial state
 };
 var reducer = function (state = initialState, action) {
@@ -421,8 +423,17 @@ var reducer = function (state = initialState, action) {
         keyword:action.keyword,
         treeData:updateTreeNumResult
       })
-
-      //return
+    case actionTypes.ClickMarker:
+      console.log("ClickMarker","marker",action.marker,"info",action.info);
+      return Object.assign({}, state, {
+        isInfo : true,
+        Info : action.info
+      })
+    case actionTypes.CloseSideBar:
+      console.log("CloseSideBar");
+      return Object.assign({}, state, {
+        isInfo : false
+      })
     default:
       return state;
   }

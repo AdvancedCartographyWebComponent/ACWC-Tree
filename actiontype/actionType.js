@@ -7,5 +7,7 @@ module.exports = {
   GetDataFromUrlForTree : "GetDataFromUrlForTree",
   UpdateServerData : "UpdateServerData",
   GetDataFromUrlForTreeAndMap : "GetDataFromUrlForTreeAndMap",
-  GlobalSearch : "GlobalSearch"
+  GlobalSearch : "GlobalSearch",
+  ClickMarker : "ClickMarker",
+  CloseSideBar : "CloseSideBar"
 };

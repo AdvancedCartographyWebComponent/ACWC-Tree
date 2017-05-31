@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import L from 'leaflet';
 import 'leaflet.markercluster'
-import Info from './Info'
+import Info from '../info/Info'
 // postCSS import of Leaflet's CSS
 //import ReactElementToString from 'react-element-to-string'
 import 'leaflet/dist/leaflet.css';
@@ -12,7 +12,7 @@ import 'leaflet.icon.glyph'
 import 'leaflet-extra-markers/dist/js/leaflet.extra-markers.min.js'
 import 'leaflet-extra-markers/dist/css/leaflet.extra-markers.min.css'
 import 'leaflet-sidebar'
-import 'leaflet-sidebar/src/L.Control.Sidebar.css'
+import './css/L.Control.Sidebar.css'
 import 'font-awesome/css/font-awesome.min.css'
 //import 'leaflet-extra-markers/dist/images'
 // using webpack json loader we can import our geojson file like this
@@ -463,7 +463,7 @@ class Map extends Component {
       return true;
     }
   }
-  generateContentFromGeoJson(feature){
+  /*generateContentFromGeoJson(feature){
     var info = "";
     for (var i in feature.properties) {
       var temp = `<div><p>${i}:${feature.properties[i]}</p></div>`;
@@ -472,7 +472,7 @@ class Map extends Component {
     }
     //console.log("info",info);
     return (info);
-  }
+  }*/
   pointToLayer(feature, latlng) {
     // renders our GeoJSON points as circle markers, rather than Leaflet's default image markers
     // parameters to style the GeoJSON markers
@@ -484,7 +484,7 @@ class Map extends Component {
       opacity: 1,
       fillOpacity: 1
     };*/
-
+    var cur = this;
     var redMarker = L.ExtraMarkers.icon({
       icon: 'fa-bars',
       markerColor: 'red',
@@ -495,13 +495,9 @@ class Map extends Component {
     return L.marker(latlng,{icon: redMarker,riseOnHover:true}).on('click',(e)=>{
       console.log("click button, show sidebar");
       //console.log(feature);
-      var template = this.generateContentFromGeoJson(feature);
-      //console.log("generateContent",ReactElementToString(template));
-      //console.log("template",template);
-      //var temp = ReactElementToString(template);
-      //console.log("temp",temp);
-      this.state.sidebar.setContent(template);
-      this.state.sidebar.show();
+
+      //var template = this.generateContentFromGeoJson(feature);
+      cur.props.actions.clickMarker(e.target,feature);
       this.state.map.setView(e.target.getLatLng());
     });
     //return L.circleMarker(latlng, markerParams);
@@ -573,16 +569,17 @@ class Map extends Component {
 
   init(id) {
     //console.log("hello init");
+    var cur = this;
     if (this.state.map) return;
     // this function creates the Leaflet map object and is called after the Map component mounts
     let map = L.map(id, config.params);
-    var sidebar = L.control.sidebar('sidebar', {
+    /*var sidebar = L.control.sidebar('sidebar', {
     position: 'right'
-    });
-    map.addControl(sidebar);
+    });*/
+    //map.addControl(sidebar);
     map.on('click',function () {
       console.log("click map");
-      sidebar.hide();
+      cur.props.actions.closeSideBar();
     })
     L.control.zoom({ position: "bottomleft"}).addTo(map);
     L.control.scale({ position: "bottomleft"}).addTo(map);
@@ -592,7 +589,7 @@ class Map extends Component {
     const tileLayer = L.tileLayer(config.tileLayer.uri, config.tileLayer.params).addTo(map);
 
     // set our state to include the tile layer
-    this.setState({ map:map, tileLayer:tileLayer, sidebar:sidebar});
+    this.setState({ map:map, tileLayer:tileLayer});
   }
 
   render() {

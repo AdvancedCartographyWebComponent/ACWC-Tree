@@ -54,6 +54,18 @@ let actions = {
       type: actionTypes.GlobalSearch,
       keyword
     }
+  },
+  clickMarker(marker,info){
+    return{
+      type: actionTypes.ClickMarker,
+      marker,
+      info
+    }
+  },
+  closeSideBar(){
+    return{
+      type: actionTypes.CloseSideBar,
+    }
   }
 };
 module.exports = actions;
