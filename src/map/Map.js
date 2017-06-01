@@ -17,6 +17,8 @@ import { bindActionCreators } from 'redux';
 import Filter2 from './Filter2';
 import axios from 'axios';
 import md5 from 'MD5';
+//import './marker-icon/styles.css'
+//import './marker-icon/_marker.scss'
 
 let config = {};
 config.params = mapContext.params;
@@ -353,46 +355,70 @@ class Map extends Component {
     var redMarker = L.ExtraMarkers.icon({
       icon: 'fa-bars',
       markerColor: 'red',
-      shape: 'square',
-      prefix: 'fa'
-    });
-    return L.marker(latlng,{icon: redMarker,riseOnHover:true}).on('click',(e)=>{
+      shape: 'star',
+      prefix: 'fa',
+      iconAnchor : [0,0]
+    }).createIcon().outerHTML;
+
+    //var temp = redMarker.createIcon().outerHTML;
+    //var temp = temp.concat(redMarker2.createIcon().outerHTML);
+    //console.log("redMarker",L.marker(latlng,{icon: redMarker,riseOnHover:true}),temp);
+
+    var testMarker = L.marker(latlng,{icon: L.divIcon({className: 'marker', html:redMarker, iconSize:[35,45],iconAnchor : [17,42]}),riseOnHover:true})
+                      .on('click',(e)=>{
+                        console.log("click button, show sidebar",cur.props.actions);
+                        cur.props.actions.clickMarker(e.target,feature);
+                        this.state.map.setView(e.target.getLatLng());
+                      },);
+    //console.log("testMarker",testMarker);
+    return testMarker;
+    /*return L.marker(latlng,{icon: redMarker,riseOnHover:true}).on('click',(e)=>{
       console.log("click button, show sidebar");
       cur.props.actions.clickMarker(e.target,feature);
       this.state.map.setView(e.target.getLatLng());
-    });
+    });*/
   }
 
   onEachFeature(feature, marker) {
     if (feature.properties && feature.properties.NAME) {
-      var redMarker1 = L.ExtraMarkers.icon({
+      var Marker1 = L.ExtraMarkers.icon({
         icon: 'fa-bars',
         markerColor: 'red',
-        shape: 'square',
-        prefix: 'fa'
-      });
-      var redMarker2 = L.ExtraMarkers.icon({
-        icon: 'fa-bars',
+        shape: 'star',
+        prefix: 'fa',
+        iconAnchor : [0,0]
+      }).createIcon().outerHTML;
+      var Marker2 = L.ExtraMarkers.icon({
+        icon: 'fa-plane',
+        markerColor: 'yellow',
+        shape: 'star',
+        prefix: 'fa',
+        iconAnchor : [-35,0]
+      }).createIcon().outerHTML;
+      var Marker3 = L.ExtraMarkers.icon({
+        icon: 'fa-eur',
         markerColor: 'green',
-        shape: 'square',
-        prefix: 'fa'
-      });
+        shape: 'star',
+        prefix: 'fa',
+        iconAnchor : [-35*2,0]
+      }).createIcon().outerHTML;
+      var markers = Marker1.concat(Marker2,Marker3);
       var icon_url = "favicon.ico";
       const popupContent = `<img src = ${icon_url}></img><h3>${feature.properties.NAME}</h3>
               <strong>Is Here</strong>`;
       var popup = L.popup().setContent(popupContent);
       var isChanged = false;
-      marker.bindPopup(popup,{offset:L.point(0, 0),direction:"right"});
+      marker.bindPopup(popup,{offset:L.point(0, -36)});
       marker.on('mouseover', function (e) {
         if(!isChanged) {
-          this.setIcon(redMarker2);
+          this.setIcon(L.divIcon({className: 'marker', html:markers, iconSize:[35*3,45],iconAnchor : [17,42]}));
           this.openPopup();
           isChanged = true;
         }
       });
       marker.on('mouseout', function (e) {
         this.closePopup();
-        this.setIcon(redMarker1);
+        this.setIcon(L.divIcon({className: 'marker', html:Marker1, iconSize:[35,45],iconAnchor : [17,42]}));
         isChanged=false;
       });
   }

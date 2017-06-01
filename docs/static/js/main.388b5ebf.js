@@ -42748,6 +42748,9 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
+	//import './marker-icon/styles.css'
+	//import './marker-icon/_marker.scss'
+	
 	var config = {};
 	config.params = _MapConfig2.default.params;
 	config.tileLayer = _MapConfig2.default.tileLayer;
@@ -43106,46 +43109,69 @@
 	      var redMarker = _leaflet2.default.ExtraMarkers.icon({
 	        icon: 'fa-bars',
 	        markerColor: 'red',
-	        shape: 'square',
-	        prefix: 'fa'
-	      });
-	      return _leaflet2.default.marker(latlng, { icon: redMarker, riseOnHover: true }).on('click', function (e) {
-	        console.log("click button, show sidebar");
+	        shape: 'star',
+	        prefix: 'fa',
+	        iconAnchor: [0, 0]
+	      }).createIcon().outerHTML;
+	
+	      //var temp = redMarker.createIcon().outerHTML;
+	      //var temp = temp.concat(redMarker2.createIcon().outerHTML);
+	      //console.log("redMarker",L.marker(latlng,{icon: redMarker,riseOnHover:true}),temp);
+	
+	      var testMarker = _leaflet2.default.marker(latlng, { icon: _leaflet2.default.divIcon({ className: 'marker', html: redMarker, iconSize: [35, 45], iconAnchor: [17, 42] }), riseOnHover: true }).on('click', function (e) {
+	        console.log("click button, show sidebar", cur.props.actions);
 	        cur.props.actions.clickMarker(e.target, feature);
 	        _this5.state.map.setView(e.target.getLatLng());
 	      });
+	      //console.log("testMarker",testMarker);
+	      return testMarker;
+	      /*return L.marker(latlng,{icon: redMarker,riseOnHover:true}).on('click',(e)=>{
+	        console.log("click button, show sidebar");
+	        cur.props.actions.clickMarker(e.target,feature);
+	        this.state.map.setView(e.target.getLatLng());
+	      });*/
 	    }
 	  }, {
 	    key: 'onEachFeature',
 	    value: function onEachFeature(feature, marker) {
 	      if (feature.properties && feature.properties.NAME) {
-	        var redMarker1 = _leaflet2.default.ExtraMarkers.icon({
+	        var Marker1 = _leaflet2.default.ExtraMarkers.icon({
 	          icon: 'fa-bars',
 	          markerColor: 'red',
-	          shape: 'square',
-	          prefix: 'fa'
-	        });
-	        var redMarker2 = _leaflet2.default.ExtraMarkers.icon({
-	          icon: 'fa-bars',
+	          shape: 'star',
+	          prefix: 'fa',
+	          iconAnchor: [0, 0]
+	        }).createIcon().outerHTML;
+	        var Marker2 = _leaflet2.default.ExtraMarkers.icon({
+	          icon: 'fa-plane',
+	          markerColor: 'yellow',
+	          shape: 'star',
+	          prefix: 'fa',
+	          iconAnchor: [-35, 0]
+	        }).createIcon().outerHTML;
+	        var Marker3 = _leaflet2.default.ExtraMarkers.icon({
+	          icon: 'fa-eur',
 	          markerColor: 'green',
-	          shape: 'square',
-	          prefix: 'fa'
-	        });
+	          shape: 'star',
+	          prefix: 'fa',
+	          iconAnchor: [-35 * 2, 0]
+	        }).createIcon().outerHTML;
+	        var markers = Marker1.concat(Marker2, Marker3);
 	        var icon_url = "favicon.ico";
 	        var popupContent = '<img src = ' + icon_url + '></img><h3>' + feature.properties.NAME + '</h3>\n              <strong>Is Here</strong>';
 	        var popup = _leaflet2.default.popup().setContent(popupContent);
 	        var isChanged = false;
-	        marker.bindPopup(popup, { offset: _leaflet2.default.point(0, 0), direction: "right" });
+	        marker.bindPopup(popup, { offset: _leaflet2.default.point(0, -36) });
 	        marker.on('mouseover', function (e) {
 	          if (!isChanged) {
-	            this.setIcon(redMarker2);
+	            this.setIcon(_leaflet2.default.divIcon({ className: 'marker', html: markers, iconSize: [35 * 3, 45], iconAnchor: [17, 42] }));
 	            this.openPopup();
 	            isChanged = true;
 	          }
 	        });
 	        marker.on('mouseout', function (e) {
 	          this.closePopup();
-	          this.setIcon(redMarker1);
+	          this.setIcon(_leaflet2.default.divIcon({ className: 'marker', html: Marker1, iconSize: [35, 45], iconAnchor: [17, 42] }));
 	          isChanged = false;
 	        });
 	      }
@@ -82825,4 +82851,4 @@
 
 /***/ }
 /******/ ])));
-//# sourceMappingURL=main.4e3ace4a.js.map
+//# sourceMappingURL=main.388b5ebf.js.map
