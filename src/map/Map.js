@@ -57,6 +57,7 @@ class Map extends Component {
     this.transformToGeoJSON = this.transformToGeoJSON.bind(this);
     this.getDataFromUrl = this.getDataFromUrl.bind(this);
     this.transformSparqlQueryToGeoJSON = this.transformSparqlQueryToGeoJSON.bind(this);
+    this.generateIcon = this.generateIcon.bind(this);
   }
 
   componentDidMount() {
@@ -378,40 +379,37 @@ class Map extends Component {
       this.state.map.setView(e.target.getLatLng());
     });*/
   }
-
+  generateIcon(iconIndex,iconStyle,color,shape){
+    var template = {
+      icon: 'fa-bars',
+      markerColor: 'red',
+      shape: 'star',
+      prefix: 'fa',
+      iconAnchor : [0,0]
+    }
+    iconStyle?template['icon']='fa-'.concat(iconStyle):null;
+    color?template['markerColor']=color:null;
+    shape?template['shape']=shape:null;
+    iconIndex?template['iconAnchor'] = [-35*iconIndex,0]:template['iconAnchor'] = [-35*0,0];
+    var outerHTMLElement = L.ExtraMarkers.icon(template).createIcon().outerHTML;
+    return outerHTMLElement;
+  }
   onEachFeature(feature, marker) {
     if (feature.properties && feature.properties.NAME) {
-      var Marker1 = L.ExtraMarkers.icon({
-        icon: 'fa-bars',
-        markerColor: 'red',
-        shape: 'star',
-        prefix: 'fa',
-        iconAnchor : [0,0]
-      }).createIcon().outerHTML;
-      var Marker2 = L.ExtraMarkers.icon({
-        icon: 'fa-plane',
-        markerColor: 'yellow',
-        shape: 'star',
-        prefix: 'fa',
-        iconAnchor : [-35,0]
-      }).createIcon().outerHTML;
-      var Marker3 = L.ExtraMarkers.icon({
-        icon: 'fa-eur',
-        markerColor: 'green',
-        shape: 'star',
-        prefix: 'fa',
-        iconAnchor : [-35*2,0]
-      }).createIcon().outerHTML;
+      const iconNum = 3;
+      var Marker1 = this.generateIcon();
+      var Marker2 = this.generateIcon(1,'plane','yellow','star')
+      var Marker3 =this.generateIcon(2,'battery-1','green','star');
       var markers = Marker1.concat(Marker2,Marker3);
       var icon_url = "favicon.ico";
       const popupContent = `<img src = ${icon_url}></img><h3>${feature.properties.NAME}</h3>
               <strong>Is Here</strong>`;
       var popup = L.popup().setContent(popupContent);
       var isChanged = false;
-      marker.bindPopup(popup,{offset:L.point(0, -36)});
+      marker.bindPopup(popup,{offset:L.point(1, -32)});
       marker.on('mouseover', function (e) {
         if(!isChanged) {
-          this.setIcon(L.divIcon({className: 'marker', html:markers, iconSize:[35*3,45],iconAnchor : [17,42]}));
+          this.setIcon(L.divIcon({className: 'marker', html:markers, iconSize:[35*iconNum,45],iconAnchor : [17,42]}));
           this.openPopup();
           isChanged = true;
         }
