@@ -5,9 +5,11 @@
   -o-transition: 0.5s;
   transition: 0.5s;
   opacity: 0;
+  width:0;
   visibility: hidden;
 }
 .test.show {
   opacity: 1;
   visibility: visible;
+  width:30vh;
 }
