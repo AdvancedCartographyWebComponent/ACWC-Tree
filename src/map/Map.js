@@ -8,8 +8,8 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
-import 'leaflet-extra-markers/dist/js/leaflet.extra-markers.min.js'
-import 'leaflet-extra-markers/dist/css/leaflet.extra-markers.min.css'
+//import 'leaflet-extra-markers/dist/js/leaflet.extra-markers.min.js'
+//import 'leaflet-extra-markers/dist/css/leaflet.extra-markers.min.css'
 import 'font-awesome/css/font-awesome.min.css'
 import { connect } from 'react-redux'
 import actions from '../../action/action';
@@ -18,6 +18,7 @@ import Filter2 from './Filter2';
 import axios from 'axios';
 import md5 from 'MD5';
 import './css/markers.css'
+import './marker-icon/marker.js'
 //import './marker-icon/_marker.scss'
 
 let config = {};
@@ -337,23 +338,25 @@ class Map extends Component {
     this.state.markerLayer.addLayer(this.state.geojsonLayer).addTo(this.state.map);
     this.zoomToFeature(this.state.geojsonLayer);
   }
-  generateIcon(iconIndex,iconStyle,color,shape,className,iconSize){
+  generateIcon(iconIndex,iconStyle,color,shape,className,iconSize,number){
     var template = {
       icon: 'fa-bars',
-      markerColor: 'red',
+      color: 'lightcoral',
       shape: 'star',
       prefix: 'fa',
       iconAnchor : [0,0],
-      className : 'extra-marker',
-      iconSize :[35,45]
+      className : 'my-marker',
+      iconSize :[35,35],
+      number : ""
     }
     iconStyle?template['icon']='fa-'.concat(iconStyle):null;
-    color?template['markerColor']=color:null;
+    color?template['color']=color:null;
     shape?template['shape']=shape:null;
     iconIndex?template['iconAnchor'] = [-35*iconIndex,0]:template['iconAnchor'] = [-35*0,0];
     className?template['className'] = template['className'].concat(" ",className):null;
     iconSize?template['iconSize'] = iconSize :null;
-    var outerHTMLElement = L.ExtraMarkers.icon(template).createIcon().outerHTML;
+    number?template['number'] = number :null;
+    var outerHTMLElement = L.MyMarkers.icon(template).createIcon().outerHTML;
     return outerHTMLElement;
   }
   showIcons(marker,num){
@@ -409,10 +412,10 @@ class Map extends Component {
     //console.log("redMarker",L.marker(latlng,{icon: redMarker,riseOnHover:true}),temp);
     const iconNum = 3;
     var Marker1 = this.generateIcon();
-    var Marker2 = this.generateIcon(1,'plane','yellow','star','surround')
-    var Marker3 =this.generateIcon(2,'battery-1','green','star','surround');
+    var Marker2 = this.generateIcon(1,'plane','CADETBLUE','star','surround')
+    var Marker3 =this.generateIcon(2,'battery-1','#5262b7','star','surround');
     var markers = Marker1.concat(Marker2,Marker3);
-    var testMarker = L.marker(latlng,{icon: L.divIcon({className: 'markers', html:markers, iconSize:[35,45],iconAnchor : [17,42]}),riseOnHover:true})
+    var testMarker = L.marker(latlng,{icon: L.divIcon({className: 'markers', html:markers, iconSize:[35,35],iconAnchor : [17,42]}),riseOnHover:true})
                       .on('click',(e)=>{
                         console.log("click button, show sidebar",cur.props.actions);
                         cur.props.actions.clickMarker(e.target,feature);

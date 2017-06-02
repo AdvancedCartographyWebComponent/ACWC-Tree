@@ -12,3 +12,22 @@
   opacity: 1;
   visibility: visible;
 }
+.my-marker {
+  background-color: #DADAD9;
+  border: 3px solid;
+  border-radius: 50%;
+  width: 29px;
+  height: 29px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  text-align: center;
+}
+.my-marker i {
+  margin-top: 10px;
+  display: inline-block;
+  font-size: 18px;
+  text-align: center;
+  line-height: 11px;
+}
