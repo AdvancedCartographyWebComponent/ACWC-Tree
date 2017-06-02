@@ -17,7 +17,7 @@ import { bindActionCreators } from 'redux';
 import Filter2 from './Filter2';
 import axios from 'axios';
 import md5 from 'MD5';
-//import './marker-icon/styles.css'
+import './css/markers.css'
 //import './marker-icon/_marker.scss'
 
 let config = {};
@@ -58,6 +58,8 @@ class Map extends Component {
     this.getDataFromUrl = this.getDataFromUrl.bind(this);
     this.transformSparqlQueryToGeoJSON = this.transformSparqlQueryToGeoJSON.bind(this);
     this.generateIcon = this.generateIcon.bind(this);
+    this.showIcons = this.showIcons.bind(this);
+    this.hideIcons = this.hideIcons.bind(this);
   }
 
   componentDidMount() {
@@ -335,7 +337,54 @@ class Map extends Component {
     this.state.markerLayer.addLayer(this.state.geojsonLayer).addTo(this.state.map);
     this.zoomToFeature(this.state.geojsonLayer);
   }
+  generateIcon(iconIndex,iconStyle,color,shape,className,iconSize){
+    var template = {
+      icon: 'fa-bars',
+      markerColor: 'red',
+      shape: 'star',
+      prefix: 'fa',
+      iconAnchor : [0,0],
+      className : 'extra-marker',
+      iconSize :[35,45]
+    }
+    iconStyle?template['icon']='fa-'.concat(iconStyle):null;
+    color?template['markerColor']=color:null;
+    shape?template['shape']=shape:null;
+    iconIndex?template['iconAnchor'] = [-35*iconIndex,0]:template['iconAnchor'] = [-35*0,0];
+    className?template['className'] = template['className'].concat(" ",className):null;
+    iconSize?template['iconSize'] = iconSize :null;
+    var outerHTMLElement = L.ExtraMarkers.icon(template).createIcon().outerHTML;
+    return outerHTMLElement;
+  }
+  showIcons(marker,num){
+    console.log('showIcons',marker._icon.children);
+    var count = 1;
+    num?count = num:null;
 
+    for (var obj in marker._icon.children) {
+      if(obj>0){
+        marker._icon.children[obj].className = marker._icon.children[obj].className.concat(' show');
+      }
+    }
+    marker.dragging._marker._icon.style.width?marker.dragging._marker._icon.style.width = 35*num+"px":null;
+  }
+  replaceString(oldS, newS, fullS) {
+    for (var i = 0; i < fullS.length; ++i) {
+      if (fullS.substring(i, i + oldS.length) == oldS) {
+        fullS = fullS.substring(0, i) + newS + fullS.substring(i + oldS.length, fullS.length);
+      }
+    }
+    return fullS;
+  }
+  hideIcons(marker){
+    console.log('hideIcons',marker._icon.children);
+    for (var obj in marker._icon.children) {
+      if(obj>0){
+        marker._icon.children[obj].className =this.replaceString(' show','',marker._icon.children[obj].className);
+      }
+    }
+    marker.dragging._marker._icon.style.width ?marker.dragging._marker._icon.style.width= 35*1+"px":null;
+  }
   zoomToFeature(target) {
     var fitBoundsParams = {
       paddingTopLeft: [10,10],
@@ -353,19 +402,17 @@ class Map extends Component {
   pointToLayer(feature, latlng) {
 
     var cur = this;
-    var redMarker = L.ExtraMarkers.icon({
-      icon: 'fa-bars',
-      markerColor: 'red',
-      shape: 'star',
-      prefix: 'fa',
-      iconAnchor : [0,0]
-    }).createIcon().outerHTML;
+    var redMarker = this.generateIcon()
 
     //var temp = redMarker.createIcon().outerHTML;
     //var temp = temp.concat(redMarker2.createIcon().outerHTML);
     //console.log("redMarker",L.marker(latlng,{icon: redMarker,riseOnHover:true}),temp);
-
-    var testMarker = L.marker(latlng,{icon: L.divIcon({className: 'marker', html:redMarker, iconSize:[35,45],iconAnchor : [17,42]}),riseOnHover:true})
+    const iconNum = 3;
+    var Marker1 = this.generateIcon();
+    var Marker2 = this.generateIcon(1,'plane','yellow','star','surround')
+    var Marker3 =this.generateIcon(2,'battery-1','green','star','surround');
+    var markers = Marker1.concat(Marker2,Marker3);
+    var testMarker = L.marker(latlng,{icon: L.divIcon({className: 'markers', html:markers, iconSize:[35,45],iconAnchor : [17,42]}),riseOnHover:true})
                       .on('click',(e)=>{
                         console.log("click button, show sidebar",cur.props.actions);
                         cur.props.actions.clickMarker(e.target,feature);
@@ -379,28 +426,12 @@ class Map extends Component {
       this.state.map.setView(e.target.getLatLng());
     });*/
   }
-  generateIcon(iconIndex,iconStyle,color,shape){
-    var template = {
-      icon: 'fa-bars',
-      markerColor: 'red',
-      shape: 'star',
-      prefix: 'fa',
-      iconAnchor : [0,0]
-    }
-    iconStyle?template['icon']='fa-'.concat(iconStyle):null;
-    color?template['markerColor']=color:null;
-    shape?template['shape']=shape:null;
-    iconIndex?template['iconAnchor'] = [-35*iconIndex,0]:template['iconAnchor'] = [-35*0,0];
-    var outerHTMLElement = L.ExtraMarkers.icon(template).createIcon().outerHTML;
-    return outerHTMLElement;
-  }
+
   onEachFeature(feature, marker) {
+    var cur = this;
+    const iconNum = 3;
     if (feature.properties && feature.properties.NAME) {
-      const iconNum = 3;
-      var Marker1 = this.generateIcon();
-      var Marker2 = this.generateIcon(1,'plane','yellow','star')
-      var Marker3 =this.generateIcon(2,'battery-1','green','star');
-      var markers = Marker1.concat(Marker2,Marker3);
+
       var icon_url = "favicon.ico";
       const popupContent = `<img src = ${icon_url}></img><h3>${feature.properties.NAME}</h3>
               <strong>Is Here</strong>`;
@@ -409,14 +440,17 @@ class Map extends Component {
       marker.bindPopup(popup,{offset:L.point(1, -32)});
       marker.on('mouseover', function (e) {
         if(!isChanged) {
-          this.setIcon(L.divIcon({className: 'marker', html:markers, iconSize:[35*iconNum,45],iconAnchor : [17,42]}));
+          console.log(marker);
+          cur.showIcons(marker,iconNum);
+          //this.setIcon(L.divIcon({className: 'marker', html:markers, iconSize:[35*iconNum,45],iconAnchor : [17,42]}));
           this.openPopup();
           isChanged = true;
         }
       });
       marker.on('mouseout', function (e) {
         this.closePopup();
-        this.setIcon(L.divIcon({className: 'marker', html:Marker1, iconSize:[35,45],iconAnchor : [17,42]}));
+        cur.hideIcons(marker);
+        //this.setIcon(L.divIcon({className: 'marker', html:Marker1, iconSize:[35,45],iconAnchor : [17,42]}));
         isChanged=false;
       });
   }
