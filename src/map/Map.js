@@ -339,6 +339,23 @@ class Map extends Component {
     this.zoomToFeature(this.state.geojsonLayer);
   }
   generateIcon(iconIndex,iconStyle,color,shape,className,iconSize,number){
+    /*
+    options: {
+        iconSize: [ 35, 45 ],
+        iconAnchor: [ 17, 42 ],
+        popupAnchor: [ 1, -32 ],
+        shadowAnchor: [ 10, 12 ],
+        shadowSize: [ 36, 16 ],
+        className: "my-marker",
+        prefix: "",
+        extraClasses: "",
+        shape: "circle",
+        icon: "",
+        innerHTML: "",
+        color: "red",
+        number: ""
+    }
+    */
     var template = {
       icon: 'fa-bars',
       color: 'lightcoral',
@@ -356,6 +373,9 @@ class Map extends Component {
     className?template['className'] = template['className'].concat(" ",className):null;
     iconSize?template['iconSize'] = iconSize :null;
     number?template['number'] = number :null;
+    if(!iconIndex||iconIndex == 0) {
+      template['isAnchor'] = true;
+    }
     var outerHTMLElement = L.MyMarkers.icon(template).createIcon().outerHTML;
     return outerHTMLElement;
   }
@@ -407,9 +427,7 @@ class Map extends Component {
     var cur = this;
     var redMarker = this.generateIcon()
 
-    //var temp = redMarker.createIcon().outerHTML;
-    //var temp = temp.concat(redMarker2.createIcon().outerHTML);
-    //console.log("redMarker",L.marker(latlng,{icon: redMarker,riseOnHover:true}),temp);
+
     const iconNum = 3;
     var Marker1 = this.generateIcon();
     var Marker2 = this.generateIcon(1,'plane','CADETBLUE','star','surround')

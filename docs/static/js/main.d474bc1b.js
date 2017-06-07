@@ -43090,6 +43090,23 @@
 	  }, {
 	    key: 'generateIcon',
 	    value: function generateIcon(iconIndex, iconStyle, color, shape, className, iconSize, number) {
+	      /*
+	      options: {
+	          iconSize: [ 35, 45 ],
+	          iconAnchor: [ 17, 42 ],
+	          popupAnchor: [ 1, -32 ],
+	          shadowAnchor: [ 10, 12 ],
+	          shadowSize: [ 36, 16 ],
+	          className: "my-marker",
+	          prefix: "",
+	          extraClasses: "",
+	          shape: "circle",
+	          icon: "",
+	          innerHTML: "",
+	          color: "red",
+	          number: ""
+	      }
+	      */
 	      var template = {
 	        icon: 'fa-bars',
 	        color: 'lightcoral',
@@ -43107,6 +43124,9 @@
 	      className ? template['className'] = template['className'].concat(" ", className) : null;
 	      iconSize ? template['iconSize'] = iconSize : null;
 	      number ? template['number'] = number : null;
+	      if (!iconIndex || iconIndex == 0) {
+	        template['isAnchor'] = true;
+	      }
 	      var outerHTMLElement = _leaflet2.default.MyMarkers.icon(template).createIcon().outerHTML;
 	      return outerHTMLElement;
 	    }
@@ -43171,9 +43191,6 @@
 	      var cur = this;
 	      var redMarker = this.generateIcon();
 	
-	      //var temp = redMarker.createIcon().outerHTML;
-	      //var temp = temp.concat(redMarker2.createIcon().outerHTML);
-	      //console.log("redMarker",L.marker(latlng,{icon: redMarker,riseOnHover:true}),temp);
 	      var iconNum = 3;
 	      var Marker1 = this.generateIcon();
 	      var Marker2 = this.generateIcon(1, 'plane', 'CADETBLUE', 'star', 'surround');
@@ -43278,8 +43295,6 @@
 	"use strict";
 	
 	(function (window, document, undefined) {
-	    "use strict";
-	
 	    L.MyMarkers = {};
 	    L.MyMarkers.version = "1.0.1";
 	    L.MyMarkers.Icon = L.Icon.extend({
@@ -43295,10 +43310,9 @@
 	            shape: "circle",
 	            icon: "",
 	            innerHTML: "",
-	            svgBorderColor: "#fff",
-	            svgOpacity: 1,
 	            color: "red",
-	            number: ""
+	            number: "",
+	            isAnchor: false
 	        },
 	        initialize: function initialize(options) {
 	            options = L.Util.setOptions(this, options);
@@ -43328,11 +43342,15 @@
 	            if (options.number) {
 	                iconNumber = "number='" + options.number + "' ";
 	            }
-	            return "<i " + iconNumber + iconColorStyle + "class='" + options.extraClasses + " " + options.prefix + " " + options.icon + "'></i>";
+	            if (options.isAnchor) {
+	                return "<div class =\"marker-wrapper icon-marker\"></div><i " + iconNumber + iconColorStyle + "class='" + options.extraClasses + " " + options.prefix + " " + options.icon + "'></i>";
+	            } else {
+	                return "<i " + iconNumber + iconColorStyle + "class='" + options.extraClasses + " " + options.prefix + " " + options.icon + "'></i>";
+	            }
 	        },
 	        _setIconStyles: function _setIconStyles(img, name) {
 	            var options = this.options,
-	                size = L.point(options[name === "shadow" ? "shadowSize" : "iconSize"]),
+	                size = L.point(options["iconSize"]),
 	                anchor,
 	                leafletName;
 	            if (name === "shadow") {
@@ -43353,11 +43371,6 @@
 	            if (options.color) {
 	                img.style.color = options.color;
 	            }
-	        },
-	        createShadow: function createShadow() {
-	            var div = document.createElement("div");
-	            this._setIconStyles(div, "shadow");
-	            return div;
 	        }
 	    });
 	    L.MyMarkers.icon = function (options) {
@@ -82984,4 +82997,4 @@
 
 /***/ }
 /******/ ])));
-//# sourceMappingURL=main.9f7602a2.js.map
+//# sourceMappingURL=main.d474bc1b.js.map

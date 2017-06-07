@@ -1,5 +1,4 @@
 (function(window, document, undefined) {
-    "use strict";
     L.MyMarkers = {};
     L.MyMarkers.version = "1.0.1";
     L.MyMarkers.Icon = L.Icon.extend({
@@ -15,10 +14,9 @@
             shape: "circle",
             icon: "",
             innerHTML: "",
-            svgBorderColor: "#fff",
-            svgOpacity: 1,
             color: "red",
-            number: ""
+            number: "",
+            isAnchor:false
         },
         initialize: function(options) {
             options = L.Util.setOptions(this, options);
@@ -45,10 +43,17 @@
             if (options.number) {
                 iconNumber = "number='" + options.number + "' ";
             }
-            return "<i " + iconNumber + iconColorStyle +"class='" + options.extraClasses + " " + options.prefix + " " + options.icon + "'></i>";
+            if (options.isAnchor) {
+              return "<div class =\"marker-wrapper icon-marker\"></div><i " + iconNumber + iconColorStyle +"class='" + options.extraClasses + " " + options.prefix + " " + options.icon + "'></i>";
+            }else {
+              return "<i " + iconNumber + iconColorStyle +"class='" + options.extraClasses + " " + options.prefix + " " + options.icon + "'></i>";
+            }
+
+
+
         },
         _setIconStyles: function(img, name) {
-            var options = this.options, size = L.point(options[name === "shadow" ? "shadowSize" : "iconSize"]), anchor, leafletName;
+            var options = this.options, size = L.point(options["iconSize"]), anchor, leafletName;
             if (name === "shadow") {
                 anchor = L.point(options.shadowAnchor || options.iconAnchor);
                 leafletName = "shadow";
@@ -67,11 +72,6 @@
             if (options.color){
               img.style.color = options.color;
             }
-        },
-        createShadow: function() {
-            var div = document.createElement("div");
-            this._setIconStyles(div, "shadow");
-            return div;
         }
     });
     L.MyMarkers.icon = function(options) {
