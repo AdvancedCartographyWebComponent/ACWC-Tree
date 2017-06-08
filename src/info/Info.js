@@ -14,6 +14,10 @@ class Info extends Component {
     var classNameParent = "test";
     if(this.props.isInfo){
       classNameParent = classNameParent.concat(" show");
+      document.getElementById('sidebar').style.zIndex=1;
+    }else{
+      document.getElementById('carte').style.width="76%";
+      document.getElementById('sidebar').style.zIndex=-1;
     }
     return (
       (

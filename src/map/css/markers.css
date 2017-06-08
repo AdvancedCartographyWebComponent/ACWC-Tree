@@ -22,7 +22,7 @@
   font-size: 40px;
   line-height: 40px;
   opacity: .99; }
-  
+
 [data-icon]:before {
   font-family: "carto" !important;
   content: attr(data-icon);
@@ -51,7 +51,6 @@
   content: "\41";
 }
 .surround {
-
   -webkit-transition: 0.5s;
   -moz-transition: 0.5s;
   -o-transition: 0.5s;
@@ -60,7 +59,44 @@
   width:0;
   visibility: hidden;
 }
-.surround.show {
+.surround[speed="1"]{
+  -webkit-transition: 0.16s;
+  -moz-transition: 0.16s;
+  -o-transition: 0.16s;
+  transition: 0.16s;
+}
+.surround[speed="2"]{
+  -webkit-transition: 0.32s;
+  -moz-transition: 0.32s;
+  -o-transition: 0.32s;
+  transition: 0.32s;
+}
+.surround[speed="3"]{
+  -webkit-transition: 0.48s;
+  -moz-transition: 0.48s;
+  -o-transition: 0.48s;
+  transition: 0.48s;
+}
+.surround[speed="4"]{
+  -webkit-transition: 0.64s;
+  -moz-transition: 0.64s;
+  -o-transition: 0.64s;
+  transition: 0.64s;
+}
+.surround[speed="5"]{
+  -webkit-transition: 0.80s;
+  -moz-transition: 0.80s;
+  -o-transition: 0.80s;
+  transition: 0.80s;
+}
+.surround[speed="6"]{
+  -webkit-transition: 0.96s;
+  -moz-transition: 0.96s;
+  -o-transition: 0.96s;
+  transition: 0.96s;
+}
+[class*="surround"].show,
+[class^="surround"].show {
   opacity: 1;
   visibility: visible;
 }

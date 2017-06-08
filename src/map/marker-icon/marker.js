@@ -16,23 +16,23 @@
             innerHTML: "",
             color: "red",
             number: "",
-            isAnchor:false
+            isAnchor:false,
+            animation : null
         },
         initialize: function(options) {
             options = L.Util.setOptions(this, options);
         },
         createIcon: function() {
             var div = document.createElement("div"), options = this.options;
+            //TODO Set speed by element.setAttribute(speed, "1")
+
             if (options.icon) {
                 div.innerHTML = this._createInner();
             }
             if (options.innerHTML) {
                 div.innerHTML = options.innerHTML;
             }
-            if (options.bgPos) {
-                div.style.backgroundPosition = -options.bgPos.x + "px " + -options.bgPos.y + "px";
-            }
-            this._setIconStyles(div, options.shape + "-" + options.markerColor);
+            this._setIconStyles(div);
             return div;
         },
         _createInner: function() {
@@ -52,19 +52,16 @@
 
 
         },
-        _setIconStyles: function(img, name) {
+        _setIconStyles: function(img) {
             var options = this.options, size = L.point(options["iconSize"]), anchor, leafletName;
-            if (name === "shadow") {
-                anchor = L.point(options.shadowAnchor || options.iconAnchor);
-                leafletName = "shadow";
-            } else {
-                anchor = L.point(options.iconAnchor);
-                leafletName = "icon";
-            }
+            anchor = L.point(options.iconAnchor);
+            leafletName = "icon";
             if (!anchor && size) {
                 anchor = size.divideBy(2, true);
             }
+            if (!options.isAnchor) img.style.pointerEvents = "auto";
             img.className = "leaflet-marker-" + leafletName  + " " + options.className;
+            if(options.animation) img.setAttribute("speed", options.animation);
             if (anchor) {
                 img.style.marginLeft = -anchor.x + "px";
                 img.style.marginTop = -anchor.y + "px";

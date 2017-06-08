@@ -11890,6 +11890,10 @@
 	      var classNameParent = "test";
 	      if (this.props.isInfo) {
 	        classNameParent = classNameParent.concat(" show");
+	        document.getElementById('sidebar').style.zIndex = 1;
+	      } else {
+	        document.getElementById('carte').style.width = "76%";
+	        document.getElementById('sidebar').style.zIndex = -1;
 	      }
 	      return _react2.default.createElement(
 	        'div',
@@ -43089,7 +43093,7 @@
 	    }
 	  }, {
 	    key: 'generateIcon',
-	    value: function generateIcon(iconIndex, iconStyle, color, shape, className, iconSize, number) {
+	    value: function generateIcon(count, iconIndex, iconStyle, color, shape, className, iconSize, number) {
 	      /*
 	      options: {
 	          iconSize: [ 35, 45 ],
@@ -43104,7 +43108,8 @@
 	          icon: "",
 	          innerHTML: "",
 	          color: "red",
-	          number: ""
+	          number: "",
+	          animation : "1"
 	      }
 	      */
 	      var template = {
@@ -43115,12 +43120,15 @@
 	        iconAnchor: [0, 0],
 	        className: 'my-marker',
 	        iconSize: [35, 35],
-	        number: ""
+	        number: "",
+	        animation: null
 	      };
+	      var offset = Math.PI * (1 - 2 * (count - 1) / count) / 2;
 	      iconStyle ? template['icon'] = 'fa-'.concat(iconStyle) : null;
 	      color ? template['color'] = color : null;
 	      shape ? template['shape'] = shape : null;
-	      iconIndex ? template['iconAnchor'] = [-35 * iconIndex, 0] : template['iconAnchor'] = [-35 * 0, 0];
+	      iconIndex ? template['iconAnchor'] = [-35 * Math.cos(2 * Math.PI * (iconIndex - 1) / count + offset), 35 * Math.sin(2 * Math.PI * (iconIndex - 1) / count + offset)] : null;
+	      iconIndex ? template['animation'] = iconIndex : null;
 	      className ? template['className'] = template['className'].concat(" ", className) : null;
 	      iconSize ? template['iconSize'] = iconSize : null;
 	      number ? template['number'] = number : null;
@@ -43142,7 +43150,8 @@
 	          marker._icon.children[obj].className = marker._icon.children[obj].className.concat(' show');
 	        }
 	      }
-	      marker.dragging._marker._icon.style.width ? marker.dragging._marker._icon.style.width = 35 * num + "px" : null;
+	      marker.dragging._marker._icon.style.width ? marker.dragging._marker._icon.style.width = 35 + "px" : null;
+	      marker.dragging._marker._icon.style.height ? marker.dragging._marker._icon.style.height = 35 + "px" : null;
 	    }
 	  }, {
 	    key: 'replaceString',
@@ -43164,6 +43173,7 @@
 	        }
 	      }
 	      marker.dragging._marker._icon.style.width ? marker.dragging._marker._icon.style.width = 35 * 1 + "px" : null;
+	      marker.dragging._marker._icon.style.height ? marker.dragging._marker._icon.style.height = 35 * 1 + "px" : null;
 	    }
 	  }, {
 	    key: 'zoomToFeature',
@@ -43191,47 +43201,46 @@
 	      var cur = this;
 	      var redMarker = this.generateIcon();
 	
-	      var iconNum = 3;
+	      var iconNum = 6; //Change when have data
+	      //generateIcon(count,iconIndex,iconStyle,color,shape,className,iconSize,number)
 	      var Marker1 = this.generateIcon();
-	      var Marker2 = this.generateIcon(1, 'plane', 'CADETBLUE', 'star', 'surround');
-	      var Marker3 = this.generateIcon(2, 'battery-1', '#5262b7', 'star', 'surround');
-	      var markers = Marker1.concat(Marker2, Marker3);
+	      var Marker2 = this.generateIcon(iconNum - 1, 1, 'plane', 'CADETBLUE', 'star', 'surround');
+	      var Marker3 = this.generateIcon(iconNum - 1, 2, 'battery-1', '#5262b7', 'star', 'surround');
+	      var Marker4 = this.generateIcon(iconNum - 1, 3, 'battery-1', '#5262b7', 'star', 'surround');
+	      var Marker5 = this.generateIcon(iconNum - 1, 4, 'battery-1', '#5262b7', 'star', 'surround');
+	      var Marker6 = this.generateIcon(iconNum - 1, 5, 'battery-1', '#5262b7', 'star', 'surround');
+	      var markers = Marker1.concat(Marker2, Marker3, Marker4, Marker5, Marker6);
 	      var testMarker = _leaflet2.default.marker(latlng, { icon: _leaflet2.default.divIcon({ className: 'markers', html: markers, iconSize: [35, 35], iconAnchor: [17, 42] }), riseOnHover: true }).on('click', function (e) {
 	        console.log("click button, show sidebar", cur.props.actions);
 	        cur.props.actions.clickMarker(e.target, feature);
+	        document.getElementById('carte').style.width = "50%";
 	        _this5.state.map.setView(e.target.getLatLng());
 	      });
-	      //console.log("testMarker",testMarker);
 	      return testMarker;
-	      /*return L.marker(latlng,{icon: redMarker,riseOnHover:true}).on('click',(e)=>{
-	        console.log("click button, show sidebar");
-	        cur.props.actions.clickMarker(e.target,feature);
-	        this.state.map.setView(e.target.getLatLng());
-	      });*/
 	    }
 	  }, {
 	    key: 'onEachFeature',
 	    value: function onEachFeature(feature, marker) {
 	      var cur = this;
-	      var iconNum = 3;
+	      var iconNum = 6; //Change when have data
 	      if (feature.properties && feature.properties.NAME) {
 	
 	        var icon_url = "favicon.ico";
-	        var popupContent = '<img src = ' + icon_url + '></img><h3>' + feature.properties.NAME + '</h3>\n              <strong>Is Here</strong>';
-	        var popup = _leaflet2.default.popup().setContent(popupContent);
+	        /*const popupContent = `<img src = ${icon_url}></img><h3>${feature.properties.NAME}</h3>
+	                <strong>Is Here</strong>`;
+	        var popup = L.popup().setContent(popupContent);*/
 	        var isChanged = false;
-	        marker.bindPopup(popup, { offset: _leaflet2.default.point(1, -32) });
+	        //marker.bindPopup(popup,{offset:L.point(1, -32)});
 	        marker.on('mouseover', function (e) {
 	          if (!isChanged) {
 	            console.log(marker);
 	            cur.showIcons(marker, iconNum);
-	            //this.setIcon(L.divIcon({className: 'marker', html:markers, iconSize:[35*iconNum,45],iconAnchor : [17,42]}));
-	            this.openPopup();
+	            //this.openPopup();
 	            isChanged = true;
 	          }
 	        });
 	        marker.on('mouseout', function (e) {
-	          this.closePopup();
+	          //this.closePopup();
 	          cur.hideIcons(marker);
 	          //this.setIcon(L.divIcon({className: 'marker', html:Marker1, iconSize:[35,45],iconAnchor : [17,42]}));
 	          isChanged = false;
@@ -43247,6 +43256,7 @@
 	      map.on('click', function () {
 	        console.log("click map");
 	        cur.props.actions.closeSideBar();
+	        document.getElementById('carte').style.width = "76%";
 	      });
 	      _leaflet2.default.control.zoom({ position: "bottomleft" }).addTo(map);
 	      _leaflet2.default.control.scale({ position: "bottomleft" }).addTo(map);
@@ -43312,7 +43322,8 @@
 	            innerHTML: "",
 	            color: "red",
 	            number: "",
-	            isAnchor: false
+	            isAnchor: false,
+	            animation: null
 	        },
 	        initialize: function initialize(options) {
 	            options = L.Util.setOptions(this, options);
@@ -43320,16 +43331,15 @@
 	        createIcon: function createIcon() {
 	            var div = document.createElement("div"),
 	                options = this.options;
+	            //TODO Set speed by element.setAttribute(speed, "1")
+	
 	            if (options.icon) {
 	                div.innerHTML = this._createInner();
 	            }
 	            if (options.innerHTML) {
 	                div.innerHTML = options.innerHTML;
 	            }
-	            if (options.bgPos) {
-	                div.style.backgroundPosition = -options.bgPos.x + "px " + -options.bgPos.y + "px";
-	            }
-	            this._setIconStyles(div, options.shape + "-" + options.markerColor);
+	            this._setIconStyles(div);
 	            return div;
 	        },
 	        _createInner: function _createInner() {
@@ -43348,22 +43358,19 @@
 	                return "<i " + iconNumber + iconColorStyle + "class='" + options.extraClasses + " " + options.prefix + " " + options.icon + "'></i>";
 	            }
 	        },
-	        _setIconStyles: function _setIconStyles(img, name) {
+	        _setIconStyles: function _setIconStyles(img) {
 	            var options = this.options,
 	                size = L.point(options["iconSize"]),
 	                anchor,
 	                leafletName;
-	            if (name === "shadow") {
-	                anchor = L.point(options.shadowAnchor || options.iconAnchor);
-	                leafletName = "shadow";
-	            } else {
-	                anchor = L.point(options.iconAnchor);
-	                leafletName = "icon";
-	            }
+	            anchor = L.point(options.iconAnchor);
+	            leafletName = "icon";
 	            if (!anchor && size) {
 	                anchor = size.divideBy(2, true);
 	            }
+	            if (!options.isAnchor) img.style.pointerEvents = "auto";
 	            img.className = "leaflet-marker-" + leafletName + " " + options.className;
+	            if (options.animation) img.setAttribute("speed", options.animation);
 	            if (anchor) {
 	                img.style.marginLeft = -anchor.x + "px";
 	                img.style.marginTop = -anchor.y + "px";
@@ -82997,4 +83004,4 @@
 
 /***/ }
 /******/ ])));
-//# sourceMappingURL=main.d474bc1b.js.map
+//# sourceMappingURL=main.ae103029.js.map

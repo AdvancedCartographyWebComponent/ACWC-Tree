@@ -80,6 +80,7 @@
 
 .sidebar-content {
   position: absolute;
+  border: 1px solid red;
   top: 0;
   bottom: 0;
   width: 100%;
