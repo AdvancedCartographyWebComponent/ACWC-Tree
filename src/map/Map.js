@@ -26,9 +26,9 @@ config.params = mapContext.params;
 config.tileLayer = mapContext.tileLayer;
 const USER_TYPE = serverContext.USER_TYPE;
 const SERVICE_PORT = serverContext.SERVICE_PORT;
-
+console.log("window",window);
+var windowGlobal = window;
 let UserNames = [];
-
 class Map extends Component {
   constructor(props) {
     super(props);
@@ -64,11 +64,25 @@ class Map extends Component {
   }
 
   componentDidMount() {
+
+    // later, you can stop observing
+    //observer.disconnect();
     if(this.isServer !=="false"){
       this.postData();
     }else{
       this.getData();
     }
+    window.testValue = null;
+    this.checkDataSource = setInterval(
+      () => {
+        //console.log("window.testValue",window.testValue);
+        if(window.testValue&&(!this.testValue||md5(JSON.stringify(window.testValue))!=md5(JSON.stringify(this.testValue)))){
+          console.log("differ");
+          this.testValue = window.testValue;
+        }
+      },
+      100
+    );
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -79,6 +93,8 @@ class Map extends Component {
     }
     if (!this.state.map&&this.state.geojson) {
       this.init(this._mapNode);
+      var target = document.getElementById('testGlobal');
+
       this.postDataID = setInterval(
         () => {
           if(this.isServer!=="false"){
@@ -89,6 +105,7 @@ class Map extends Component {
       );
     };
     if (this.state.geojson && this.state.map && !this.state.geojsonLayer) {
+      console.log(windowGlobal.testGlobal);
       this.addGeoJSONLayer(this.state.geojson);
     }
     if (this.state.driversFilter !== prevState.driversFilter) {
@@ -448,6 +465,7 @@ class Map extends Component {
                         console.log("click button, show sidebar",cur.props.actions);
                         cur.props.actions.clickMarker(e.target,feature);
                         document.getElementById('carte').style.width="50%";
+                        //document.getElementById('testGlobal').setAttribute('test','555');
                         this.state.map.setView(e.target.getLatLng());
                       },);
     return testMarker;
@@ -493,6 +511,7 @@ class Map extends Component {
     L.control.zoom({ position: "bottomleft"}).addTo(map);
     L.control.scale({ position: "bottomleft"}).addTo(map);
     const tileLayer = L.tileLayer(config.tileLayer.uri, config.tileLayer.params).addTo(map);
+
     this.setState({ map:map, tileLayer:tileLayer});
   }
 
