@@ -6282,6 +6282,12 @@
 	    return{
 	      type: actionTypes.CloseSideBar,
 	    }
+	  },
+	  receiveGeoDataFromUrl(geodata){
+	    return{
+	      type: actionTypes.ReceiveGeoDataFromUrl,
+	      geodata
+	    }
 	  }
 	};
 	module.exports = actions;
@@ -11729,7 +11735,8 @@
 	  GetDataFromUrlForTreeAndMap : "GetDataFromUrlForTreeAndMap",
 	  GlobalSearch : "GlobalSearch",
 	  ClickMarker : "ClickMarker",
-	  CloseSideBar : "CloseSideBar"
+	  CloseSideBar : "CloseSideBar",
+	  ReceiveGeoDataFromUrl : "ReceiveGeoDataFromUrl"
 	};
 
 
@@ -42842,9 +42849,6 @@
 	        //console.log(windowGlobal.testGlobal);
 	        this.addGeoJSONLayer(this.state.geojson);
 	      }
-	      if (this.state.driversFilter !== prevState.driversFilter) {
-	        this.filterGeoJSONLayer();
-	      }
 	      if (prevProps.serverData && (0, _MD2.default)(JSON.stringify(this.props.serverData)) !== (0, _MD2.default)(JSON.stringify(prevState.serverData))) {
 	        UserNames = [];
 	        this.filterGeoJSONLayer();
@@ -42880,12 +42884,18 @@
 	        this.getDataFromUrl(this.urlQuery);
 	      } else {
 	        window.mapDataUrl = null;
+	        window.geojsonUrl = null;
 	        this.checkDataSource = setInterval(function () {
 	          //console.log("window.mapDataUrl",window.mapDataUrl);
 	          if (window.mapDataUrl && (!_this3.mapDataUrl || (0, _MD2.default)(JSON.stringify(window.mapDataUrl)) != (0, _MD2.default)(JSON.stringify(_this3.mapDataUrl)))) {
-	            console.log("differ");
+	            console.log("mapDataUrl differ");
 	            _this3.mapDataUrl = window.mapDataUrl;
 	            _this3.getDataFromUrl(window.mapDataUrl);
+	          }
+	          if (window.geojsonUrl && (!_this3.geojsonUrl || (0, _MD2.default)(JSON.stringify(window.geojsonUrl)) != (0, _MD2.default)(JSON.stringify(_this3.geojsonUrl)))) {
+	            console.log("geojsonUrl differ");
+	            _this3.geojsonUrl = window.geojsonUrl;
+	            _this3.getGeojsonFromUrl(window.geojsonUrl);
 	          }
 	        }, 100);
 	        this.setState({
@@ -42911,16 +42921,29 @@
 	          'Content-Type': 'application/ld+json, application/json'
 	        }
 	      }).then(function (res) {
-	        if (url.slice(1, 4) === "sql") {
-	          cur.transformSparqlQueryToGeoJSON(res.data.results.bindings);
-	          cur.props.actions.getDataFromUrlForMap(cur.geoCollection);
-	          cur.setState({
-	            numUser: cur.geoCollection.features.length,
-	            geojson: cur.geoCollection
-	          });
-	        } else {
-	          cur.props.actions.getDataFromUrlForMap(res.data);
+	        cur.props.actions.getDataFromUrlForMap(res.data);
+	      }).catch(function (error) {
+	        console.log(error);
+	      });;
+	    }
+	  }, {
+	    key: 'getGeojsonFromUrl',
+	    value: function getGeojsonFromUrl(url) {
+	      var cur = this;
+	      console.log("getGeojsonFromUrl", url.slice(1, 4), url.slice(5));
+	      this.geoCollection = {
+	        "type": "FeatureCollection",
+	        "features": []
+	      };
+	      (0, _axios2.default)({
+	        method: 'get',
+	        url: url.slice(1, 4) == "geo" ? url.slice(5) : null,
+	        headers: {
+	          'Accept': 'application/ld+json, application/json',
+	          'Content-Type': 'application/ld+json, application/json'
 	        }
+	      }).then(function (res) {
+	        cur.props.actions.receiveGeoDataFromUrl(res.data);
 	      }).catch(function (error) {
 	        console.log(error);
 	      });;
@@ -43224,12 +43247,13 @@
 	      var iconNum = 6; //Change when have data
 	      //generateIcon(count,iconIndex,iconStyle,color,shape,className,iconSize,number)
 	      var Marker1 = this.generateIcon();
-	      var Marker2 = this.generateIcon(iconNum - 1, 1, 'plane', 'CADETBLUE', 'star', 'surround');
-	      var Marker3 = this.generateIcon(iconNum - 1, 2, 'battery-1', '#5262b7', 'star', 'surround');
-	      var Marker4 = this.generateIcon(iconNum - 1, 3, 'battery-1', '#5262b7', 'star', 'surround');
-	      var Marker5 = this.generateIcon(iconNum - 1, 4, 'battery-1', '#5262b7', 'star', 'surround');
-	      var Marker6 = this.generateIcon(iconNum - 1, 5, 'battery-1', '#5262b7', 'star', 'surround');
-	      var markers = Marker1.concat(Marker2, Marker3, Marker4, Marker5, Marker6);
+	      /*var Marker2 = this.generateIcon(iconNum-1,1,'plane','CADETBLUE','star','surround')
+	      var Marker3 =this.generateIcon(iconNum-1,2,'battery-1','#5262b7','star','surround');
+	      var Marker4 =this.generateIcon(iconNum-1,3,'battery-1','#5262b7','star','surround');
+	      var Marker5 =this.generateIcon(iconNum-1,4,'battery-1','#5262b7','star','surround');
+	      var Marker6 =this.generateIcon(iconNum-1,5,'battery-1','#5262b7','star','surround');
+	      var markers = Marker1.concat(Marker2,Marker3,Marker4,Marker5,Marker6);*/
+	      var markers = Marker1;
 	      var testMarker = _leaflet2.default.marker(latlng, { icon: _leaflet2.default.divIcon({ className: 'markers', html: markers, iconSize: [35, 35], iconAnchor: [17, 42] }), riseOnHover: true }).on('click', function (e) {
 	        console.log("click button, show sidebar", cur.props.actions);
 	        cur.props.actions.clickMarker(e.target, feature);
@@ -82920,10 +82944,10 @@
 	      return Object.assign({}, state, {
 	        isInfo : false
 	      })
-	    case actionTypes.ReceiveDataUrl:
-	      console.log("ReceiveDataUrl");
+	    case actionTypes.ReceiveGeoDataFromUrl:
+	      console.log("ReceiveGeoDataFromUrl");
 	      return Object.assign({}, state, {
-	        dynamicUrl : url
+	        geoData : action.geodata
 	      })
 	    default:
 	      return state;
@@ -83064,4 +83088,4 @@
 
 /***/ }
 /******/ ])));
-//# sourceMappingURL=main.359c99cf.js.map
+//# sourceMappingURL=main.2eb6dae5.js.map

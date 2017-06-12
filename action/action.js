@@ -66,6 +66,12 @@ let actions = {
     return{
       type: actionTypes.CloseSideBar,
     }
+  },
+  receiveGeoDataFromUrl(geodata){
+    return{
+      type: actionTypes.ReceiveGeoDataFromUrl,
+      geodata
+    }
   }
 };
 module.exports = actions;

@@ -41,11 +41,13 @@ http://localhost:3000/?sko=https://api.myjson.com/bins/p9ytt&&?geo=https://seman
 ```
 ## Way 2 
 There are two global variables for configure the data.
-You can reset the value of **window.treeUrl** to be the url for tree-menu, for example:
+You can reset the value of **window.treeUrl** to be the url for tree-menu with the prefix **?sko=**, for example:
 ```javascript
 window.treeUrl = "?sko=https://api.myjson.com/bins/p9ytt"
 ```
-And you can do the same thing with **window.mapDataUrl** to set the map data.
+And you can do the same thing with **window.mapDataUrl** to set the map data with the prefix **?geo=**.
+
+Also, you can do the same thing with **window.geojsonUrl** to set the map data with the prefix **?geo=**. **Important**:It can not work with the tree-menu and the url should contain the [geojson](http://geojson.org/) data.
 
 
 In this case, we use semantic form to query and structure geo-location data.

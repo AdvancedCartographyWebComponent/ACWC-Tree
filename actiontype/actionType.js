@@ -9,5 +9,6 @@ module.exports = {
   GetDataFromUrlForTreeAndMap : "GetDataFromUrlForTreeAndMap",
   GlobalSearch : "GlobalSearch",
   ClickMarker : "ClickMarker",
-  CloseSideBar : "CloseSideBar"
+  CloseSideBar : "CloseSideBar",
+  ReceiveGeoDataFromUrl : "ReceiveGeoDataFromUrl"
 };

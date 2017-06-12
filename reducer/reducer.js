@@ -369,10 +369,10 @@ var reducer = function (state = initialState, action) {
       return Object.assign({}, state, {
         isInfo : false
       })
-    case actionTypes.ReceiveDataUrl:
-      console.log("ReceiveDataUrl");
+    case actionTypes.ReceiveGeoDataFromUrl:
+      console.log("ReceiveGeoDataFromUrl");
       return Object.assign({}, state, {
-        dynamicUrl : url
+        geoData : action.geodata
       })
     default:
       return state;
