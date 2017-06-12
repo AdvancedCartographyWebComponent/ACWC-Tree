@@ -40,6 +40,8 @@ Or you can use both url:
 http://localhost:3000/?sko=https://api.myjson.com/bins/p9ytt&&?geo=https://semantic-forms.cc:8111/sparql?query=%0D%0APREFIX+rdfs%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2000%2F01%2Frdf-schema%23%3E%0D%0A%0D%0A%0D%0A%0D%0A%0D%0APrefix+geo%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2003%2F01%2Fgeo%2Fwgs84_pos%23%3E%0D%0A%0D%0ACONSTRUCT+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A%0D%0A%7D%0D%0AWHERE+%7B%0D%0A++GRAPH+%3FGRAPH+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A++%7D%0D%0A%7D
 ```
 ## Way 2 
+**Import**: All the request should be loaded over https.
+
 There are two global variables for configure the data.
 You can reset the value of **window.treeUrl** to be the url for tree-menu with the prefix **?sko=**, for example:
 ```javascript
@@ -48,6 +50,10 @@ window.treeUrl = "?sko=https://api.myjson.com/bins/p9ytt"
 And you can do the same thing with **window.mapDataUrl** to set the map data with the prefix **?geo=**.
 
 Also, you can do the same thing with **window.geojsonUrl** to set the map data with the prefix **?geo=**. **Important**:It can not work with the tree-menu and the url should contain the [geojson](http://geojson.org/) data.
+
+```javascript
+window.treeUrl = "?geo=https://sementicbus-simonzen.rhcloud.com/data/api/AlternatibaMartigue"
+```
 
 
 In this case, we use semantic form to query and structure geo-location data.
