@@ -268,7 +268,8 @@ const initialState = {
   keyword : null,
   root : null,
   isInfo : false,
-  Info : null
+  Info : null,
+  dynamicUrl : null
 };
 var reducer = function (state = initialState, action) {
   switch (action.type) {
@@ -367,6 +368,11 @@ var reducer = function (state = initialState, action) {
       console.log("CloseSideBar");
       return Object.assign({}, state, {
         isInfo : false
+      })
+    case actionTypes.ReceiveDataUrl:
+      console.log("ReceiveDataUrl");
+      return Object.assign({}, state, {
+        dynamicUrl : url
       })
     default:
       return state;

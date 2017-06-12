@@ -72,17 +72,6 @@ class Map extends Component {
     }else{
       this.getData();
     }
-    window.testValue = null;
-    this.checkDataSource = setInterval(
-      () => {
-        //console.log("window.testValue",window.testValue);
-        if(window.testValue&&(!this.testValue||md5(JSON.stringify(window.testValue))!=md5(JSON.stringify(this.testValue)))){
-          console.log("differ");
-          this.testValue = window.testValue;
-        }
-      },
-      100
-    );
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -93,7 +82,7 @@ class Map extends Component {
     }
     if (!this.state.map&&this.state.geojson) {
       this.init(this._mapNode);
-      var target = document.getElementById('testGlobal');
+      //var target = document.getElementById('testGlobal');
 
       this.postDataID = setInterval(
         () => {
@@ -105,7 +94,7 @@ class Map extends Component {
       );
     };
     if (this.state.geojson && this.state.map && !this.state.geojsonLayer) {
-      console.log(windowGlobal.testGlobal);
+      //console.log(windowGlobal.testGlobal);
       this.addGeoJSONLayer(this.state.geojson);
     }
     if (this.state.driversFilter !== prevState.driversFilter) {
@@ -117,16 +106,16 @@ class Map extends Component {
     }
     if(md5(JSON.stringify(prevProps.geoData))!==md5(JSON.stringify(this.props.geoData))){
       console.log("geoData changed");
-      console.log("prev",prevProps.geoData);
-      console.log("this",this.props.geoData);
+      //console.log("prev",prevProps.geoData);
+      //console.log("this",this.props.geoData);
       this.setState({
         geojson:this.props.geoData
       });
     }
     if(prevState.geojson&&md5(JSON.stringify(prevState.geojson))!==md5(JSON.stringify(this.state.geojson))){
       console.log("geojson changed do filterGeoJSONLayer");
-      console.log("prev",prevState.geojson);
-      console.log("this",this.state.geojson);
+      //console.log("prev",prevState.geojson);
+      //console.log("this",this.state.geojson);
       UserNames=[];
       this.filterGeoJSONLayer();
     }
@@ -142,6 +131,18 @@ class Map extends Component {
       this.getDataFromUrl(this.urlQuery);
     }
     else{
+      window.mapDataUrl = null;
+      this.checkDataSource = setInterval(
+        () => {
+          //console.log("window.mapDataUrl",window.mapDataUrl);
+          if(window.mapDataUrl&&(!this.mapDataUrl||md5(JSON.stringify(window.mapDataUrl))!=md5(JSON.stringify(this.mapDataUrl)))){
+            console.log("differ");
+            this.mapDataUrl = window.mapDataUrl;
+            this.getDataFromUrl(window.mapDataUrl);
+          }
+        },
+        100
+      );
       this.setState({
         numUser: this.props.geoData.features.length,
         geojson: this.props.geoData
@@ -150,14 +151,14 @@ class Map extends Component {
   }
   getDataFromUrl(url){
     var cur = this;
-    console.log("map data from url",url.slice(5));
+    console.log("map data from url",url.slice(1,4),url.slice(5));
     this.geoCollection = {
       "type": "FeatureCollection",
       "features": []
     };
     axios({
       method: 'get',
-      url: url.slice(5),
+      url: url.slice(1,4)=="geo"?url.slice(5):null,
       headers: {
           'Accept': 'application/ld+json, application/json',
           'Content-Type': 'application/ld+json, application/json'
@@ -173,7 +174,9 @@ class Map extends Component {
         else{
           cur.props.actions.getDataFromUrlForMap(res.data);
         }
-    });
+    }).catch(function (error) {
+      console.log(error);
+    });;
   }
 
 
@@ -401,7 +404,7 @@ class Map extends Component {
     return outerHTMLElement;
   }
   showIcons(marker,num){
-    console.log('showIcons',marker._icon.children);
+    //console.log('showIcons',marker._icon.children);
     var count = 1;
     num?count = num:null;
 
@@ -422,7 +425,7 @@ class Map extends Component {
     return fullS;
   }
   hideIcons(marker){
-    console.log('hideIcons',marker._icon.children);
+    //console.log('hideIcons',marker._icon.children);
     for (var obj in marker._icon.children) {
       if(obj>0){
         marker._icon.children[obj].className =this.replaceString(' show','',marker._icon.children[obj].className);

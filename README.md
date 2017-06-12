@@ -22,7 +22,8 @@ Then:
   2. Find the href of the generated js and css in the html file,
   3. Delete the first "/" in the href.
 
-# Get data from URL 
+# Get data from URL (2 Ways)
+## Way 1
 Use ?sko for tree-menu data and ?geo for geolocation data, if you use both, add "&&" between two url
 
 For example, when you want to set tree-menu data, add ?sko=(your url)
@@ -38,6 +39,14 @@ Or you can use both url:
 ```
 http://localhost:3000/?sko=https://api.myjson.com/bins/p9ytt&&?geo=https://semantic-forms.cc:8111/sparql?query=%0D%0APREFIX+rdfs%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2000%2F01%2Frdf-schema%23%3E%0D%0A%0D%0A%0D%0A%0D%0A%0D%0APrefix+geo%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2003%2F01%2Fgeo%2Fwgs84_pos%23%3E%0D%0A%0D%0ACONSTRUCT+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A%0D%0A%7D%0D%0AWHERE+%7B%0D%0A++GRAPH+%3FGRAPH+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A++%7D%0D%0A%7D
 ```
+## Way 2 
+There are two global variables for configure the data.
+You can reset the value of **window.treeUrl** to be the url for tree-menu, for example:
+```javascript
+window.treeUrl = "?sko=https://api.myjson.com/bins/p9ytt"
+```
+And you can do the same thing with **window.mapDataUrl** to set the map data.
+
 
 In this case, we use semantic form to query and structure geo-location data.
 See more info of semantic forms [**here**](semantic-forms.cc:9111/tools)

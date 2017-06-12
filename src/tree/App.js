@@ -9,11 +9,15 @@ import { withRouter } from 'react-router-dom'
 import axios from 'axios'
 import 'font-awesome/css/font-awesome.min.css'
 import { Scrollbars } from 'react-custom-scrollbars';
+import md5 from 'MD5';
 var isQuery = false;
 var App = React.createClass({
   getInitialState: function() {
     return {
     };
+  },
+  componentDidUpdate: function(prevProps, prevState){
+    this.props.urlQuery&&md5(JSON.stringify(this.props.urlQuery))!=md5(JSON.stringify(prevProps.urlQuery))?this._getUrlData(this.props.urlQuery):null;
   },
   render: function() {
     if(!this.props.urlQuery&&!isQuery){
@@ -28,7 +32,8 @@ var App = React.createClass({
       </div>
       <div className="row">
         <div className="col-lg-3">
-          <Scrollbars style={{ width: "100%", height: "90vh" }}>{dynamicExample}</Scrollbars>{this.props.urlQuery?this._getUrlData(this.props.urlQuery):null}
+          <Scrollbars style={{ width: "100%", height: "90vh" }}>{dynamicExample}</Scrollbars>
+
         </div>
       </div>
 
@@ -65,7 +70,7 @@ var App = React.createClass({
       "type": "FeatureCollection",
       "features": []
     };
-    if(!isQuery){
+    if(1){
       axios({
       method: 'get',
       url: url.slice(5),
