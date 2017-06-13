@@ -77,12 +77,12 @@ The tree data should follow the structure like this:
 }
 
 ```
-**"broader"** is the parent of **"@id"**
-So the structure will be like the following graph if you have plusieur records.
-**"broader"**
-|_**"@id"**
-|_**"@id"**
-|_**"@id"**
+**"broader"** is the parent of **"@id"**  
+So the structure will be like the following graph if you have plusieur records.<br />
+**"broader"**<br />
+ -**"@id"**<br />
+ -**"@id"**<br />
+ -**"@id"**<br />
 
 
 The geolocation data should follow the structure like this:
@@ -128,13 +128,13 @@ The geolocation data should follow the structure like this:
     "rdfs" : "http://www.w3.org/2000/01/rdf-schema#"
   }
 }
-```
-**"@id"**is the id of the poi
-**"@type"**is the type of the poi
-**"subject"**is the parent of the poi, it works like the external key, linking to the **"@id"** in tree-menu
-**"markerAndIcons"** is the icons' configuration for markers, you can set the icons inside the markers, maximum 1 anchor marker and 6 surrounding markers
-**"label"** is the name of poi
-**"lat"**,**"long"** is latitude and longitude of the poi
+```  
+**"@id"** is the id of the poi  
+**"@type"** is the type of the poi  
+**"subject"** is the parent of the poi, it works like the external key, linking to the **"@id"** in tree-menu  
+**"markerAndIcons"** is the icons' configuration for markers, you can set the icons inside the markers, maximum 1 anchor marker and 6 surrounding markers  
+**"label"** is the name of poi  
+**"lat"**,**"long"** is latitude and longitude of the poi  
 # TODO
 Change markers style using following plugin:
 
