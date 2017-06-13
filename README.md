@@ -77,6 +77,13 @@ The tree data should follow the structure like this:
 }
 
 ```
+**"broader"** is the parent of **"@id"**
+So the structure will be like the following graph if you have plusieur records.
+**"broader"**
+|_**"@id"**
+|_**"@id"**
+|_**"@id"**
+
 
 The geolocation data should follow the structure like this:
 
@@ -86,12 +93,14 @@ The geolocation data should follow the structure like this:
     "@id" : "dbr:Alicudi",
     "@type" : "dbo:PopulatedPlace",
     "subject" : "dbc:Aeolian_Islands",
+    "markerAndIcons":["plane","battery-1"],
     "label" : {
       "@language" : "fr",
       "@value" : "Alicudi"
     },
     "lat" : "38.545833587646484375",
-    "long" : "14.350000381469726562"
+    "long" : "14.350000381469726562",
+    "any data you want";"data"
   }, {...}],
   "@context" : {
     "subject" : {
@@ -120,6 +129,12 @@ The geolocation data should follow the structure like this:
   }
 }
 ```
+**"@id"**is the id of the poi
+**"@type"**is the type of the poi
+**"subject"**is the parent of the poi, it works like the external key, linking to the **"@id"** in tree-menu
+**"markerAndIcons"** is the icons' configuration for markers, you can set the icons inside the markers, maximum 1 anchor marker and 6 surrounding markers
+**"label"** is the name of poi
+**"lat"**,**"long"** is latitude and longitude of the poi
 # TODO
 Change markers style using following plugin:
 

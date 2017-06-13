@@ -61,6 +61,7 @@ class Map extends Component {
     this.generateIcon = this.generateIcon.bind(this);
     this.showIcons = this.showIcons.bind(this);
     this.hideIcons = this.hideIcons.bind(this);
+    this.markerAndIcons = this.markerAndIcons.bind(this);
   }
 
   componentDidMount() {
@@ -372,7 +373,7 @@ class Map extends Component {
     this.state.markerLayer.addLayer(this.state.geojsonLayer).addTo(this.state.map);
     this.zoomToFeature(this.state.geojsonLayer);
   }
-  generateIcon(count,iconIndex,iconStyle,color,shape,className,iconSize,number){
+  generateIcon(count,iconIndex,iconStyle,color,className,iconSize,number){
     /*
     options: {
         iconSize: [ 35, 45 ],
@@ -383,7 +384,6 @@ class Map extends Component {
         className: "my-marker",
         prefix: "",
         extraClasses: "",
-        shape: "circle",
         icon: "",
         innerHTML: "",
         color: "red",
@@ -405,9 +405,8 @@ class Map extends Component {
     var offset = Math.PI*(1-2*(count-1)/count)/2;
     iconStyle?template['icon']='fa-'.concat(iconStyle):null;
     color?template['color']=color:null;
-    shape?template['shape']=shape:null;
-    iconIndex?template['iconAnchor'] = [-35*Math.cos(2*Math.PI*(iconIndex-1) /count+offset),35*Math.sin(2*Math.PI*(iconIndex-1) /count+offset)]:null;
-    iconIndex?template['animation'] = iconIndex:null;
+    iconIndex>0?template['iconAnchor'] = [-35*Math.cos(2*Math.PI*(iconIndex-1) /count+offset),35*Math.sin(2*Math.PI*(iconIndex-1) /count+offset)]:null;
+    iconIndex>0?template['animation'] = iconIndex:null;
     className?template['className'] = template['className'].concat(" ",className):null;
     iconSize?template['iconSize'] = iconSize :null;
     number?template['number'] = number :null;
@@ -417,11 +416,9 @@ class Map extends Component {
     var outerHTMLElement = L.MyMarkers.icon(template).createIcon().outerHTML;
     return outerHTMLElement;
   }
-  showIcons(marker,num){
+  showIcons(marker){
     //console.log('showIcons',marker._icon.children);
     var count = 1;
-    num?count = num:null;
-
     for (var obj in marker._icon.children) {
       if(obj>0){
         marker._icon.children[obj].className = marker._icon.children[obj].className.concat(' show');
@@ -445,8 +442,8 @@ class Map extends Component {
         marker._icon.children[obj].className =this.replaceString(' show','',marker._icon.children[obj].className);
       }
     }
-    marker.dragging._marker._icon.style.width ?marker.dragging._marker._icon.style.width= 35*1+"px":null;
-    marker.dragging._marker._icon.style.height ?marker.dragging._marker._icon.style.height= 35*1+"px":null;
+    marker.dragging._marker._icon.style.width ?marker.dragging._marker._icon.style.width= 35+"px":null;
+    marker.dragging._marker._icon.style.height ?marker.dragging._marker._icon.style.height= 35+"px":null;
   }
   zoomToFeature(target) {
     var fitBoundsParams = {
@@ -462,6 +459,24 @@ class Map extends Component {
       return true;
     }
   }
+  markerAndIcons(info){
+    var cur = this;
+    var markerAndIconsString = "";
+    var iconNum = info?info.length:null;
+    console.log("markerAndIcons",info,iconNum);
+    if(info){
+      for(var i=0;i<iconNum;i++){
+        if(i==0){
+          markerAndIconsString = markerAndIconsString.concat(cur.generateIcon(iconNum-1,i,info[i]));
+        }else{
+          markerAndIconsString = markerAndIconsString.concat(cur.generateIcon(iconNum-1,i,info[i],'CADETBLUE','surround'));
+        }
+      }
+    }else{
+      markerAndIconsString = this.generateIcon();
+    }
+    return markerAndIconsString;
+  }
   pointToLayer(feature, latlng) {
 
     var cur = this;
@@ -470,14 +485,16 @@ class Map extends Component {
 
     var iconNum = 6;//Change when have data
     //generateIcon(count,iconIndex,iconStyle,color,shape,className,iconSize,number)
-    var Marker1 = this.generateIcon();
-    /*var Marker2 = this.generateIcon(iconNum-1,1,'plane','CADETBLUE','star','surround')
-    var Marker3 =this.generateIcon(iconNum-1,2,'battery-1','#5262b7','star','surround');
-    var Marker4 =this.generateIcon(iconNum-1,3,'battery-1','#5262b7','star','surround');
-    var Marker5 =this.generateIcon(iconNum-1,4,'battery-1','#5262b7','star','surround');
-    var Marker6 =this.generateIcon(iconNum-1,5,'battery-1','#5262b7','star','surround');
+
+    var Marker1 = this.markerAndIcons(feature.properties.markerAndIcons?feature.properties.markerAndIcons:null);
+    /*var Marker2 = this.generateIcon(iconNum-1,1,'plane','CADETBLUE','surround')
+    var Marker3 =this.generateIcon(iconNum-1,2,'battery-1','#5262b7','surround');
+    var Marker4 =this.generateIcon(iconNum-1,3,'battery-1','#5262b7','surround');
+    var Marker5 =this.generateIcon(iconNum-1,4,'battery-1','#5262b7','surround');
+    var Marker6 =this.generateIcon(iconNum-1,5,'battery-1','#5262b7','surround');
     var markers = Marker1.concat(Marker2,Marker3,Marker4,Marker5,Marker6);*/
     var markers = Marker1;
+    console.log("Marker1",Marker1);
     var testMarker = L.marker(latlng,{icon: L.divIcon({className: 'markers', html:markers, iconSize:[35,35],iconAnchor : [17,42]}),riseOnHover:true})
                       .on('click',(e)=>{
                         console.log("click button, show sidebar",cur.props.actions);
@@ -491,7 +508,6 @@ class Map extends Component {
 
   onEachFeature(feature, marker) {
     var cur = this;
-    var iconNum = 6;//Change when have data
     if (feature.properties && feature.properties.NAME) {
 
       var icon_url = "favicon.ico";
@@ -503,7 +519,7 @@ class Map extends Component {
       marker.on('mouseover', function (e) {
         if(!isChanged) {
           console.log(marker);
-          cur.showIcons(marker,iconNum);
+          cur.showIcons(marker);
           //this.openPopup();
           isChanged = true;
         }

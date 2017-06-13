@@ -42810,6 +42810,7 @@
 	    _this.generateIcon = _this.generateIcon.bind(_this);
 	    _this.showIcons = _this.showIcons.bind(_this);
 	    _this.hideIcons = _this.hideIcons.bind(_this);
+	    _this.markerAndIcons = _this.markerAndIcons.bind(_this);
 	    return _this;
 	  }
 	
@@ -43136,7 +43137,7 @@
 	    }
 	  }, {
 	    key: 'generateIcon',
-	    value: function generateIcon(count, iconIndex, iconStyle, color, shape, className, iconSize, number) {
+	    value: function generateIcon(count, iconIndex, iconStyle, color, className, iconSize, number) {
 	      /*
 	      options: {
 	          iconSize: [ 35, 45 ],
@@ -43147,7 +43148,6 @@
 	          className: "my-marker",
 	          prefix: "",
 	          extraClasses: "",
-	          shape: "circle",
 	          icon: "",
 	          innerHTML: "",
 	          color: "red",
@@ -43169,9 +43169,8 @@
 	      var offset = Math.PI * (1 - 2 * (count - 1) / count) / 2;
 	      iconStyle ? template['icon'] = 'fa-'.concat(iconStyle) : null;
 	      color ? template['color'] = color : null;
-	      shape ? template['shape'] = shape : null;
-	      iconIndex ? template['iconAnchor'] = [-35 * Math.cos(2 * Math.PI * (iconIndex - 1) / count + offset), 35 * Math.sin(2 * Math.PI * (iconIndex - 1) / count + offset)] : null;
-	      iconIndex ? template['animation'] = iconIndex : null;
+	      iconIndex > 0 ? template['iconAnchor'] = [-35 * Math.cos(2 * Math.PI * (iconIndex - 1) / count + offset), 35 * Math.sin(2 * Math.PI * (iconIndex - 1) / count + offset)] : null;
+	      iconIndex > 0 ? template['animation'] = iconIndex : null;
 	      className ? template['className'] = template['className'].concat(" ", className) : null;
 	      iconSize ? template['iconSize'] = iconSize : null;
 	      number ? template['number'] = number : null;
@@ -43183,11 +43182,9 @@
 	    }
 	  }, {
 	    key: 'showIcons',
-	    value: function showIcons(marker, num) {
+	    value: function showIcons(marker) {
 	      //console.log('showIcons',marker._icon.children);
 	      var count = 1;
-	      num ? count = num : null;
-	
 	      for (var obj in marker._icon.children) {
 	        if (obj > 0) {
 	          marker._icon.children[obj].className = marker._icon.children[obj].className.concat(' show');
@@ -43215,8 +43212,8 @@
 	          marker._icon.children[obj].className = this.replaceString(' show', '', marker._icon.children[obj].className);
 	        }
 	      }
-	      marker.dragging._marker._icon.style.width ? marker.dragging._marker._icon.style.width = 35 * 1 + "px" : null;
-	      marker.dragging._marker._icon.style.height ? marker.dragging._marker._icon.style.height = 35 * 1 + "px" : null;
+	      marker.dragging._marker._icon.style.width ? marker.dragging._marker._icon.style.width = 35 + "px" : null;
+	      marker.dragging._marker._icon.style.height ? marker.dragging._marker._icon.style.height = 35 + "px" : null;
 	    }
 	  }, {
 	    key: 'zoomToFeature',
@@ -43237,6 +43234,26 @@
 	      }
 	    }
 	  }, {
+	    key: 'markerAndIcons',
+	    value: function markerAndIcons(info) {
+	      var cur = this;
+	      var markerAndIconsString = "";
+	      var iconNum = info ? info.length : null;
+	      console.log("markerAndIcons", info, iconNum);
+	      if (info) {
+	        for (var i = 0; i < iconNum; i++) {
+	          if (i == 0) {
+	            markerAndIconsString = markerAndIconsString.concat(cur.generateIcon(iconNum - 1, i, info[i]));
+	          } else {
+	            markerAndIconsString = markerAndIconsString.concat(cur.generateIcon(iconNum - 1, i, info[i], 'CADETBLUE', 'surround'));
+	          }
+	        }
+	      } else {
+	        markerAndIconsString = this.generateIcon();
+	      }
+	      return markerAndIconsString;
+	    }
+	  }, {
 	    key: 'pointToLayer',
 	    value: function pointToLayer(feature, latlng) {
 	      var _this6 = this;
@@ -43246,14 +43263,16 @@
 	
 	      var iconNum = 6; //Change when have data
 	      //generateIcon(count,iconIndex,iconStyle,color,shape,className,iconSize,number)
-	      var Marker1 = this.generateIcon();
-	      /*var Marker2 = this.generateIcon(iconNum-1,1,'plane','CADETBLUE','star','surround')
-	      var Marker3 =this.generateIcon(iconNum-1,2,'battery-1','#5262b7','star','surround');
-	      var Marker4 =this.generateIcon(iconNum-1,3,'battery-1','#5262b7','star','surround');
-	      var Marker5 =this.generateIcon(iconNum-1,4,'battery-1','#5262b7','star','surround');
-	      var Marker6 =this.generateIcon(iconNum-1,5,'battery-1','#5262b7','star','surround');
+	
+	      var Marker1 = this.markerAndIcons(feature.properties.markerAndIcons ? feature.properties.markerAndIcons : null);
+	      /*var Marker2 = this.generateIcon(iconNum-1,1,'plane','CADETBLUE','surround')
+	      var Marker3 =this.generateIcon(iconNum-1,2,'battery-1','#5262b7','surround');
+	      var Marker4 =this.generateIcon(iconNum-1,3,'battery-1','#5262b7','surround');
+	      var Marker5 =this.generateIcon(iconNum-1,4,'battery-1','#5262b7','surround');
+	      var Marker6 =this.generateIcon(iconNum-1,5,'battery-1','#5262b7','surround');
 	      var markers = Marker1.concat(Marker2,Marker3,Marker4,Marker5,Marker6);*/
 	      var markers = Marker1;
+	      console.log("Marker1", Marker1);
 	      var testMarker = _leaflet2.default.marker(latlng, { icon: _leaflet2.default.divIcon({ className: 'markers', html: markers, iconSize: [35, 35], iconAnchor: [17, 42] }), riseOnHover: true }).on('click', function (e) {
 	        console.log("click button, show sidebar", cur.props.actions);
 	        cur.props.actions.clickMarker(e.target, feature);
@@ -43267,7 +43286,6 @@
 	    key: 'onEachFeature',
 	    value: function onEachFeature(feature, marker) {
 	      var cur = this;
-	      var iconNum = 6; //Change when have data
 	      if (feature.properties && feature.properties.NAME) {
 	
 	        var icon_url = "favicon.ico";
@@ -43279,7 +43297,7 @@
 	        marker.on('mouseover', function (e) {
 	          if (!isChanged) {
 	            console.log(marker);
-	            cur.showIcons(marker, iconNum);
+	            cur.showIcons(marker);
 	            //this.openPopup();
 	            isChanged = true;
 	          }
@@ -46558,6 +46576,11 @@
 					"@language": "fr",
 					"@value": "Alicudi est une petite île volcanique de la mer Tyrrhénienne faisant partie de l'archipel des Îles Éoliennes, au nord de la Sicile. Administrativement, Alicudi est sur le territoire de la commune de Lipari (province de Messine). L'ancien nom d'Alicudi était Ericusa (une variété particulière d'erica présente sur l'île)."
 				},
+				"markerAndIcons": [
+					"plane",
+					"battery-1",
+					"battery-1"
+				],
 				"subject": "dbc:Aeolian_Islands",
 				"label": {
 					"@language": "fr",
@@ -82759,11 +82782,13 @@
 	    var name = formatString(linkStringInLabel(instance["label"]));
 	    var subject = formatString(instance["subject"]?instance["subject"]:"Exclued Data");
 	    var abstract = formatString(instance["abstract"]?instance["abstract"]["@value"]:"No Abstract Found");
+	    var markerAndIcons = instance["markerAndIcons"]?instance["markerAndIcons"]:null;
 	    var lat = instance["lat"];
 	    var long = instance["long"];
 	    var related = false;
 	    if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
 	      var temp = (_.values(instance));
+	      //console.log('globalContentSearch',temp);
 	      if(_.size(keyWordList)>0){
 	          for(var obj in temp){
 	          if(!related){
@@ -82801,7 +82826,8 @@
 	          "properties": {
 	            "Subject": subject,
 	            "NAME": name,
-	            "Abstract":abstract
+	            "Abstract":abstract,
+	            "markerAndIcons":markerAndIcons
 	          },
 	          "geometry": {
 	            "type": "Point",
@@ -83088,4 +83114,4 @@
 
 /***/ }
 /******/ ])));
-//# sourceMappingURL=main.2eb6dae5.js.map
+//# sourceMappingURL=main.83e3fe51.js.map

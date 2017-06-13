@@ -184,11 +184,13 @@ var globalContentSearch = function(rawData,checkedItem,keyword){
     var name = formatString(linkStringInLabel(instance["label"]));
     var subject = formatString(instance["subject"]?instance["subject"]:"Exclued Data");
     var abstract = formatString(instance["abstract"]?instance["abstract"]["@value"]:"No Abstract Found");
+    var markerAndIcons = instance["markerAndIcons"]?instance["markerAndIcons"]:null;
     var lat = instance["lat"];
     var long = instance["long"];
     var related = false;
     if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
       var temp = (_.values(instance));
+      //console.log('globalContentSearch',temp);
       if(_.size(keyWordList)>0){
           for(var obj in temp){
           if(!related){
@@ -226,7 +228,8 @@ var globalContentSearch = function(rawData,checkedItem,keyword){
           "properties": {
             "Subject": subject,
             "NAME": name,
-            "Abstract":abstract
+            "Abstract":abstract,
+            "markerAndIcons":markerAndIcons
           },
           "geometry": {
             "type": "Point",
