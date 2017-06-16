@@ -3,7 +3,7 @@ module.exports = {
     center: [2.334345,48.836703],
     zoomControl: false,
     zoom: 1,
-    maxZoom: 30,
+    maxZoom: 18,
     minZoom: 1,
     scrollwheel: false,
     legends: true,

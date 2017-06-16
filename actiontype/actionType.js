@@ -10,5 +10,7 @@ module.exports = {
   GlobalSearch : "GlobalSearch",
   ClickMarker : "ClickMarker",
   CloseSideBar : "CloseSideBar",
-  ReceiveGeoDataFromUrl : "ReceiveGeoDataFromUrl"
+  ReceiveGeoDataFromUrl : "ReceiveGeoDataFromUrl",
+  IsTyping : "IsTyping",
+  IsTrajet : "IsTrajet"
 };

@@ -14,7 +14,7 @@ import 'font-awesome/css/font-awesome.min.css'
 import { connect } from 'react-redux'
 import actions from '../../action/action';
 import { bindActionCreators } from 'redux';
-import Filter2 from './Filter2';
+import LoadingPage from './LoadingPage';
 import axios from 'axios';
 import md5 from 'MD5';
 import './css/markers.css'
@@ -47,6 +47,7 @@ class Map extends Component {
     this.geoCollection = {};
     this.prevGeoCollection = null;
     this._mapNode = null;
+    this.isTyping = false;
     this.updateFilter = this.updateFilter.bind(this);
     this.onEachFeature = this.onEachFeature.bind(this);
     this.pointToLayer = this.pointToLayer.bind(this);
@@ -65,9 +66,6 @@ class Map extends Component {
   }
 
   componentDidMount() {
-
-    // later, you can stop observing
-    //observer.disconnect();
     if(this.isServer !=="false"){
       this.postData();
     }else{
@@ -76,46 +74,49 @@ class Map extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if(this.urlQuery&&this.props.geoData&&!this.state.geojson){
-      this.setState({
-        geojson:this.props.geoData
-      });
+    if(this.props.isTyping){
     }
-    if (!this.state.map&&this.state.geojson) {
-      this.init(this._mapNode);
-      //var target = document.getElementById('testGlobal');
+    else{
+      if(this.urlQuery&&this.props.geoData&&!this.state.geojson){
+        console.log("test1");
+        this.setState({
+          geojson:this.props.geoData
+        });
+      }
+      //console.log("typing",this.props.isTyping);
+      if (!this.state.map&&this.state.geojson) {
+        this.init(this._mapNode);
+        //var target = document.getElementById('testGlobal');
+        console.log("map init");
+        this.postDataID = setInterval(
+          () => {
+            if(this.isServer!=="false"){
+              this.postData();
+            }
+          },
+          10000
+        );
+      };
 
-      this.postDataID = setInterval(
-        () => {
-          if(this.isServer!=="false"){
-            this.postData();
-          }
-        },
-        10000
-      );
-    };
-    if (this.state.geojson && this.state.map && !this.state.geojsonLayer) {
-      //console.log(windowGlobal.testGlobal);
-      this.addGeoJSONLayer(this.state.geojson);
-    }
-    if (prevProps.serverData&&md5(JSON.stringify(this.props.serverData))!==md5(JSON.stringify(prevState.serverData))) {
-      UserNames=[];
-      this.filterGeoJSONLayer();
-    }
-    if(md5(JSON.stringify(prevProps.geoData))!==md5(JSON.stringify(this.props.geoData))){
-      console.log("geoData changed");
-      //console.log("prev",prevProps.geoData);
-      //console.log("this",this.props.geoData);
-      this.setState({
-        geojson:this.props.geoData
-      });
-    }
-    if(prevState.geojson&&md5(JSON.stringify(prevState.geojson))!==md5(JSON.stringify(this.state.geojson))){
-      console.log("geojson changed do filterGeoJSONLayer");
-      //console.log("prev",prevState.geojson);
-      //console.log("this",this.state.geojson);
-      UserNames=[];
-      this.filterGeoJSONLayer();
+      if (this.state.geojson && this.state.map && !this.state.geojsonLayer) {
+        console.log("test2");
+        this.addGeoJSONLayer(this.state.geojson);
+      }
+      if (prevProps.serverData&&md5(JSON.stringify(this.props.serverData))!==md5(JSON.stringify(prevState.serverData))) {
+        UserNames=[];
+        this.filterGeoJSONLayer();
+      }
+      if(md5(JSON.stringify(prevProps.geoData))!==md5(JSON.stringify(this.props.geoData))){
+        console.log("geoData changed");
+        this.setState({
+          geojson:this.props.geoData
+        });
+      }
+      if(prevState.geojson&&md5(JSON.stringify(prevState.geojson))!==md5(JSON.stringify(this.state.geojson))){
+        console.log("geojson changed do filterGeoJSONLayer");
+        UserNames=[];
+        this.filterGeoJSONLayer();
+      }
     }
   }
 
@@ -131,9 +132,10 @@ class Map extends Component {
     else{
       window.mapDataUrl = null;
       window.geojsonUrl = null;
+      window.isTrajet = true;
+      this.isTrajet = true;
       this.checkDataSource = setInterval(
         () => {
-          //console.log("window.mapDataUrl",window.mapDataUrl);
           if(window.mapDataUrl&&(!this.mapDataUrl||md5(JSON.stringify(window.mapDataUrl))!=md5(JSON.stringify(this.mapDataUrl)))){
             console.log("mapDataUrl differ");
             this.mapDataUrl = window.mapDataUrl;
@@ -143,6 +145,11 @@ class Map extends Component {
             console.log("geojsonUrl differ");
             this.geojsonUrl = window.geojsonUrl;
             this.getGeojsonFromUrl(window.geojsonUrl);
+          }
+          if(window.isTrajet!=this.isTrajet){
+            console.log("isTrajet differ");
+            this.isTrajet = window.isTrajet;
+            this.props.actions.isTrajet(this.isTrajet);
           }
         },
         100
@@ -219,9 +226,6 @@ class Map extends Component {
   }
 
   transformToGeoJSON(data){
-    //console.log("transform data",data);
-    //console.log("current geoCollection data",this.geoCollection);
-    ////console.log("defalut geo",defaultGeoCollection);
     data.map(
       (value, index)=>
       {
@@ -237,26 +241,10 @@ class Map extends Component {
             "URL" : value["url"]
           }
         }
-        //console.log("value:",value);
-        //console.log("mapping data index:",index,"-- geoFeatures data:",geoFeatures);
         this.geoCollection.features.push(geoFeatures);
-        //console.log("mapping data geoCollection:",this.geoCollection);
       });
-    //console.log("after transform geoCollection is:",this.geoCollection);
-    ////console.log("defalut geo",defaultGeoCollection);
-        /*{ "type": "Feature",
-          "properties": {
-            "NAME": "user2",
-            "URL": "http:\/\/www.xxx.xxx\/xxx\/xxx\/"},
-          "geometry": {
-            "type": "Point",
-            "coordinates": [ 2.354345,48.816703 ] }
-        }*/
   }
   transformSparqlQueryToGeoJSON(data){
-    //console.log("transform data",data);
-    //console.log("current geoCollection data",this.geoCollection);
-    ////console.log("defalut geo",defaultGeoCollection);
     data.map(
       (value, index)=>
       {
@@ -272,21 +260,8 @@ class Map extends Component {
             "URL" : value["LAB"]["value"]
           }
         }
-        //console.log("value:",value);
-        //console.log("mapping data index:",index,"-- geoFeatures data:",geoFeatures);
         this.geoCollection.features.push(geoFeatures);
-        //console.log("mapping data geoCollection:",this.geoCollection);
       });
-    //console.log("after transform geoCollection is:",this.geoCollection);
-    ////console.log("defalut geo",defaultGeoCollection);
-        /*{ "type": "Feature",
-          "properties": {
-            "NAME": "user2",
-            "URL": "http:\/\/www.xxx.xxx\/xxx\/xxx\/"},
-          "geometry": {
-            "type": "Point",
-            "coordinates": [ 2.354345,48.816703 ] }
-        }*/
   }
   postData(){
 
@@ -343,11 +318,28 @@ class Map extends Component {
   addGeoJSONLayer(geojson) {
     // create a native Leaflet GeoJSON SVG Layer to add as an interactive overlay to the map
     // an options object is passed to define functions for customizing the layer
+    var myStyle_1 = {
+    "color": "#c936c3",
+    "weight": 2,
+    "opacity": 0.70
+    };
+    var myStyle_2 = {
+    "color": "#1500ff",
+    "weight": 2,
+    "opacity": 0.70
+    };
     const geojsonLayer = L.geoJson(geojson, {
       onEachFeature: this.onEachFeature,
       pointToLayer: this.pointToLayer,
-      filter: this.filterFeatures
+      filter: this.filterFeatures,
+      style: function(feature) {
+        switch (feature.properties.NAME) {
+            case "71": return myStyle_1;
+            case "97":   return myStyle_2;
+        }
+      }
     });
+
     // add our GeoJSON layer to the Leaflet map object
     //TODO Add marker here
     var markers = L.markerClusterGroup({
@@ -373,7 +365,7 @@ class Map extends Component {
     this.state.markerLayer.addLayer(this.state.geojsonLayer).addTo(this.state.map);
     this.zoomToFeature(this.state.geojsonLayer);
   }
-  generateIcon(count,iconIndex,iconStyle,color,className,iconSize,number){
+  generateIcon(count,iconIndex,iconStyle,color,className,number){
     /*
     options: {
         iconSize: [ 35, 45 ],
@@ -408,7 +400,6 @@ class Map extends Component {
     iconIndex>0?template['iconAnchor'] = [-35*Math.cos(2*Math.PI*(iconIndex-1) /count+offset),35*Math.sin(2*Math.PI*(iconIndex-1) /count+offset)]:null;
     iconIndex>0?template['animation'] = iconIndex:null;
     className?template['className'] = template['className'].concat(" ",className):null;
-    iconSize?template['iconSize'] = iconSize :null;
     number?template['number'] = number :null;
     if(!iconIndex||iconIndex == 0) {
       template['isAnchor'] = true;
@@ -463,13 +454,13 @@ class Map extends Component {
     var cur = this;
     var markerAndIconsString = "";
     var iconNum = info?info.length:null;
-    console.log("markerAndIcons",info,iconNum);
+    //console.log("markerAndIcons",info,iconNum);
     if(info){
       for(var i=0;i<iconNum;i++){
         if(i==0){
           markerAndIconsString = markerAndIconsString.concat(cur.generateIcon(iconNum-1,i,info[i]));
         }else{
-          markerAndIconsString = markerAndIconsString.concat(cur.generateIcon(iconNum-1,i,info[i],'CADETBLUE','surround'));
+          markerAndIconsString = markerAndIconsString.concat(cur.generateIcon(iconNum-1,i,info[i][0],'CADETBLUE','surround',info[i][0]=="number"?info[i][1]:null));
         }
       }
     }else{
@@ -481,53 +472,36 @@ class Map extends Component {
 
     var cur = this;
     var redMarker = this.generateIcon()
-
-
-    var iconNum = 6;//Change when have data
-    //generateIcon(count,iconIndex,iconStyle,color,shape,className,iconSize,number)
-
-    var Marker1 = this.markerAndIcons(feature.properties.markerAndIcons?feature.properties.markerAndIcons:null);
-    /*var Marker2 = this.generateIcon(iconNum-1,1,'plane','CADETBLUE','surround')
-    var Marker3 =this.generateIcon(iconNum-1,2,'battery-1','#5262b7','surround');
-    var Marker4 =this.generateIcon(iconNum-1,3,'battery-1','#5262b7','surround');
-    var Marker5 =this.generateIcon(iconNum-1,4,'battery-1','#5262b7','surround');
-    var Marker6 =this.generateIcon(iconNum-1,5,'battery-1','#5262b7','surround');
-    var markers = Marker1.concat(Marker2,Marker3,Marker4,Marker5,Marker6);*/
-    var markers = Marker1;
-    console.log("Marker1",Marker1);
-    var testMarker = L.marker(latlng,{icon: L.divIcon({className: 'markers', html:markers, iconSize:[35,35],iconAnchor : [17,42]}),riseOnHover:true})
-                      .on('click',(e)=>{
-                        console.log("click button, show sidebar",cur.props.actions);
-                        cur.props.actions.clickMarker(e.target,feature);
-                        document.getElementById('carte').style.width="50%";
-                        //document.getElementById('testGlobal').setAttribute('test','555');
-                        this.state.map.setView(e.target.getLatLng());
-                      },);
-    return testMarker;
+    if(feature.geometry.type =="Point"){
+      var Marker1 = this.markerAndIcons(feature.properties.markerAndIcons?feature.properties.markerAndIcons:null);
+      var markers = Marker1;
+      var testMarker = L.marker(latlng,{icon: L.divIcon({className: 'markers', html:markers, iconSize:[35,35],iconAnchor : [17,42]}),riseOnHover:true})
+                        .on('click',(e)=>{
+                          console.log("click button, show sidebar",cur.props.actions);
+                          cur.props.actions.clickMarker(e.target,feature);
+                          document.getElementById('carte').style.width="50%";
+                          //document.getElementById('testGlobal').setAttribute('test','555');
+                          this.state.map.setView(e.target.getLatLng());
+                        },);
+      return testMarker;
+    }else{
+      return null;
+    }
   }
 
   onEachFeature(feature, marker) {
     var cur = this;
-    if (feature.properties && feature.properties.NAME) {
-
-      var icon_url = "favicon.ico";
-      /*const popupContent = `<img src = ${icon_url}></img><h3>${feature.properties.NAME}</h3>
-              <strong>Is Here</strong>`;
-      var popup = L.popup().setContent(popupContent);*/
+    if (feature.geometry.type =="Point"&&feature.properties) {
       var isChanged = false;
-      //marker.bindPopup(popup,{offset:L.point(1, -32)});
       marker.on('mouseover', function (e) {
         if(!isChanged) {
           console.log(marker);
           cur.showIcons(marker);
-          //this.openPopup();
           isChanged = true;
         }
       });
       marker.on('mouseout', function (e) {
-        //this.closePopup();
         cur.hideIcons(marker);
-        //this.setIcon(L.divIcon({className: 'marker', html:Marker1, iconSize:[35,45],iconAnchor : [17,42]}));
         isChanged=false;
       });
   }
@@ -551,17 +525,13 @@ class Map extends Component {
 
   render() {
     var cur = this;
+    console.log("render map");
     return (
-
       <div id="mapUI">
-
         {
-          cur.state.geojson &&false&&
-            <Filter2
-              curState={cur.state.geojson}
-              filterUsers={cur.updateFilter} />
-          }
-
+          cur.props.isTyping &&
+            <LoadingPage/>
+        }
         <div ref={(node) => { cur._mapNode = node}} id="map" />
       </div>
     );
@@ -571,7 +541,8 @@ class Map extends Component {
 const mapStateToProps = state => ({
   urlDataForMap:state.urlDataForMap,
   geoData:state.geoData,
-  serverData:state.serverData
+  serverData:state.serverData,
+  isTyping : state.isTyping
 })
 
 const mapDispatchToProps = dispatch => ({

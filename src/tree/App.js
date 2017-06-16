@@ -11,24 +11,43 @@ import 'font-awesome/css/font-awesome.min.css'
 import { Scrollbars } from 'react-custom-scrollbars';
 import md5 from 'MD5';
 var isQuery = false;
+var isTyping = false;
 var App = React.createClass({
   getInitialState: function() {
-    return {
-    };
+    return {isBusy: false};
   },
   componentDidUpdate: function(prevProps, prevState){
+    console.log("tree componentDidUpdate",this.props.urlQuery);
     this.props.urlQuery&&md5(JSON.stringify(this.props.urlQuery))!=md5(JSON.stringify(prevProps.urlQuery))?this._getUrlData(this.props.urlQuery):null;
+    console.log("tree componentDidUpdate again");
   },
   render: function() {
-    if(!this.props.urlQuery&&!isQuery){
-      this.props.actions.useDefaultTreeData();
+    if(!isQuery){
+      this.props.urlQuery?this._getUrlData(this.props.urlQuery):this.props.actions.useDefaultTreeData();
       isQuery = true;
     }
+    //this.props.actions.isTyping(false);
+    console.log("render");
+    var typingTimer = null;             //timer identifier
+    var doneTypingInterval = 1000;
+    var typingValue = null;  //time in ms, 5 second for example
     var dynamicExample = this._getExamplePanel(this._getDynamicTreeExample());
     return <div className="container">
       <div className="input-group margin-bottom-sm">
         <span className="fa fa-search"></span>
-        <input className="global-search" type="text" placeholder="Search" onChange={(e)=>this.props.actions.globalSearch(e.target.value)}/>
+        <input className="global-search" type="text" placeholder="Search"
+          onChange={(e)=>{
+            isTyping?null:this.props.actions.isTyping(true);
+            isTyping = true;
+            typingValue = e.target.value;
+            typingTimer?clearTimeout(typingTimer):null;
+            typingTimer = setTimeout(
+              ()=>{
+              this.props.actions.isTyping(false);
+              isTyping = false;
+              this.props.actions.globalSearch(typingValue);
+            }, doneTypingInterval);
+          }}/>
       </div>
       <div className="row">
         <div className="col-lg-3">
@@ -86,8 +105,7 @@ var App = React.createClass({
 
 
   _getDynamicTreeExample: function () {
-
-    return _.size(this.props.treeData)>0?
+    return _.size(this.props.treeData)>0&&!this.state.isBusy?
     (
       <TreeMenu
         expandIconClass="fa fa-angle-double-right"
@@ -202,8 +220,8 @@ var App = React.createClass({
 
     newState.toJS();
     console.log("newState",newState.toJS());
-    this.props.actions.updateTreeData(newState.toJS());
-
+    //if(propName !="collapsed") this.props.actions.isTyping(true);
+    this.props.actions.updateTreeData(newState.toJS(),propName);
   },
 
   _setLastActionState: function (action, node) {

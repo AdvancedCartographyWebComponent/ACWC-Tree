@@ -13,10 +13,11 @@ let actions = {
       change
     }
   },
-  updateTreeData(newdata) {
+  updateTreeData(newdata,typeAction) {
     return {
       type: actionTypes.UpdateTreeData,
-      newdata
+      newdata,
+      typeAction
     }
   },
  useDefaultTreeData() {
@@ -71,6 +72,18 @@ let actions = {
     return{
       type: actionTypes.ReceiveGeoDataFromUrl,
       geodata
+    }
+  },
+  isTyping(typing){
+    return{
+      type: actionTypes.IsTyping,
+      typing
+    }
+  },
+  isTrajet(trajet){
+    return{
+      type: actionTypes.IsTrajet,
+      trajet
     }
   }
 };

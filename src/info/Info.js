@@ -30,7 +30,7 @@ class Info extends Component {
                     </h1>
                     {
                       this.props.Info?Object.keys(this.props.Info.properties).map((key, index)=>{
-                        return (<p key = {key}>{key+"\t:\t"+this.props.Info.properties[key]}</p>)
+                        if(key!="markerAndIcons") return (<p key = {key}>{key+"\t:\t"+this.props.Info.properties[key]}</p>)
                       }):null
                     }
                 </div>

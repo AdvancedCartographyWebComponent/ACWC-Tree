@@ -48,25 +48,6 @@ class Filter2 extends Component{
     else{
       this.userNames.unshift('All Info');
     }
-    /*e.features.map((value,index)=>{
-      //console.log('value:',value,'key:',index);
-      if (value.properties && value.properties.NAME) {
-
-        // if the array for unique subway line names has not been made, create it
-        // there are ?? unique names total
-
-        if (this.userNames.indexOf(value.properties.NAME) === -1){
-          this.userNames.push(value.properties.NAME);
-          if (e.features.indexOf(value) === this.userNum - 1) {
-            // use sort() to put our values in alphanumeric order
-            this.userNames.sort();
-            // finally add a value to represent all of the subway lines
-            this.userNames.unshift('All Info');
-          }
-        }
-      }
-
-    });*/
     this.setState({userList:this.userNames});
     //console.log("updated userNames",this.userNames);
   }

@@ -44,3 +44,41 @@ html, body {
   margin: 5px;
 
 }
+.LoadingPage {
+  position: absolute;
+  z-index: 10;
+  margin-top: 0;
+  width: 80%;
+  left: 10%;
+  height: 44%;
+  top: 25%;
+  background: hsla(0,100%,100%,0.8);
+  margin: 10px;
+  font-family: sans-serif;
+  font-size: 13px;
+  padding: 5px;
+  padding-bottom: 10px;
+  border-radius: 5px;
+}
+.LoadingPage hr {
+  border: 1px solid #000;
+  margin: 5px;
+}
+.LoadingPage h3 {
+  position: absolute;
+  font-size: 50px;
+  margin-top: 0;
+  text-align: center;
+  left: 10%;
+  top: 35%;
+  width: 80%;
+  height: 40%;
+}
+.LoadingPage p {
+  padding-left: 5px;
+}
+.LoadingPage select {
+  display: block;
+  margin: 5px;
+
+}

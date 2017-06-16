@@ -1,6 +1,9 @@
 const actionTypes = require('../actiontype/actionType');
-const defaultTreeData = require('json!../data/test/World_Heritage_Sites.skos.jsonld');
-const defaultMapData = require('json!../data/test/exemple_villes.jsonld');
+//const defaultTreeData = require('json!../data/test/World_Heritage_Sites.skos.jsonld');
+const defaultTreeData = require('json!../data/test/scooterTree.jsonld');
+//const defaultMapData = require('json!../data/test/exemple_villes.jsonld');
+const defaultMapData = require('json!../data/test/scooter2.jsonld');
+const ScooterInfo = require('../Context/scooterInfo');
 var _ = require('lodash');
 var Immutable = require('immutable');
 var treeConstructor = function (rawData,countList,root){
@@ -112,10 +115,11 @@ var checkedItem = function(treeData,checkedList){
   }
   return checkedList;
 }
-var countItem = function(geoData){
+var countItem = function(geoData,isTrajet){
   if(_.size(geoData["@graph"])>0){
     var countList = geoData["@graph"].reduce(function (allNames, instance) {
-      var name = formatString(instance["subject"]?instance["subject"]:"Exclued Data");
+      var name = formatString(instance["subject"]?instance["subject"]:
+      (instance["@id"]?(isTrajet?ScooterInfo[parseInt(formatString(instance["@id"].split('/')[1]))]:"Exclued Data"):"Exclued Data"));
       if (name in allNames) {
         allNames[name]++;
       }
@@ -127,6 +131,7 @@ var countItem = function(geoData){
   }else{
     var countList = {};
   }
+  console.log("countList",countList);
   return countList;
 }
 var findRoot = function(data,stateRoot){
@@ -146,6 +151,7 @@ var findRoot = function(data,stateRoot){
 
   })
   var root =stateRoot?stateRoot:_.difference(flattenBroader,flattenId);
+  console.log("root",root);
   return [root,flattenId,flattenBroader];
 
 }
@@ -171,7 +177,9 @@ var linkStringInLabel = function(labels){
   }
   return stringFinal;
 }
-var globalContentSearch = function(rawData,checkedItem,keyword){
+var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
+  console.log("in globalContentSearch isTrajet",isTrajet);
+  console.log(ScooterInfo);
   var geojson = {
   "type": "FeatureCollection",
   "features": []
@@ -179,31 +187,44 @@ var globalContentSearch = function(rawData,checkedItem,keyword){
   var relatedRawData={
     "@graph":[]
   }
-  var keyWordList = _.words(_.toLower(keyword));
+  var matchedRawData={
+    "@graph":[]
+  }
+  var geoLine = {};
+  var keyWordList = _.words(_.toLower(keyword),/\S*\w/g);
+  console.log("keyWordList",keyWordList);
   rawData["@graph"].map((instance,index) =>{
-    var name = formatString(linkStringInLabel(instance["label"]));
-    var subject = formatString(instance["subject"]?instance["subject"]:"Exclued Data");
+    var timestamp = instance["@id"]?instance["@id"].split('/')[2]:null;
+    var scooterId = instance["@id"]?instance["@id"].split('/')[1]:null;
+    //console.log("scooterId",scooterId,parseInt(scooterId),ScooterInfo[parseInt(scooterId)]);
+    scooterId?scooterId =ScooterInfo[parseInt(scooterId.split(':')[1])]:null;
+    timestamp = timestamp?timestamp.replace(/\D/g,""):null;
+    var name = formatString(instance["label"]?linkStringInLabel(instance["label"]):"scooter");
+    var subject = formatString(instance["subject"]?instance["subject"]:scooterId?scooterId:"Exclued Data");
+    //console.log("subject",subject);
     var abstract = formatString(instance["abstract"]?instance["abstract"]["@value"]:"No Abstract Found");
     var markerAndIcons = instance["markerAndIcons"]?instance["markerAndIcons"]:null;
     var lat = instance["lat"];
     var long = instance["long"];
     var related = false;
-    if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
-      var temp = (_.values(instance));
-      //console.log('globalContentSearch',temp);
-      if(_.size(keyWordList)>0){
-          for(var obj in temp){
+    var matched = false;
+    var temp = (_.values(instance));
+    //console.log('globalContentSearch',temp);
+    if(_.size(keyWordList)>0){
+        for(var obj in temp){
           if(!related){
             if (typeof temp[obj] != 'object'){
               for(var index in keyWordList){
                 if(!related){
                   if(_.toLower(temp[obj]).includes(keyWordList[index])){
                     related = true;
+                    if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
+                      matched = true;
+                    }
                   }
                 }
               }
-            }
-            else{
+            }else{
               var value = (_.values(temp[obj]));
               for(var indexV in value){
                 if(!related){
@@ -211,6 +232,9 @@ var globalContentSearch = function(rawData,checkedItem,keyword){
                   if(!related){
                     if(_.toLower(value[indexV]).includes(keyWordList[indexK])){
                         related = true;
+                        if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
+                          matched = true;
+                        }
                       }
                     }
                   }
@@ -219,29 +243,97 @@ var globalContentSearch = function(rawData,checkedItem,keyword){
             }
           }
         }
+      }else{
+        related=true;
+        if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
+          matched = true;
+        }
       }
-      else{related=true;}
-      if(related){
-        var feature =
-        {
-          "type": "Feature",
-          "properties": {
-            "Subject": subject,
-            "NAME": name,
-            "Abstract":abstract,
-            "markerAndIcons":markerAndIcons
-          },
-          "geometry": {
-            "type": "Point",
-            "coordinates": [long,lat]
+      if(matched){
+        if(isTrajet){
+          relatedRawData["@graph"].push(instance);
+          var dateWithTime = instance["@id"].split('/')[2];
+          var temp = {
+            "timestamp" : timestamp,
+            "coordinates": [long,lat],
+            "scooterId" : scooterId,
+            "date":dateWithTime.split('T')[0],
+            "time":dateWithTime.split('T')[1]
           }
-        };
-        geojson["features"].push(feature);
-        relatedRawData["@graph"].push(instance);
+          geoLine[scooterId]?null:geoLine[scooterId]=[];
+          geoLine[scooterId].push(temp);
+        }else{
+          var feature =
+          {
+            "type": "Feature",
+            "properties": {
+              "Subject": subject,
+              "NAME": name,
+              "Abstract":abstract,
+              "markerAndIcons":markerAndIcons
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [long,lat]
+            }
+          };
+          geojson["features"].push(feature);
+          relatedRawData["@graph"].push(instance);
+        }
       }
-  }});
+      if(related){
+        matchedRawData["@graph"].push(instance);
+      }
 
-  return [geojson,relatedRawData];
+    });
+    if(isTrajet) {
+      geoLine = _.sortBy(geoLine, ['timestamp']);
+      for(var count in geoLine){
+        for(var obj in geoLine[count]){
+          if(obj==0){
+              var feature ={
+                "type": "Feature",
+                "properties": {
+                  "Subject": "scooterTracer",
+                  "NAME": geoLine[count][obj]["scooterId"],
+                  "markerAndIcons":null
+                },
+                "geometry": {
+                  "type": "LineString",
+                  "coordinates": []
+                }
+              };
+              geojson["features"].push(feature);
+          }
+          geojson["features"][geojson["features"].length-1].geometry.coordinates.push(geoLine[count][obj]["coordinates"]);
+        }
+      }
+      for(var count in geoLine){
+        for(var obj in geoLine[count]){
+          var dateTemp =  Math.floor(parseInt(geoLine[count][obj]["timestamp"]/1000000000));
+          var feature ={
+            "type": "Feature",
+            "properties": {
+              "Details": "",
+              "Name": geoLine[count][obj]["scooterId"],
+              "markerAndIcons":[["motorcycle"],["number",dateTemp%1000]],
+              "Date" : geoLine[count][obj]['date'],
+              "Time" : geoLine[count][obj]['time'],
+              "Battery Status" : "To be Getted",
+              "Speed" : "To be Getted"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": geoLine[count][obj]["coordinates"]
+            }
+          };
+          geojson["features"].push(feature);
+        }
+      }
+    }
+  console.log("geojson",geojson);
+  //console.log("geoLine",geoLine);
+  return [geojson,relatedRawData,matchedRawData];
 }
 var updateTreeNum = function(tree,countList){
   var temp ={};
@@ -259,7 +351,7 @@ var updateTreeNum = function(tree,countList){
   }
   return temp;
 }
-const defaultGeoJson = globalContentSearch(defaultMapData)[0];
+const defaultGeoJson = globalContentSearch(defaultMapData,true)[0];
 const initialState = {
   content: "hello",
   lastChange:null,
@@ -272,7 +364,9 @@ const initialState = {
   root : null,
   isInfo : false,
   Info : null,
-  dynamicUrl : null
+  dynamicUrl : null,
+  isTyping : false,
+  isTrajet : true
 };
 var reducer = function (state = initialState, action) {
   switch (action.type) {
@@ -285,26 +379,36 @@ var reducer = function (state = initialState, action) {
         lastChange:action.change
       })
     case actionTypes.UpdateTreeData:
-      console.log("UpdateTreeData :",action.newdata);
-      var checkedlist=[];
-      var tempCheckedItem = checkedItem(action.newdata,checkedlist);
-      var findRootResults = findRoot(state.urlDataForTree?state.urlDataForTree:defaultTreeData,state.root);
-      var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,
-        tempCheckedItem,state.keyword);
-      var countItemResult = countItem(globalContentSearchResult[1]);
-      var updateTreeNumResult = updateTreeNum(action.newdata,countItemResult)
-      for(var num in state.root){
-        countParentsNum(updateTreeNumResult,formatString(state.root[num]));
+      console.log("UpdateTreeData :",action.newdata,action.typeAction);
+      if(action.typeAction =="collapsed"){
+        console.log("UpdateTreeData collapsed");
+        return Object.assign({}, state, {
+          treeData:action.newdata,
+        })
+      }else if(action.typeAction =="checked"){
+        console.log("UpdateTreeData checked");
+        var checkedlist=[];
+        var tempCheckedItem = checkedItem(action.newdata,checkedlist);
+        var findRootResults = findRoot(state.urlDataForTree?state.urlDataForTree:defaultTreeData,state.root);
+        var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet,
+          tempCheckedItem,state.keyword);
+        /*var countItemResult = countItem(globalContentSearchResult[1]);
+        var updateTreeNumResult = updateTreeNum(action.newdata,countItemResult)
+        for(var num in state.root){
+          countParentsNum(updateTreeNumResult,formatString(state.root[num]));
+        }
+        console.log("countItemResult",countItemResult);*/
+        return Object.assign({}, state, {
+          treeData:action.newdata,
+          geoData: globalContentSearchResult[0],
+          root:findRootResults[0]
+        })
       }
-      console.log("countItemResult",countItemResult);
-      return Object.assign({}, state, {
-        treeData:updateTreeNumResult,
-        geoData: globalContentSearchResult[0],
-        root:findRootResults[0]
-      })
+
     case actionTypes.UseDefaultTreeData :
+      console.log("UseDefaultTreeData");
       var findRootResults = findRoot(defaultTreeData,state.root);
-      var defaultTree = treeConstructor(defaultTreeData,countItem(defaultMapData),findRootResults[0]);
+      var defaultTree = treeConstructor(defaultTreeData,countItem(defaultMapData,state.isTrajet),findRootResults[0]);
       return Object.assign({}, state, {
         treeData:defaultTree,
         root:findRootResults[0]
@@ -313,12 +417,12 @@ var reducer = function (state = initialState, action) {
       console.log("GetDataFromUrlForMap",action.urlDataForMap);
       var checkedlist=[];
       var findRootResults = findRoot(state.urlDataForTree?state.urlDataForTree:defaultTreeData,state.root);
-      var globalContentSearchResult = globalContentSearch(action.urlDataForMap,checkedItem(state.treeData,checkedlist),state.keyword);
-      console.log("globalContentSearchResult",globalContentSearchResult,"countItem",countItem(globalContentSearchResult[1]),"checkedlist",checkedlist);
+      var globalContentSearchResult = globalContentSearch(action.urlDataForMap,state.isTrajet,checkedItem(state.treeData,checkedlist),state.keyword);
+      console.log("globalContentSearchResult",globalContentSearchResult,"countItem",countItem(globalContentSearchResult[1],state.isTrajet),"checkedlist",checkedlist);
       console.log("findRootResults",findRootResults[0]);
       return Object.assign({}, state, {
         urlDataForMap:action.urlDataForMap,
-        treeData:treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(globalContentSearchResult[1]),findRootResults[0]),
+        treeData:treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(globalContentSearchResult[1],state.isTrajet),findRootResults[0]),
         geoData:globalContentSearchResult[0],
         root:findRootResults[0]
       })
@@ -326,7 +430,7 @@ var reducer = function (state = initialState, action) {
       console.log("GetDataFromUrlForTree",action.urlDataForTree);
       var checkedlist=[];
       var findRootResults = findRoot(action.urlDataForTree,state.root);
-      var treeConstructorResult = treeConstructor(action.urlDataForTree,countItem(state.urlDataForMap?state.urlDataForMap:defaultMapData),findRootResults[0]);
+      var treeConstructorResult = treeConstructor(action.urlDataForTree,countItem(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet),findRootResults[0]);
       return Object.assign({}, state, {
         urlDataForTree:action.urlDataForTree,
         treeData:treeConstructorResult,
@@ -336,7 +440,7 @@ var reducer = function (state = initialState, action) {
       console.log("GetDataFromUrlForTreeAndMap",action.urlDataForTree,action.urlDataForMap);
 
       return Object.assign({}, state, {
-        treeData:treeConstructor(action.urlDataForTree,countItem(action.urlDataForMap),state.root)
+        treeData:treeConstructor(action.urlDataForTree,countItem(action.urlDataForMap,state.isTrajet),state.root)
       })
     case actionTypes.UpdateServerData:
       return Object.assign({}, state, {
@@ -346,8 +450,8 @@ var reducer = function (state = initialState, action) {
       console.log("GlobalSearch",action.keyword);
       var checkedlist=[];
       var tempCheckedItem = checkedItem(state.treeData,checkedlist);
-      var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,tempCheckedItem,action.keyword);
-      var countItemResult = countItem(globalContentSearchResult[1]);
+      var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet,tempCheckedItem,action.keyword);
+      var countItemResult = countItem(globalContentSearchResult[2]);//all matched points
       console.log("countItem",countItemResult);
       console.log("new geojson from GlobalSearch",globalContentSearchResult[0]);
       var updateTreeNumResult = updateTreeNum(state.treeData,countItemResult)
@@ -376,6 +480,16 @@ var reducer = function (state = initialState, action) {
       console.log("ReceiveGeoDataFromUrl");
       return Object.assign({}, state, {
         geoData : action.geodata
+      })
+    case actionTypes.IsTyping:
+      console.log("isTyping",action.typing);
+      return Object.assign({}, state, {
+        isTyping : action.typing
+      })
+    case actionTypes.IsTrajet:
+      console.log("isTrajet",action.trajet);
+      return Object.assign({}, state, {
+        isTrajet : action.trajet
       })
     default:
       return state;

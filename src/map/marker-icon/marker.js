@@ -38,10 +38,11 @@
         _createInner: function() {
             var iconColorStyle = "", iconNumber = "", options = this.options;
             if (options.color) {
-                iconColorStyle = "style='color: " + options.color + "' ";
+                iconColorStyle = "style='color: " + options.color + ";' ";
             }
             if (options.number) {
                 iconNumber = "number='" + options.number + "' ";
+                iconColorStyle = "style='color: " + options.color + ";font-size:12px;'";
             }
             if (options.isAnchor) {
               return "<div class =\"marker-wrapper icon-marker\"></div><i " + iconNumber + iconColorStyle +"class='" + options.extraClasses + " " + options.prefix + " " + options.icon + "'></i>";
