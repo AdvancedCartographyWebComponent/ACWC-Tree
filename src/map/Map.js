@@ -63,6 +63,7 @@ class Map extends Component {
     this.showIcons = this.showIcons.bind(this);
     this.hideIcons = this.hideIcons.bind(this);
     this.markerAndIcons = this.markerAndIcons.bind(this);
+    this.updateProgressBar = this.updateProgressBar.bind(this);
   }
 
   componentDidMount() {
@@ -103,7 +104,7 @@ class Map extends Component {
         this.addGeoJSONLayer(this.state.geojson);
       }
       if (prevProps.serverData&&md5(JSON.stringify(this.props.serverData))!==md5(JSON.stringify(prevState.serverData))) {
-        UserNames=[];
+        //UserNames=[];
         this.filterGeoJSONLayer();
       }
       if(md5(JSON.stringify(prevProps.geoData))!==md5(JSON.stringify(this.props.geoData))){
@@ -114,7 +115,7 @@ class Map extends Component {
       }
       if(prevState.geojson&&md5(JSON.stringify(prevState.geojson))!==md5(JSON.stringify(this.state.geojson))){
         console.log("geojson changed do filterGeoJSONLayer");
-        UserNames=[];
+        //UserNames=[];
         this.filterGeoJSONLayer();
       }
     }
@@ -124,6 +125,8 @@ class Map extends Component {
     this.state.map.remove();
      clearInterval(this.postDataID);
   }
+
+
 
   getData() {
     if(this.urlQuery){
@@ -315,6 +318,20 @@ class Map extends Component {
     });
   }
 
+  updateProgressBar(processed, total, elapsed, layersArray) {
+    var progress = document.getElementById('progress');
+    var progressBar = document.getElementById('progress-bar');
+    if (elapsed > 1000) {
+      // if it takes more than a second to load, display the progress bar:
+      progress.style.display = 'block';
+      progressBar.style.width = Math.round(processed/total*100) + '%';
+    }
+
+    if (processed === total) {
+      // all markers processed - hide the progress bar:
+      progress.style.display = 'none';
+    }
+  }
   addGeoJSONLayer(geojson) {
     // create a native Leaflet GeoJSON SVG Layer to add as an interactive overlay to the map
     // an options object is passed to define functions for customizing the layer
@@ -339,12 +356,29 @@ class Map extends Component {
         }
       }
     });
-
+    this.zoomToFeature(geojsonLayer);
     // add our GeoJSON layer to the Leaflet map object
-    //TODO Add marker here
+    //TODO
     var markers = L.markerClusterGroup({
-	      showCoverageOnHover: false
+      chunkedLoading: true,
+      chunkProgress: this.updateProgressBar,
+      spiderfyOnMaxZoom : false
     });
+    markers.on('clusterclick', function (a) {
+	     // a.layer is actually a cluster
+       //TODO add function to greate number of points
+       if(a.layer._zoom == mapContext.params.maxZoom){
+         if(a.layer.getAllChildMarkers().length>100){
+           console.log('cluster ' + a.layer.getAllChildMarkers().length);
+         }else {
+           a.layer.spiderfy();
+         }
+
+       }
+    });
+    /*var markers = L.markerClusterGroup({
+	      showCoverageOnHover: false
+    });*/
     console.log("markers initial success?",markers?"yes":"no");
     markers.addLayer(geojsonLayer).addTo(this.state.map);
     //geojsonLayer.addTo(this.state.map);
@@ -355,15 +389,16 @@ class Map extends Component {
         markerLayer:markers
      });
     // fit the geographic extent of the GeoJSON layer within the map's bounds / viewport
-    this.zoomToFeature(geojsonLayer);
+
   }
 
   filterGeoJSONLayer() {
     this.state.geojsonLayer.clearLayers();
     this.state.markerLayer.clearLayers();
     this.state.geojsonLayer.addData(this.state.geojson);
-    this.state.markerLayer.addLayer(this.state.geojsonLayer).addTo(this.state.map);
     this.zoomToFeature(this.state.geojsonLayer);
+    this.state.markerLayer.addLayer(this.state.geojsonLayer).addTo(this.state.map);
+
   }
   generateIcon(count,iconIndex,iconStyle,color,className,number){
     /*

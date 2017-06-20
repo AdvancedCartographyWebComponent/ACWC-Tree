@@ -19,11 +19,11 @@ class App extends Component {
           case "points":
             this.props.actions.isTrajet(false);
             break;
-          case "points":
+          case "path":
             this.props.actions.isTrajet(true);
             break;
           default:
-            this.props.actions.isTrajet(true);
+            this.props.actions.isTrajet(false);
         }
       }
       if(urlList[obj].slice(1,4)=="geo"||urlList[obj].slice(1,4)=="sql") urlForMap.push(urlList[obj]);

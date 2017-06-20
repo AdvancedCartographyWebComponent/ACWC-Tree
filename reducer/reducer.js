@@ -1,10 +1,11 @@
 const actionTypes = require('../actiontype/actionType');
-//const defaultTreeData = require('json!../data/test/World_Heritage_Sites.skos.jsonld');
-const defaultTreeData = require('json!../data/test/scooterTree.jsonld');
-//const defaultMapData = require('json!../data/test/exemple_villes.jsonld');
-const defaultMapData = require('json!../data/test/scooter2.jsonld');
+const defaultTreeData = require('json!../data/test/World_Heritage_Sites.skos.jsonld');
+//const defaultTreeData = require('json!../data/test/scooterTree.jsonld');
+const defaultMapData = require('json!../data/test/exemple_villes.jsonld');
+//const defaultMapData = require('json!../data/test/scooter2.jsonld');
 const ScooterInfo = require('../Context/scooterInfo');
 var _ = require('lodash');
+var simplify = require('simplify-geometry');
 var Immutable = require('immutable');
 var treeConstructor = function (rawData,countList,root){
   if(!countList["Exclued Data"]||countList["Exclued Data"]==0){
@@ -194,8 +195,8 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
   var keyWordList = _.words(_.toLower(keyword),/\S*\w/g);
   console.log("keyWordList",keyWordList);
   rawData["@graph"].map((instance,index) =>{
-    var timestamp = instance["@id"]?instance["@id"].split('/')[2]:null;
-    var scooterId = instance["@id"]?instance["@id"].split('/')[1]:null;
+    var timestamp = instance["@id"]&&isTrajet?instance["@id"].split('/')[2]:null;
+    var scooterId = instance["@id"]&&isTrajet?instance["@id"].split('/')[1]:null;
     //console.log("scooterId",scooterId,parseInt(scooterId),ScooterInfo[parseInt(scooterId)]);
     scooterId?scooterId =ScooterInfo[parseInt(scooterId.split(':')[1])]:null;
     timestamp = timestamp?timestamp.replace(/\D/g,""):null;
@@ -307,6 +308,7 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
           }
           geojson["features"][geojson["features"].length-1].geometry.coordinates.push(geoLine[count][obj]["coordinates"]);
         }
+        geojson["features"][geojson["features"].length-1]["geometry"]["coordinates"] = simplify(geojson["features"][geojson["features"].length-1]["geometry"]["coordinates"],0.00)
       }
       for(var count in geoLine){
         for(var obj in geoLine[count]){
@@ -332,6 +334,8 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
       }
     }
   console.log("geojson",geojson);
+  //console.log("simplify",simplify(geojson["features"][0]["geometry"]["coordinates"],0.0003),"before",geojson["features"][0]["geometry"]["coordinates"]);
+
   //console.log("geoLine",geoLine);
   return [geojson,relatedRawData,matchedRawData];
 }
@@ -351,7 +355,7 @@ var updateTreeNum = function(tree,countList){
   }
   return temp;
 }
-const defaultGeoJson = globalContentSearch(defaultMapData,true)[0];
+const defaultGeoJson = globalContentSearch(defaultMapData,false)[0];
 const initialState = {
   content: "hello",
   lastChange:null,
@@ -366,7 +370,7 @@ const initialState = {
   Info : null,
   dynamicUrl : null,
   isTyping : false,
-  isTrajet : true
+  isTrajet : false
 };
 var reducer = function (state = initialState, action) {
   switch (action.type) {
