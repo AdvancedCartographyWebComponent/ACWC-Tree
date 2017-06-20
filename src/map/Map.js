@@ -35,8 +35,6 @@ class Map extends Component {
     this.state = {
       map: null,
       tileLayer: null,
-      geojsonLayer: null,
-      geojsonLayerForPath:null,
       markerCluster : null,
       geojson: null,
       driversFilter: '*',
@@ -67,6 +65,7 @@ class Map extends Component {
     this.hideIcons = this.hideIcons.bind(this);
     this.markerAndIcons = this.markerAndIcons.bind(this);
     this.updateProgressBar = this.updateProgressBar.bind(this);
+    this.updateGeojsonPath = this.updateGeojsonPath.bind(this);
   }
 
   componentDidMount() {
@@ -116,6 +115,16 @@ class Map extends Component {
         //UserNames=[];
         this.filterGeoJSONLayer();
       }*/
+      if(prevProps.isTrajet != this.props.isTrajet){
+        if(this.props.isTrajet) {this.updateGeojsonPath(this.props.geojsonForPath);}
+        else{
+          for (var i in this.geoPathDivision) {
+            this.state.map.removeLayer(this.geoPathDivision[i]);
+          }
+          this.geoPathDivision = {};
+        }
+        return;
+      }
       if(md5(JSON.stringify(prevProps.checkedItem))!=md5(JSON.stringify(this.props.checkedItem))){
         //console.log("checkedItem changed",prevProps.checkedItem,this.props.checkedItem,"this state markerCluster",this.state.markerCluster);
         for(var index in this.geojsonDivision){
@@ -168,8 +177,8 @@ class Map extends Component {
     else{
       window.mapDataUrl = null;
       window.geojsonUrl = null;
-      window.isTrajet = true;
-      this.isTrajet = true;
+      window.isTrajet = this.props.isTrajet;
+      this.isTrajet = this.props.isTrajet;
       this.checkDataSource = setInterval(
         () => {
           if(window.mapDataUrl&&(!this.mapDataUrl||md5(JSON.stringify(window.mapDataUrl))!=md5(JSON.stringify(this.mapDataUrl)))){
@@ -364,16 +373,7 @@ class Map extends Component {
   addGeoJSONLayer(geojson,geojsonForPath) {
     // create a native Leaflet GeoJSON SVG Layer to add as an interactive overlay to the map
     // an options object is passed to define functions for customizing the layer
-    var myStyle_1 = {
-    "color": "#c936c3",
-    "weight": 2,
-    "opacity": 0.70
-    };
-    var myStyle_2 = {
-    "color": "#1500ff",
-    "weight": 2,
-    "opacity": 0.70
-    };
+
     var markerCluster = L.markerClusterGroup({
       chunkedLoading: true,
       chunkProgress: this.updateProgressBar,
@@ -404,6 +404,41 @@ class Map extends Component {
     markerCluster.addTo(this.state.map);
     //console.log("geojsonDivision",this.geojsonDivision);
     //console.log("geojsonForPath in map",geojsonForPath,this.state.map);
+    /*console.log("this.isTrajet",this.isTrajet);
+    for (var index in geojsonForPath["features"]) {
+      var geojsonLayerForPath = this.isTrajet?L.geoJson(geojsonForPath["features"][index], {
+        style: function(feature) {
+          switch (feature.properties.Name) {
+              case "71": return myStyle_1;
+              case "97":   return myStyle_2;
+          }
+        }
+      }):null;
+      geojsonLayerForPath?geojsonLayerForPath.addTo(this.state.map):null;
+      this.geoPathDivision[geojsonForPath["features"][index]["properties"]["Name"]] = geojsonLayerForPath;
+    }*/
+    this.updateGeojsonPath(geojsonForPath);
+    //console.log("this.geoPathDivision",this.geoPathDivision);
+    //this.zoomToFeature(this.geojsonDivision);
+    // add our GeoJSON layer to the Leaflet map object
+    //TODO
+    this.setState(
+      {
+        markerCluster:markerCluster
+     });
+  }
+  updateGeojsonPath(geojsonForPath){
+    console.log("this.isTrajet",this.isTrajet);
+    var myStyle_1 = {
+    "color": "#c936c3",
+    "weight": 2,
+    "opacity": 0.70
+    };
+    var myStyle_2 = {
+    "color": "#1500ff",
+    "weight": 2,
+    "opacity": 0.70
+    };
     for (var index in geojsonForPath["features"]) {
       var geojsonLayerForPath = this.isTrajet?L.geoJson(geojsonForPath["features"][index], {
         style: function(feature) {
@@ -416,17 +451,7 @@ class Map extends Component {
       geojsonLayerForPath?geojsonLayerForPath.addTo(this.state.map):null;
       this.geoPathDivision[geojsonForPath["features"][index]["properties"]["Name"]] = geojsonLayerForPath;
     }
-    //console.log("this.geoPathDivision",this.geoPathDivision);
-    //this.zoomToFeature(this.geojsonDivision);
-    // add our GeoJSON layer to the Leaflet map object
-    //TODO
-    this.setState(
-      {
-        geojsonLayerForPath:geojsonLayerForPath,
-        markerCluster:markerCluster
-     });
   }
-
   filterGeoJSONLayer() {
     //this.state.geojsonLayer.clearLayers();
     //console.log("this.props.checkedItem",this.props.checkedItem);
@@ -622,7 +647,8 @@ const mapStateToProps = state => ({
   serverData:state.serverData,
   isTyping : state.isTyping,
   geojsonForPath : state.geojsonForPath,
-  checkedItem : state.checkedItem
+  checkedItem : state.checkedItem,
+  isTrajet : state.isTrajet
 })
 
 const mapDispatchToProps = dispatch => ({
