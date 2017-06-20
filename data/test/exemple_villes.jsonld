@@ -6,6 +6,7 @@
       "@language" : "fr",
       "@value" : "Alicudi est une petite île volcanique de la mer Tyrrhénienne faisant partie de l'archipel des Îles Éoliennes, au nord de la Sicile. Administrativement, Alicudi est sur le territoire de la commune de Lipari (province de Messine). L'ancien nom d'Alicudi était Ericusa (une variété particulière d'erica présente sur l'île)."
     },
+    "markerAndIcons":["plane","battery-1","battery-1"],
     "subject" : "dbc:Aeolian_Islands",
     "label" : {
       "@language" : "fr",

@@ -36,19 +36,22 @@ class Map extends Component {
       map: null,
       tileLayer: null,
       geojsonLayer: null,
-      markerLayer : null,
+      geojsonLayerForPath:null,
+      markerCluster : null,
       geojson: null,
       driversFilter: '*',
       numUser: null,
       sidebar:null
     };
     this.isServer = this.props.isServer?this.props.isServer:"false";
+    this.geojsonDivision = {};
+    this.geoPathDivision = {};
     this.urlQuery = this.props.urlQuery?this.props.urlQuery:null;
     this.geoCollection = {};
     this.prevGeoCollection = null;
     this._mapNode = null;
     this.isTyping = false;
-    this.updateFilter = this.updateFilter.bind(this);
+    //this.updateFilter = this.updateFilter.bind(this);
     this.onEachFeature = this.onEachFeature.bind(this);
     this.pointToLayer = this.pointToLayer.bind(this);
     this.filterFeatures = this.filterFeatures.bind(this);
@@ -72,42 +75,72 @@ class Map extends Component {
     }else{
       this.getData();
     }
+    if (!this.state.map) {
+      this.init(this._mapNode);
+      //var target = document.getElementById('testGlobal');
+      console.log("map init");
+      this.postDataID = setInterval(
+        () => {
+          if(this.isServer!=="false"){
+            this.postData();
+          }
+        },
+        10000
+      );
+    };
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log("checkedItem",this.props.checkedItem);
     if(this.props.isTyping){
     }
     else{
-      if(this.urlQuery&&this.props.geoData&&!this.state.geojson){
+      /*if(this.urlQuery&&this.props.geoData&&!this.state.geojson){
         console.log("test1");
         this.setState({
           geojson:this.props.geoData
         });
-      }
+      }*/
       //console.log("typing",this.props.isTyping);
-      if (!this.state.map&&this.state.geojson) {
-        this.init(this._mapNode);
-        //var target = document.getElementById('testGlobal');
-        console.log("map init");
-        this.postDataID = setInterval(
-          () => {
-            if(this.isServer!=="false"){
-              this.postData();
-            }
-          },
-          10000
-        );
-      };
 
-      if (this.state.geojson && this.state.map && !this.state.geojsonLayer) {
+      if ((this.props.geoData||this.props.geojsonForPath) && this.state.map && !this.state.markerCluster ) {
         console.log("test2");
-        this.addGeoJSONLayer(this.state.geojson);
+        this.addGeoJSONLayer(this.props.geoData,this.props.geojsonForPath);
+        return;
       }
-      if (prevProps.serverData&&md5(JSON.stringify(this.props.serverData))!==md5(JSON.stringify(prevState.serverData))) {
+      /*if (this.state.geojson && this.state.map && !this.state.geojsonLayer) {
+        console.log("test2");
+        this.addGeoJSONLayer(this.state.geojson,this.props.geojsonForPath);
+      }*/
+      /*if (prevProps.serverData&&md5(JSON.stringify(this.props.serverData))!==md5(JSON.stringify(prevState.serverData))) {
         //UserNames=[];
         this.filterGeoJSONLayer();
+      }*/
+      if(md5(JSON.stringify(prevProps.checkedItem))!=md5(JSON.stringify(this.props.checkedItem))){
+        //console.log("checkedItem changed",prevProps.checkedItem,this.props.checkedItem,"this state markerCluster",this.state.markerCluster);
+        for(var index in this.geojsonDivision){
+          //console.log("index",index,"this.state.markerCluster",this.state.markerCluster,"this.geojsonDivision",this.geojsonDivision);
+          if(this.props.checkedItem.length==0){
+            this.state.markerCluster.addLayer(this.geojsonDivision[index]);
+            this.state.map.addLayer(this.geoPathDivision[index]);
+          }else {
+            if(this.props.checkedItem.indexOf(index)==-1){
+              this.state.markerCluster.removeLayer(this.geojsonDivision[index]);
+              this.state.map.removeLayer(this.geoPathDivision[index]);
+            }else {
+              this.state.markerCluster.addLayer(this.geojsonDivision[index]);
+              this.state.map.addLayer(this.geoPathDivision[index]);
+            }
+          }
+        }
+        return;
       }
-      if(md5(JSON.stringify(prevProps.geoData))!==md5(JSON.stringify(this.props.geoData))){
+      if(prevProps.geoData&&md5(JSON.stringify(prevProps.geoData))!==md5(JSON.stringify(this.props.geoData))){
+        console.log("geoData changed");
+        this.filterGeoJSONLayer();
+        return;
+      }
+      /*if(md5(JSON.stringify(prevProps.geoData))!==md5(JSON.stringify(this.props.geoData))){
         console.log("geoData changed");
         this.setState({
           geojson:this.props.geoData
@@ -117,7 +150,7 @@ class Map extends Component {
         console.log("geojson changed do filterGeoJSONLayer");
         //UserNames=[];
         this.filterGeoJSONLayer();
-      }
+      }*/
     }
   }
 
@@ -157,10 +190,6 @@ class Map extends Component {
         },
         100
       );
-      this.setState({
-        numUser: this.props.geoData.features.length,
-        geojson: this.props.geoData
-      });
     }
   }
   getDataFromUrl(url){
@@ -306,7 +335,7 @@ class Map extends Component {
     });
   }
 
-  updateFilter(e) {
+  /*updateFilter(e) {
     let userSelected = e.target.value;
     // change the subway line filter
     if (userSelected === "All Info") {
@@ -316,7 +345,7 @@ class Map extends Component {
     this.setState({
       driversFilter: userSelected
     });
-  }
+  }*/
 
   updateProgressBar(processed, total, elapsed, layersArray) {
     var progress = document.getElementById('progress');
@@ -332,7 +361,7 @@ class Map extends Component {
       progress.style.display = 'none';
     }
   }
-  addGeoJSONLayer(geojson) {
+  addGeoJSONLayer(geojson,geojsonForPath) {
     // create a native Leaflet GeoJSON SVG Layer to add as an interactive overlay to the map
     // an options object is passed to define functions for customizing the layer
     var myStyle_1 = {
@@ -345,27 +374,13 @@ class Map extends Component {
     "weight": 2,
     "opacity": 0.70
     };
-    const geojsonLayer = L.geoJson(geojson, {
-      onEachFeature: this.onEachFeature,
-      pointToLayer: this.pointToLayer,
-      filter: this.filterFeatures,
-      style: function(feature) {
-        switch (feature.properties.NAME) {
-            case "71": return myStyle_1;
-            case "97":   return myStyle_2;
-        }
-      }
-    });
-    this.zoomToFeature(geojsonLayer);
-    // add our GeoJSON layer to the Leaflet map object
-    //TODO
-    var markers = L.markerClusterGroup({
+    var markerCluster = L.markerClusterGroup({
       chunkedLoading: true,
       chunkProgress: this.updateProgressBar,
       spiderfyOnMaxZoom : false
     });
-    markers.on('clusterclick', function (a) {
-	     // a.layer is actually a cluster
+    markerCluster.on('clusterclick', function (a) {
+       // a.layer is actually a cluster
        //TODO add function to greate number of points
        if(a.layer._zoom == mapContext.params.maxZoom){
          if(a.layer.getAllChildMarkers().length>100){
@@ -376,28 +391,57 @@ class Map extends Component {
 
        }
     });
-    /*var markers = L.markerClusterGroup({
-	      showCoverageOnHover: false
-    });*/
-    console.log("markers initial success?",markers?"yes":"no");
-    markers.addLayer(geojsonLayer).addTo(this.state.map);
-    //geojsonLayer.addTo(this.state.map);
-    // store the Leaflet GeoJSON layer in our component state for use later
+    //console.log("geojson",geojson);
+    for (var geojsonIndex in geojson) {
+      var geojsonLayer = L.geoJson(geojson[geojsonIndex], {
+        onEachFeature: this.onEachFeature,
+        pointToLayer: this.pointToLayer,
+        filter: this.filterFeatures
+      });
+      this.geojsonDivision[geojson[geojsonIndex].features[0].properties.Name] = geojsonLayer;
+      markerCluster.addLayer(geojsonLayer);
+    }
+    markerCluster.addTo(this.state.map);
+    //console.log("geojsonDivision",this.geojsonDivision);
+    //console.log("geojsonForPath in map",geojsonForPath,this.state.map);
+    for (var index in geojsonForPath["features"]) {
+      var geojsonLayerForPath = this.isTrajet?L.geoJson(geojsonForPath["features"][index], {
+        style: function(feature) {
+          switch (feature.properties.Name) {
+              case "71": return myStyle_1;
+              case "97":   return myStyle_2;
+          }
+        }
+      }):null;
+      geojsonLayerForPath?geojsonLayerForPath.addTo(this.state.map):null;
+      this.geoPathDivision[geojsonForPath["features"][index]["properties"]["Name"]] = geojsonLayerForPath;
+    }
+    //console.log("this.geoPathDivision",this.geoPathDivision);
+    //this.zoomToFeature(this.geojsonDivision);
+    // add our GeoJSON layer to the Leaflet map object
+    //TODO
     this.setState(
       {
-        geojsonLayer,
-        markerLayer:markers
+        geojsonLayerForPath:geojsonLayerForPath,
+        markerCluster:markerCluster
      });
-    // fit the geographic extent of the GeoJSON layer within the map's bounds / viewport
-
   }
 
   filterGeoJSONLayer() {
-    this.state.geojsonLayer.clearLayers();
-    this.state.markerLayer.clearLayers();
-    this.state.geojsonLayer.addData(this.state.geojson);
-    this.zoomToFeature(this.state.geojsonLayer);
-    this.state.markerLayer.addLayer(this.state.geojsonLayer).addTo(this.state.map);
+    //this.state.geojsonLayer.clearLayers();
+    //console.log("this.props.checkedItem",this.props.checkedItem);
+    this.state.markerCluster.clearLayers();
+    for (var i in this.geoPathDivision) {
+      this.state.map.removeLayer(this.geoPathDivision[i]);
+    }
+
+    this.geojsonDivision = {};
+    this.geoPathDivision = {};
+    //this.state.markerLayer.addLayer(this.geojsonDivision[0]);
+    this.addGeoJSONLayer(this.props.geoData,this.props.geojsonForPath);
+    //this.state.geojsonLayer.addData(this.props.geoData);
+    //this.zoomToFeature(this.state.geojsonLayer);
+    //this.state.markerLayer.addLayer(this.state.geojsonLayer).addTo(this.state.map);
 
   }
   generateIcon(count,iconIndex,iconStyle,color,className,number){
@@ -480,7 +524,7 @@ class Map extends Component {
     this.state.map.fitBounds(target.getBounds(), fitBoundsParams);
   }
   filterFeatures(feature, layer) {
-    const test = (feature.properties.NAME===(this.state.driversFilter));
+    const test = (feature.properties.Name===(this.state.driversFilter));
     if (this.state.driversFilter === '*' || test !== false) {
       return true;
     }
@@ -574,10 +618,11 @@ class Map extends Component {
 }
 
 const mapStateToProps = state => ({
-  urlDataForMap:state.urlDataForMap,
   geoData:state.geoData,
   serverData:state.serverData,
-  isTyping : state.isTyping
+  isTyping : state.isTyping,
+  geojsonForPath : state.geojsonForPath,
+  checkedItem : state.checkedItem
 })
 
 const mapDispatchToProps = dispatch => ({

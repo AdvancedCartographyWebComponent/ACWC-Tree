@@ -1,8 +1,8 @@
 const actionTypes = require('../actiontype/actionType');
-const defaultTreeData = require('json!../data/test/World_Heritage_Sites.skos.jsonld');
-//const defaultTreeData = require('json!../data/test/scooterTree.jsonld');
-const defaultMapData = require('json!../data/test/exemple_villes.jsonld');
-//const defaultMapData = require('json!../data/test/scooter2.jsonld');
+//const defaultTreeData = require('json!../data/test/World_Heritage_Sites.skos.jsonld');
+const defaultTreeData = require('json!../data/test/scooterTree.jsonld');
+//const defaultMapData = require('json!../data/test/exemple_villes.jsonld');
+const defaultMapData = require('json!../data/test/scooter2.jsonld');
 const ScooterInfo = require('../Context/scooterInfo');
 var _ = require('lodash');
 var simplify = require('simplify-geometry');
@@ -119,8 +119,7 @@ var checkedItem = function(treeData,checkedList){
 var countItem = function(geoData,isTrajet){
   if(_.size(geoData["@graph"])>0){
     var countList = geoData["@graph"].reduce(function (allNames, instance) {
-      var name = formatString(instance["subject"]?instance["subject"]:
-      (instance["@id"]?(isTrajet?ScooterInfo[parseInt(formatString(instance["@id"].split('/')[1]))]:"Exclued Data"):"Exclued Data"));
+      var name = formatString(instance["subject"]||instance["mobile"]?instance["subject"]||ScooterInfo[parseInt(formatString(instance["mobile"].split(':')[1]))]:"Exclued Data");
       if (name in allNames) {
         allNames[name]++;
       }
@@ -181,7 +180,8 @@ var linkStringInLabel = function(labels){
 var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
   console.log("in globalContentSearch isTrajet",isTrajet);
   console.log(ScooterInfo);
-  var geojson = {
+  var geojson = {};
+  var geojsonForPath = {
   "type": "FeatureCollection",
   "features": []
   };
@@ -195,11 +195,11 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
   var keyWordList = _.words(_.toLower(keyword),/\S*\w/g);
   console.log("keyWordList",keyWordList);
   rawData["@graph"].map((instance,index) =>{
-    var timestamp = instance["@id"]&&isTrajet?instance["@id"].split('/')[2]:null;
-    var scooterId = instance["@id"]&&isTrajet?instance["@id"].split('/')[1]:null;
+    var timestamp = instance["date"]||instance["http://purl.org/dc/terms/date"]?instance["date"]||instance["http://purl.org/dc/terms/date"]:null;
+    var scooterId = instance["mobile"]?instance["mobile"].split(':')[1]:null;
     //console.log("scooterId",scooterId,parseInt(scooterId),ScooterInfo[parseInt(scooterId)]);
-    scooterId?scooterId =ScooterInfo[parseInt(scooterId.split(':')[1])]:null;
-    timestamp = timestamp?timestamp.replace(/\D/g,""):null;
+    scooterId?scooterId =ScooterInfo[parseInt(scooterId)]:null;
+    timestamp = timestamp?timestamp.slice(0,18).replace(/\D/g,""):null;
     var name = formatString(instance["label"]?linkStringInLabel(instance["label"]):"scooter");
     var subject = formatString(instance["subject"]?instance["subject"]:scooterId?scooterId:"Exclued Data");
     //console.log("subject",subject);
@@ -269,7 +269,7 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
             "type": "Feature",
             "properties": {
               "Subject": subject,
-              "NAME": name,
+              "Name": name,
               "Abstract":abstract,
               "markerAndIcons":markerAndIcons
             },
@@ -296,7 +296,7 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
                 "type": "Feature",
                 "properties": {
                   "Subject": "scooterTracer",
-                  "NAME": geoLine[count][obj]["scooterId"],
+                  "Name": geoLine[count][obj]["scooterId"],
                   "markerAndIcons":null
                 },
                 "geometry": {
@@ -304,15 +304,19 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
                   "coordinates": []
                 }
               };
-              geojson["features"].push(feature);
+              geojsonForPath["features"].push(feature);
           }
-          geojson["features"][geojson["features"].length-1].geometry.coordinates.push(geoLine[count][obj]["coordinates"]);
+          geojsonForPath["features"][geojsonForPath["features"].length-1].geometry.coordinates.push(geoLine[count][obj]["coordinates"]);
         }
-        geojson["features"][geojson["features"].length-1]["geometry"]["coordinates"] = simplify(geojson["features"][geojson["features"].length-1]["geometry"]["coordinates"],0.00)
+        //geojson["features"][geojson["features"].length-1]["geometry"]["coordinates"] = simplify(geojson["features"][geojson["features"].length-1]["geometry"]["coordinates"],0.00)
       }
       for(var count in geoLine){
+        geojson[count]={
+        "type": "FeatureCollection",
+        "features": []
+        };
         for(var obj in geoLine[count]){
-          var dateTemp =  Math.floor(parseInt(geoLine[count][obj]["timestamp"]/1000000000));
+          var dateTemp =  Math.floor(parseInt(geoLine[count][obj]["timestamp"]/100000));
           var feature ={
             "type": "Feature",
             "properties": {
@@ -329,15 +333,15 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
               "coordinates": geoLine[count][obj]["coordinates"]
             }
           };
-          geojson["features"].push(feature);
+          geojson[count]["features"].push(feature);
         }
       }
     }
-  console.log("geojson",geojson);
+  console.log("geojson",geojson,geojsonForPath,"geoline",geoLine);
   //console.log("simplify",simplify(geojson["features"][0]["geometry"]["coordinates"],0.0003),"before",geojson["features"][0]["geometry"]["coordinates"]);
 
   //console.log("geoLine",geoLine);
-  return [geojson,relatedRawData,matchedRawData];
+  return [geojson,relatedRawData,matchedRawData,geojsonForPath];
 }
 var updateTreeNum = function(tree,countList){
   var temp ={};
@@ -355,14 +359,14 @@ var updateTreeNum = function(tree,countList){
   }
   return temp;
 }
-const defaultGeoJson = globalContentSearch(defaultMapData,false)[0];
+const defaultGeoJson = globalContentSearch(defaultMapData,true);
 const initialState = {
   content: "hello",
   lastChange:null,
   treeData : {},
   urlDataForMap :null,
   urlDataForTree :null,
-  geoData : defaultGeoJson,
+  geoData : defaultGeoJson[0],
   serverData:null,
   keyword : null,
   root : null,
@@ -370,7 +374,9 @@ const initialState = {
   Info : null,
   dynamicUrl : null,
   isTyping : false,
-  isTrajet : false
+  isTrajet : true,
+  geojsonForPath :defaultGeoJson[3],
+  checkedItem : []
 };
 var reducer = function (state = initialState, action) {
   switch (action.type) {
@@ -394,18 +400,20 @@ var reducer = function (state = initialState, action) {
         var checkedlist=[];
         var tempCheckedItem = checkedItem(action.newdata,checkedlist);
         var findRootResults = findRoot(state.urlDataForTree?state.urlDataForTree:defaultTreeData,state.root);
-        var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet,
-          tempCheckedItem,state.keyword);
+        /*var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet,
+          tempCheckedItem,state.keyword);*/
         /*var countItemResult = countItem(globalContentSearchResult[1]);
         var updateTreeNumResult = updateTreeNum(action.newdata,countItemResult)
         for(var num in state.root){
           countParentsNum(updateTreeNumResult,formatString(state.root[num]));
         }
         console.log("countItemResult",countItemResult);*/
+        console.log("tempCheckedItem",tempCheckedItem,checkedlist);
         return Object.assign({}, state, {
           treeData:action.newdata,
-          geoData: globalContentSearchResult[0],
-          root:findRootResults[0]
+          /*geoData: globalContentSearchResult[0],*/
+          root:findRootResults[0],
+          checkedItem : tempCheckedItem
         })
       }
 
@@ -428,6 +436,7 @@ var reducer = function (state = initialState, action) {
         urlDataForMap:action.urlDataForMap,
         treeData:treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(globalContentSearchResult[1],state.isTrajet),findRootResults[0]),
         geoData:globalContentSearchResult[0],
+        geojsonForPath : globalContentSearchResult[3],
         root:findRootResults[0]
       })
     case actionTypes.GetDataFromUrlForTree:
@@ -466,8 +475,9 @@ var reducer = function (state = initialState, action) {
       console.log("countParentsNumResult",updateTreeNumResult);
       return Object.assign({}, state, {
         geoData:globalContentSearchResult[0],
+        geojsonForPath : globalContentSearchResult[3],
         keyword:action.keyword,
-        treeData:updateTreeNumResult
+        treeData:updateTreeNumResult,
       })
     case actionTypes.ClickMarker:
       console.log("ClickMarker","marker",action.marker,"info",action.info);

@@ -2,7 +2,7 @@ module.exports = {
   params: {
     center: [2.334345,48.836703],
     zoomControl: false,
-    zoom: 1,
+    zoom: 2,
     maxZoom: 18,
     minZoom: 1,
     scrollwheel: false,
