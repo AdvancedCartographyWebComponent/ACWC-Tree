@@ -1,8 +1,8 @@
 const actionTypes = require('../actiontype/actionType');
-const defaultTreeData = require('json!../data/test/World_Heritage_Sites.skos.jsonld');
-//const defaultTreeData = require('json!../data/test/scooterTree.jsonld');
-const defaultMapData = require('json!../data/test/exemple_villes.jsonld');
-//const defaultMapData = require('json!../data/test/scooter2.jsonld');
+//const defaultTreeData = require('json!../data/test/World_Heritage_Sites.skos.jsonld');
+const defaultTreeData = require('json!../data/test/scooterTree.jsonld');
+//const defaultMapData = require('json!../data/test/exemple_villes.jsonld');
+const defaultMapData = require('json!../data/test/scooter2.jsonld');
 const ScooterInfo = require('../Context/scooterInfo');
 var _ = require('lodash');
 var simplify = require('simplify-geometry');
@@ -22,7 +22,6 @@ var treeConstructor = function (rawData,countList,root){
     };
   }
   var treeData = buildTree(tree,root,rawData["@graph"],countList);
-  console.log("build tree",treeData);
   for(var num in root){
     countParentsNum(treeData,formatString(root[num]));
   }
@@ -131,7 +130,6 @@ var countItem = function(geoData,isTrajet){
   }else{
     var countList = {};
   }
-  console.log("countList",countList);
   return countList;
 }
 var findRoot = function(data,stateRoot){
@@ -151,7 +149,6 @@ var findRoot = function(data,stateRoot){
 
   })
   var root =stateRoot?stateRoot:_.difference(flattenBroader,flattenId);
-  console.log("root",root);
   return [root,flattenId,flattenBroader];
 
 }
@@ -178,8 +175,6 @@ var linkStringInLabel = function(labels){
   return stringFinal;
 }
 var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
-  console.log("in globalContentSearch isTrajet",isTrajet);
-  console.log(ScooterInfo);
   var geojson = {};
   var geojsonForPath = {
   "type": "FeatureCollection",
@@ -193,7 +188,6 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
   }
   var geoLine = {};
   var keyWordList = _.words(_.toLower(keyword),/\S*\w/g);
-  console.log("keyWordList",keyWordList);
   rawData["@graph"].map((instance,index) =>{
     var timestamp = instance["date"]||instance["http://purl.org/dc/terms/date"]?instance["date"]||instance["http://purl.org/dc/terms/date"]:null;
     var scooterId = instance["mobile"]?instance["mobile"].split(':')[1]:null;
@@ -314,7 +308,6 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
           }
           geojsonForPath["features"][geojsonForPath["features"].length-1].geometry.coordinates.push(geoLine[count][obj]["coordinates"]);
         }
-        //geojson["features"][geojson["features"].length-1]["geometry"]["coordinates"] = simplify(geojson["features"][geojson["features"].length-1]["geometry"]["coordinates"],0.00)
       }
       for(var count in geoLine){
         geojson[count]={
@@ -343,10 +336,6 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
         }
       }
     }
-  console.log("geojson",geojson,geojsonForPath,"geoline",geoLine);
-  //console.log("simplify",simplify(geojson["features"][0]["geometry"]["coordinates"],0.0003),"before",geojson["features"][0]["geometry"]["coordinates"]);
-
-  //console.log("geoLine",geoLine);
   return [geojson,relatedRawData,matchedRawData,geojsonForPath];
 }
 var updateTreeNum = function(tree,countList){
@@ -365,7 +354,7 @@ var updateTreeNum = function(tree,countList){
   }
   return temp;
 }
-const defaultGeoJson = globalContentSearch(defaultMapData,false);
+const defaultGeoJson = globalContentSearch(defaultMapData,true);
 const initialState = {
   content: "hello",
   lastChange:null,
@@ -380,7 +369,7 @@ const initialState = {
   Info : null,
   dynamicUrl : null,
   isTyping : false,
-  isTrajet : false,
+  isTrajet : true,
   geojsonForPath :defaultGeoJson[3],
   checkedItem : []
 };
@@ -397,12 +386,10 @@ var reducer = function (state = initialState, action) {
     case actionTypes.UpdateTreeData:
       console.log("UpdateTreeData :",action.newdata,action.typeAction);
       if(action.typeAction =="collapsed"){
-        console.log("UpdateTreeData collapsed");
         return Object.assign({}, state, {
           treeData:action.newdata,
         })
       }else if(action.typeAction =="checked"){
-        console.log("UpdateTreeData checked");
         var checkedlist=[];
         var tempCheckedItem = checkedItem(action.newdata,checkedlist);
         var findRootResults = findRoot(state.urlDataForTree?state.urlDataForTree:defaultTreeData,state.root);
@@ -414,7 +401,6 @@ var reducer = function (state = initialState, action) {
           for(var num in state.root){
             countParentsNum(updateTreeNumResult,formatString(state.root[num]));
           }
-          console.log("countItemResult",countItemResult);
           return Object.assign({}, state, {
             treeData:action.newdata,
             geoData: globalContentSearchResult[0],
@@ -424,26 +410,10 @@ var reducer = function (state = initialState, action) {
         }else{
           return Object.assign({}, state, {
             treeData:action.newdata,
-            /*geoData: globalContentSearchResult[0],*/
             root:findRootResults[0],
             checkedItem : tempCheckedItem
           })
         }
-        /*var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet,
-          tempCheckedItem,state.keyword);*/
-        /*var countItemResult = countItem(globalContentSearchResult[1]);
-        var updateTreeNumResult = updateTreeNum(action.newdata,countItemResult)
-        for(var num in state.root){
-          countParentsNum(updateTreeNumResult,formatString(state.root[num]));
-        }
-        console.log("countItemResult",countItemResult);*/
-        /*console.log("tempCheckedItem",tempCheckedItem,checkedlist);
-        return Object.assign({}, state, {
-          treeData:action.newdata,
-          geoData: globalContentSearchResult[0],
-          root:findRootResults[0],
-          checkedItem : tempCheckedItem
-        })*/
       }
 
     case actionTypes.UseDefaultTreeData :
@@ -459,8 +429,6 @@ var reducer = function (state = initialState, action) {
       var checkedlist=[];
       var findRootResults = findRoot(state.urlDataForTree?state.urlDataForTree:defaultTreeData,state.root);
       var globalContentSearchResult = globalContentSearch(action.urlDataForMap,state.isTrajet,checkedItem(state.treeData,checkedlist),state.keyword);
-      console.log("globalContentSearchResult",globalContentSearchResult,"countItem",countItem(globalContentSearchResult[1],state.isTrajet),"checkedlist",checkedlist);
-      console.log("findRootResults",findRootResults[0]);
       return Object.assign({}, state, {
         urlDataForMap:action.urlDataForMap,
         treeData:treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(globalContentSearchResult[1],state.isTrajet),findRootResults[0]),
@@ -480,7 +448,6 @@ var reducer = function (state = initialState, action) {
       })
     case actionTypes.GetDataFromUrlForTreeAndMap:
       console.log("GetDataFromUrlForTreeAndMap",action.urlDataForTree,action.urlDataForMap);
-
       return Object.assign({}, state, {
         treeData:treeConstructor(action.urlDataForTree,countItem(action.urlDataForMap,state.isTrajet),state.root)
       })
@@ -494,14 +461,10 @@ var reducer = function (state = initialState, action) {
       var tempCheckedItem = checkedItem(state.treeData,checkedlist);
       var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet,tempCheckedItem,action.keyword);
       var countItemResult = countItem(globalContentSearchResult[2]);//all matched points
-      console.log("countItem",countItemResult);
-      console.log("new geojson from GlobalSearch",globalContentSearchResult[0]);
       var updateTreeNumResult = updateTreeNum(state.treeData,countItemResult)
-      console.log("updateTreeNum",updateTreeNumResult);
       for(var num in state.root){
         countParentsNum(updateTreeNumResult,formatString(state.root[num]));
       }
-      console.log("countParentsNumResult",updateTreeNumResult);
       return Object.assign({}, state, {
         geoData:globalContentSearchResult[0],
         geojsonForPath : globalContentSearchResult[3],

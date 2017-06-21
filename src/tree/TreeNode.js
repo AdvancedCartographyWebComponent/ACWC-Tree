@@ -103,7 +103,7 @@ var TreeNode = React.createClass({
     return (
       <div className={this._getRootCssClass()+'-lv'+this.props.ancestor.length}>
         {this._getCollapseNode()}
-        <span onClick={this._handleClick} className = {"spanning"+'-lv'+this.props.ancestor.length}>
+        <span onClick={this._handleClick} className={"spanning"+'-lv'+this.props.ancestor.length}>
           {this._getCheckboxNode()}
           {this._getLabelNode()}
         </span>

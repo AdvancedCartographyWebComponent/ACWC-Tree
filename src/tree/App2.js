@@ -16,7 +16,7 @@ class App2 extends Component {
     this.checkDataSource = setInterval(
       () => {
         //console.log("window.testValue",window.testValue);
-        if(window.treeUrl&&(!this.state.treeUrl||md5(JSON.stringify(window.treeUrl))!=md5(JSON.stringify(this.state.treeUrl)))){
+        if(window.treeUrl&&(!this.state.treeUrl||md5(JSON.stringify(window.treeUrl))!==md5(JSON.stringify(this.state.treeUrl)))){
           console.log("differ");
           this.setState({treeUrl : window.treeUrl});
           //this.getDataFromUrl(window.treeUrl);

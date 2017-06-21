@@ -18,7 +18,7 @@ var App = React.createClass({
   },
   componentDidUpdate: function(prevProps, prevState){
     console.log("tree componentDidUpdate",this.props.urlQuery);
-    this.props.urlQuery&&md5(JSON.stringify(this.props.urlQuery))!=md5(JSON.stringify(prevProps.urlQuery))?this._getUrlData(this.props.urlQuery):null;
+    this.props.urlQuery&&md5(JSON.stringify(this.props.urlQuery))!==md5(JSON.stringify(prevProps.urlQuery))?this._getUrlData(this.props.urlQuery):null;
     console.log("tree componentDidUpdate again");
   },
   render: function() {

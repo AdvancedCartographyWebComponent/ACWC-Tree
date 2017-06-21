@@ -21,16 +21,16 @@ class Info extends Component {
     }
     return (
       (
-        <div className = {classNameParent}>
+        <div className={classNameParent}>
             <div className="sidebar-content sidebar-right">
                 <div className="sidebar-pane" id="home">
                     <h1 className="sidebar-header">
                         Info of POI
-                        <span className="sidebar-close"  onClick = {()=>this.props.actions.closeSideBar()}><i className="fa fa-caret-right"></i></span>
+                        <span className="sidebar-close"  onClick={()=>this.props.actions.closeSideBar()}><i className="fa fa-caret-right"></i></span>
                     </h1>
                     {
                       this.props.Info?Object.keys(this.props.Info.properties).map((key, index)=>{
-                        if(key!="markerAndIcons") return (<p key = {key}>{key+"\t:\t"+this.props.Info.properties[key]}</p>)
+                        if(key!=="markerAndIcons") return (<p key={key}>{key+"\t:\t"+this.props.Info.properties[key]}</p>)
                       }):null
                     }
                 </div>

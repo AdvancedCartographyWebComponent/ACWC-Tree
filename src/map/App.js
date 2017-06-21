@@ -12,7 +12,7 @@ class App extends Component {
     var urlForMap = [];
     for (var obj in urlList){
       //console.log(urlList[obj]);
-      if(urlList[obj].slice(1,5)=="view") {
+      if(urlList[obj].slice(1,5)==="view") {
         var isTrajetFromUrl=urlList[obj].slice(6);
         console.log("isTrajetFromUrl",isTrajetFromUrl);
         switch (isTrajetFromUrl) {
@@ -26,7 +26,7 @@ class App extends Component {
             this.props.actions.isTrajet(false);
         }
       }
-      if(urlList[obj].slice(1,4)=="geo"||urlList[obj].slice(1,4)=="sql") urlForMap.push(urlList[obj]);
+      if(urlList[obj].slice(1,4)==="geo"||urlList[obj].slice(1,4)==="sql") urlForMap.push(urlList[obj]);
     }
     return <Map isServer={this.props.isServer} urlQuery={urlForMap.length>0?urlForMap[0]:null}/>;
   }
