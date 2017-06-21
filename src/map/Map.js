@@ -127,22 +127,24 @@ class Map extends Component {
       }
       if(md5(JSON.stringify(prevProps.checkedItem))!=md5(JSON.stringify(this.props.checkedItem))){
         //console.log("checkedItem changed",prevProps.checkedItem,this.props.checkedItem,"this state markerCluster",this.state.markerCluster);
-        for(var index in this.geojsonDivision){
-          //console.log("index",index,"this.state.markerCluster",this.state.markerCluster,"this.geojsonDivision",this.geojsonDivision);
-          if(this.props.checkedItem.length==0){
-            this.state.markerCluster.addLayer(this.geojsonDivision[index]);
-            this.state.map.addLayer(this.geoPathDivision[index]);
-          }else {
-            if(this.props.checkedItem.indexOf(index)==-1){
-              this.state.markerCluster.removeLayer(this.geojsonDivision[index]);
-              this.state.map.removeLayer(this.geoPathDivision[index]);
-            }else {
+        if(this.props.isTrajet){
+          for(var index in this.geojsonDivision){
+            //console.log("index",index,"this.state.markerCluster",this.state.markerCluster,"this.geojsonDivision",this.geojsonDivision);
+            if(this.props.checkedItem.length==0){
               this.state.markerCluster.addLayer(this.geojsonDivision[index]);
               this.state.map.addLayer(this.geoPathDivision[index]);
+            }else {
+              if(this.props.checkedItem.indexOf(index)==-1){
+                this.state.markerCluster.removeLayer(this.geojsonDivision[index]);
+                this.state.map.removeLayer(this.geoPathDivision[index]);
+              }else {
+                this.state.markerCluster.addLayer(this.geojsonDivision[index]);
+                this.state.map.addLayer(this.geoPathDivision[index]);
+              }
             }
           }
+          return;
         }
-        return;
       }
       if(prevProps.geoData&&md5(JSON.stringify(prevProps.geoData))!==md5(JSON.stringify(this.props.geoData))){
         console.log("geoData changed");
@@ -392,13 +394,24 @@ class Map extends Component {
        }
     });
     //console.log("geojson",geojson);
-    for (var geojsonIndex in geojson) {
-      var geojsonLayer = L.geoJson(geojson[geojsonIndex], {
+    if(this.props.isTrajet){
+      for (var geojsonIndex in geojson) {
+        var geojsonLayer = L.geoJson(geojson[geojsonIndex], {
+          onEachFeature: this.onEachFeature,
+          pointToLayer: this.pointToLayer,
+          filter: this.filterFeatures
+        });
+        this.geojsonDivision[geojson[geojsonIndex].features[0].properties.Name] = geojsonLayer;
+        markerCluster.addLayer(geojsonLayer);
+      }
+    }else{
+      var geojsonLayer = L.geoJson(geojson, {
         onEachFeature: this.onEachFeature,
         pointToLayer: this.pointToLayer,
         filter: this.filterFeatures
       });
-      this.geojsonDivision[geojson[geojsonIndex].features[0].properties.Name] = geojsonLayer;
+      this.geojsonDivision = geojsonLayer;
+      this.zoomToFeature(this.geojsonDivision);
       markerCluster.addLayer(geojsonLayer);
     }
     markerCluster.addTo(this.state.map);
@@ -417,7 +430,7 @@ class Map extends Component {
       geojsonLayerForPath?geojsonLayerForPath.addTo(this.state.map):null;
       this.geoPathDivision[geojsonForPath["features"][index]["properties"]["Name"]] = geojsonLayerForPath;
     }*/
-    this.updateGeojsonPath(geojsonForPath);
+    this.props.isTrajet?this.updateGeojsonPath(geojsonForPath):null;
     //console.log("this.geoPathDivision",this.geoPathDivision);
     //this.zoomToFeature(this.geojsonDivision);
     // add our GeoJSON layer to the Leaflet map object
@@ -440,14 +453,14 @@ class Map extends Component {
     "opacity": 0.70
     };
     for (var index in geojsonForPath["features"]) {
-      var geojsonLayerForPath = this.isTrajet?L.geoJson(geojsonForPath["features"][index], {
+      var geojsonLayerForPath = L.geoJson(geojsonForPath["features"][index], {
         style: function(feature) {
           switch (feature.properties.Name) {
               case "71": return myStyle_1;
               case "97":   return myStyle_2;
           }
         }
-      }):null;
+      });
       geojsonLayerForPath?geojsonLayerForPath.addTo(this.state.map):null;
       this.geoPathDivision[geojsonForPath["features"][index]["properties"]["Name"]] = geojsonLayerForPath;
     }
@@ -465,7 +478,7 @@ class Map extends Component {
     //this.state.markerLayer.addLayer(this.geojsonDivision[0]);
     this.addGeoJSONLayer(this.props.geoData,this.props.geojsonForPath);
     //this.state.geojsonLayer.addData(this.props.geoData);
-    //this.zoomToFeature(this.state.geojsonLayer);
+    if(!this.props.isTrajet)this.zoomToFeature(this.geojsonDivision);
     //this.state.markerLayer.addLayer(this.state.geojsonLayer).addTo(this.state.map);
 
   }
@@ -549,10 +562,7 @@ class Map extends Component {
     this.state.map.fitBounds(target.getBounds(), fitBoundsParams);
   }
   filterFeatures(feature, layer) {
-    const test = (feature.properties.Name===(this.state.driversFilter));
-    if (this.state.driversFilter === '*' || test !== false) {
-      return true;
-    }
+    return true;
   }
   markerAndIcons(info){
     var cur = this;
