@@ -134,7 +134,26 @@ The geolocation data should follow the structure like this:
 **"subject"** is the parent of the poi, it works like the external key, linking to the **"@id"** in tree-menu  
 **"markerAndIcons"** is the icons' configuration for markers, you can set the icons inside the markers, maximum 1 anchor marker and 6 surrounding markers  
 **"label"** is the name of poi  
-**"lat"**,**"long"** is latitude and longitude of the poi  
+**"lat"**,**"long"** is latitude and longitude of the poi      
+
+# Set Map Context and information displayed on the panel and table
+```javascript
+  var mapContext = {
+        "center":[48.836703,2.334345],
+        "zoom": 6
+      };
+  var infoKeyForTable=[
+    {key:'Subject',displayValue:'Subject'},
+    {key:'Name',displayValue:'Name'}
+    ];
+  var infoKeyForPanel=[
+    {key:'Subject',displayValue:'Subject'},
+    {key:'Name',displayValue:'Name'},
+    {key:'Abstract',displayValue:'Abstract'}
+    ];
+```
+
+
 # TODO
 Change markers style using following plugin:
 
