@@ -16,8 +16,8 @@ import axios from 'axios';
 import md5 from 'MD5';
 import './css/markers.css'
 import './marker-icon/marker.js'
-
 let config = {};
+var tableData = [];
 config.params = mapContext.params;
 config.tileLayer = mapContext.tileLayer;
 const USER_TYPE = serverContext.USER_TYPE;
@@ -32,7 +32,8 @@ class Map extends Component {
       geojson: null,
       driversFilter: '*',
       numUser: null,
-      sidebar:null
+      sidebar:null,
+      isTable : null
     };
     this.isServer = this.props.isServer?this.props.isServer:"false";
     this.geojsonDivision = {};
@@ -57,8 +58,8 @@ class Map extends Component {
     this.showIcons = this.showIcons.bind(this);
     this.hideIcons = this.hideIcons.bind(this);
     this.markerAndIcons = this.markerAndIcons.bind(this);
-    this.updateProgressBar = this.updateProgressBar.bind(this);
     this.updateGeojsonPath = this.updateGeojsonPath.bind(this);
+    this.handleButtonClick = this.handleButtonClick.bind(this);
   }
 
   componentDidMount() {
@@ -83,12 +84,12 @@ class Map extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log("checkedItem",this.props.checkedItem);
+    //console.log("checkedItem",this.props.checkedItem);
     if(this.props.isTyping){
     }
     else{
       if ((this.props.geoData||this.props.geojsonForPath) && this.state.map && !this.state.markerCluster ) {
-        console.log("test2");
+        console.log("test2 geodata",this.props.geoData);
         this.addGeoJSONLayer(this.props.geoData,this.props.geojsonForPath);
         return;
       }
@@ -121,7 +122,7 @@ class Map extends Component {
           return;
         }
       }
-      if(prevProps.geoData&&md5(JSON.stringify(prevProps.geoData))!==md5(JSON.stringify(this.props.geoData))){
+      if(md5(JSON.stringify(prevProps.geoData))!==md5(JSON.stringify(this.props.geoData))){
         console.log("geoData changed");
         this.filterGeoJSONLayer();
         return;
@@ -134,15 +135,23 @@ class Map extends Component {
      clearInterval(this.postDataID);
   }
 
-
+  handleButtonClick(event){
+    this.props.actions.toggleTable(!this.state.isTable);
+    this.setState({
+      isTable:!this.state.isTable
+    })
+  }
 
   getData() {
     if(this.urlQuery){
       this.getDataFromUrl(this.urlQuery);
     }
     else{
-      window.mapDataUrl = null;
-      window.geojsonUrl = null;
+      //TODO Read URL before loading the map if url already done in another js
+      //
+      console.log("testMapContext",window.testMapContext);
+      //window.mapDataUrl = null;
+      //window.geojsonUrl = null;
       window.isTrajet = this.props.isTrajet;
       this.isTrajet = this.props.isTrajet;
       this.checkDataSource = setInterval(
@@ -165,6 +174,7 @@ class Map extends Component {
         },
         100
       );
+
     }
   }
   getDataFromUrl(url){
@@ -309,22 +319,9 @@ class Map extends Component {
     .catch(function (error) {
     });
   }
-  updateProgressBar(processed, total, elapsed, layersArray) {
-    var progress = document.getElementById('progress');
-    var progressBar = document.getElementById('progress-bar');
-    if (elapsed > 1000) {
-      progress.style.display = 'block';
-      progressBar.style.width = Math.round(processed/total*100) + '%';
-    }
-
-    if (processed === total) {
-      progress.style.display = 'none';
-    }
-  }
   addGeoJSONLayer(geojson,geojsonForPath) {
     var markerCluster = L.markerClusterGroup({
       chunkedLoading: true,
-      chunkProgress: this.updateProgressBar,
       spiderfyOnMaxZoom : false
     });
     markerCluster.on('clusterclick', function (a) {
@@ -348,14 +345,15 @@ class Map extends Component {
         markerCluster.addLayer(geojsonLayer);
       }
     }else{
-      var geojsonLayer = L.geoJson(geojson, {
+      console.log("!isTrajet geojson",geojson);
+      var geojsonLayer = _.size(geojson)>0?L.geoJson(geojson, {
         onEachFeature: this.onEachFeature,
         pointToLayer: this.pointToLayer,
         filter: this.filterFeatures
-      });
+      }):null;
       this.geojsonDivision = geojsonLayer;
-      this.zoomToFeature(this.geojsonDivision);
-      markerCluster.addLayer(geojsonLayer);
+      //this.zoomToFeature(this.geojsonDivision);
+      geojsonLayer?markerCluster.addLayer(geojsonLayer):null;
     }
     markerCluster.addTo(this.state.map);
     this.props.isTrajet?this.updateGeojsonPath(geojsonForPath):null;
@@ -399,7 +397,7 @@ class Map extends Component {
     this.geojsonDivision = {};
     this.geoPathDivision = {};
     this.addGeoJSONLayer(this.props.geoData,this.props.geojsonForPath);
-    if(!this.props.isTrajet)this.zoomToFeature(this.geojsonDivision);
+    //if(!this.props.isTrajet)this.zoomToFeature(this.geojsonDivision);
   }
   generateIcon(count,iconIndex,iconStyle,color,className,number){
     /*
@@ -484,15 +482,19 @@ class Map extends Component {
   markerAndIcons(info){
     //generateIcon(count,iconIndex,iconStyle,color,className,number)
     var cur = this;
+    //console.log("info",info);
     var markerAndIconsString = "";
     var iconNum = info?info.length:0;
     if(info){
       for(var i=0;i<iconNum;i++){
-        if(i==0){
-          markerAndIconsString = markerAndIconsString.concat(cur.generateIcon(iconNum-1,i,info[i]));
-        }else{
-          markerAndIconsString = markerAndIconsString.concat(cur.generateIcon(iconNum-1,i,info[i][0],'CADETBLUE','surround',info[i][0]==="number"?info[i][1]:null));
-        }
+        markerAndIconsString = markerAndIconsString.concat(cur.generateIcon(
+          iconNum-1,
+          i,
+          info[i]['icon'],
+          info[i]['color'],
+          i===0?null:'surround',
+          info[i]['icon']==="number"?info[i]['number']:null));
+        //markerAndIconsString = markerAndIconsString.concat(cur.generateIcon(iconNum-1,i,info[i][0],'CADETBLUE','surround',info[i][0]==="number"?info[i][1]:null));
       }
     }else{
       markerAndIconsString = this.generateIcon();
@@ -532,12 +534,13 @@ class Map extends Component {
         cur.hideIcons(marker);
         isChanged=false;
       });
+    }
   }
-}
 
   init(id) {
     var cur = this;
     if (this.state.map) return;
+    //TODO set params from url or global value
     let map = L.map(id, config.params);
     map.on('click',function () {
       cur.props.actions.closeSideBar();
@@ -559,6 +562,9 @@ class Map extends Component {
           cur.props.isTyping &&
             <LoadingPage/>
         }
+        <div>
+          <button type="button" className='maptable' onClick = {this.handleButtonClick}>{this.state.isTable?'Map View':'Table View'}</button>
+        </div>
         <div ref={(node) => { cur._mapNode = node}} id="map" />
       </div>
     );

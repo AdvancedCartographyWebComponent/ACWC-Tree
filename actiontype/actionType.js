@@ -12,5 +12,6 @@ module.exports = {
   CloseSideBar : "CloseSideBar",
   ReceiveGeoDataFromUrl : "ReceiveGeoDataFromUrl",
   IsTyping : "IsTyping",
-  IsTrajet : "IsTrajet"
+  IsTrajet : "IsTrajet",
+  ToggleTable : "ToggleTable"
 };

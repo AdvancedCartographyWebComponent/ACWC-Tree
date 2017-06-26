@@ -19,6 +19,10 @@
     "redux": "^3.5.2",
     "axios": "^0.16.1",
     "MD5": "^1.3.0",
+    "react-bootstrap-table":"3.4.1",
+    "react-bootstrap": "^0.30.3",
+    "bootstrap": "^3.3.7",
+    "bootstrap-social": "^5.0.0",
     "simplify-geometry":"^0.0.2"
     },
   "devDependencies": {

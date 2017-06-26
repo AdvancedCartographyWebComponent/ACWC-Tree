@@ -1,8 +1,8 @@
 const actionTypes = require('../actiontype/actionType');
-//const defaultTreeData = require('json!../data/test/World_Heritage_Sites.skos.jsonld');
-const defaultTreeData = require('json!../data/test/scooterTree.jsonld');
-//const defaultMapData = require('json!../data/test/exemple_villes.jsonld');
-const defaultMapData = require('json!../data/test/scooter2.jsonld');
+const defaultTreeData = require('json!../data/test/World_Heritage_Sites.skos.jsonld');
+//const defaultTreeData = require('json!../data/test/scooterTree.jsonld');
+const defaultMapData = require('json!../data/test/exemple_villes.jsonld');
+//const defaultMapData = require('json!../data/test/scooter2.jsonld');
 const ScooterInfo = require('../Context/scooterInfo');
 var _ = require('lodash');
 var simplify = require('simplify-geometry');
@@ -176,6 +176,7 @@ var linkStringInLabel = function(labels){
 }
 var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
   var geojson = {};
+  var dataForTable = [];
   var geojsonForPath = {
   "type": "FeatureCollection",
   "features": []
@@ -246,7 +247,7 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
       }
       if(matched){
         if(isTrajet){
-          relatedRawData["@graph"].push(instance);
+          matchedRawData["@graph"].push(instance);
           var dateWithTime = instance["@id"].split('/')[2];
           var temp = {
             "timestamp" : timestamp,
@@ -279,11 +280,12 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
             };
           }
           geojson["features"].push(feature);
-          relatedRawData["@graph"].push(instance);
+          matchedRawData["@graph"].push(instance);
+          dataForTable.push(feature.properties);
         }
       }
       if(related){
-        matchedRawData["@graph"].push(instance);
+        relatedRawData["@graph"].push(instance);
       }
 
     });
@@ -321,7 +323,9 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
             "properties": {
               "Details": "",
               "Name": geoLine[count][obj]["scooterId"],
-              "markerAndIcons":[["motorcycle"],["number",dateTemp%1000]],
+              "markerAndIcons":[
+                {icon:"motorcycle",color:"CADETBLUE",number:null},
+                {icon:"number",color:"CADETBLUE",number:dateTemp%1000}],
               "Date" : geoLine[count][obj]['date'],
               "Time" : geoLine[count][obj]['time'],
               "Battery Status" : "To be Getted",
@@ -336,7 +340,8 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
         }
       }
     }
-  return [geojson,relatedRawData,matchedRawData,geojsonForPath];
+    console.log("globalContentSearch",dataForTable);
+  return [geojson,matchedRawData,relatedRawData,geojsonForPath,dataForTable];
 }
 var updateTreeNum = function(tree,countList){
   var temp ={};
@@ -354,22 +359,25 @@ var updateTreeNum = function(tree,countList){
   }
   return temp;
 }
-const defaultGeoJson = globalContentSearch(defaultMapData,true);
+const defaultGeoJson = globalContentSearch(defaultMapData,false);
+//console.log('reducer window',window.infoKeyForPanel);
 const initialState = {
   content: "hello",
   lastChange:null,
   treeData : {},
   urlDataForMap :null,
   urlDataForTree :null,
-  geoData : defaultGeoJson[0],
+  geoData : null,//defaultGeoJson[0],
   serverData:null,
   keyword : null,
   root : null,
   isInfo : false,
+  isTable : false,
+  tableData: null,//defaultGeoJson[4],
   Info : null,
   dynamicUrl : null,
   isTyping : false,
-  isTrajet : true,
+  isTrajet : false,
   geojsonForPath :defaultGeoJson[3],
   checkedItem : []
 };
@@ -393,25 +401,22 @@ var reducer = function (state = initialState, action) {
         var checkedlist=[];
         var tempCheckedItem = checkedItem(action.newdata,checkedlist);
         var findRootResults = findRoot(state.urlDataForTree?state.urlDataForTree:defaultTreeData,state.root);
+        var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet,
+          tempCheckedItem,state.keyword);
         if(!state.isTrajet){
-          var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet,
-            tempCheckedItem,state.keyword);
-          var countItemResult = countItem(globalContentSearchResult[1]);
-          var updateTreeNumResult = updateTreeNum(action.newdata,countItemResult)
-          for(var num in state.root){
-            countParentsNum(updateTreeNumResult,formatString(state.root[num]));
-          }
           return Object.assign({}, state, {
             treeData:action.newdata,
             geoData: globalContentSearchResult[0],
             root:findRootResults[0],
-            checkedItem : tempCheckedItem
+            checkedItem : tempCheckedItem,
+            tableData : globalContentSearchResult[4]
           })
         }else{
           return Object.assign({}, state, {
             treeData:action.newdata,
             root:findRootResults[0],
-            checkedItem : tempCheckedItem
+            checkedItem : tempCheckedItem,
+            tableData : globalContentSearchResult[4]
           })
         }
       }
@@ -434,7 +439,8 @@ var reducer = function (state = initialState, action) {
         treeData:treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(globalContentSearchResult[1],state.isTrajet),findRootResults[0]),
         geoData:globalContentSearchResult[0],
         geojsonForPath : globalContentSearchResult[3],
-        root:findRootResults[0]
+        root:findRootResults[0],
+        tableData : globalContentSearchResult[4]
       })
     case actionTypes.GetDataFromUrlForTree:
       console.log("GetDataFromUrlForTree",action.urlDataForTree);
@@ -470,6 +476,7 @@ var reducer = function (state = initialState, action) {
         geojsonForPath : globalContentSearchResult[3],
         keyword:action.keyword,
         treeData:updateTreeNumResult,
+        tableData:globalContentSearchResult[4]
       })
     case actionTypes.ClickMarker:
       console.log("ClickMarker","marker",action.marker,"info",action.info);
@@ -496,6 +503,11 @@ var reducer = function (state = initialState, action) {
       console.log("isTrajet",action.trajet);
       return Object.assign({}, state, {
         isTrajet : action.trajet
+      })
+    case actionTypes.ToggleTable:
+      console.log("ToggleTable",action.isTable);
+      return Object.assign({}, state, {
+        isTable : action.isTable
       })
     default:
       return state;

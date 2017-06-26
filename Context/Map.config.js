@@ -1,8 +1,9 @@
+console.log("Map config");
 module.exports = {
   params: {
-    center: [2.334345,48.836703],
+    center: window.mapContext?(window.mapContext.center?window.mapContext.center:[48.836703,2.334345]):[48.836703,2.334345],
     zoomControl: false,
-    zoom: 2,
+    zoom: window.mapContext?(window.mapContext.zoom?window.mapContext.zoom:6):6,
     maxZoom: 18,
     minZoom: 1,
     scrollwheel: false,

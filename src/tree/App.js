@@ -124,8 +124,8 @@ var App = React.createClass({
 
   _getExamplePanel: function (treeMenuNode) {
     return <div>
-      <div className="panel-thesaurus">
-        <div className="panel-body">
+      <div className="menu-thesaurus">
+        <div className="menu-body">
           {treeMenuNode}
         </div>
       </div>

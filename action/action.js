@@ -85,6 +85,12 @@ let actions = {
       type: actionTypes.IsTrajet,
       trajet
     }
+  },
+  toggleTable(isTable){
+    return{
+      type: actionTypes.ToggleTable,
+      isTable
+    }
   }
 };
 module.exports = actions;

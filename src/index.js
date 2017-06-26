@@ -3,11 +3,13 @@ import ReactDOM from 'react-dom';
 import App_tree from './tree/App2'
 import App_map from './map/App'
 import Info from './info/Info'
+import App_Table from './table/App'
 import './tree/index.css';
 import './tree/app.css';
 import './tree/tree-view.css';
 import Reducer from '../reducer/reducer'
 import './map/index.css'; // postCSS import of CSS module
+
 import {
   BrowserRouter as Router,
   Route
@@ -41,4 +43,10 @@ ReactDOM.render(
     <Info/>
   </Provider>,
   document.getElementById('sidebar')
+);
+ReactDOM.render(
+  <Provider store={store}>
+    <App_Table/>
+  </Provider>,
+  document.getElementById('table')
 );

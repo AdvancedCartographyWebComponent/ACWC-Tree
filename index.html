@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
     <!--
       Notice the use of %PUBLIC_URL% in the tag above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -14,6 +14,21 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>React App</title>
+    <script>
+      var mapDataUrl = "?geo=https://sementicbus-simonzen.rhcloud.com/data/api/PlateformeWebAlternativeACWC";
+      var mapContext = {
+        "center":[48.836703,2.334345],
+        "zoom": 6
+      };
+      var infoKeyForTable=[
+        {key:'Subject',displayValue:'Subject'},
+        {key:'Name',displayValue:'Name'}
+      ];
+      var infoKeyForPanel=[
+        {key:'Subject',displayValue:'Subject'},
+        {key:'Name',displayValue:'Name'},
+        {key:'Abstract',displayValue:'Abstract'}];
+    </script>
   </head>
   <body>
     <div>
@@ -43,7 +58,13 @@
      transition : 0.5s;
      z-index : -1">
      </div>
-     <div id="progress"><div id="progress-bar"></div></div>
+     <div id="table" style="
+     width: 74%;
+     position: absolute;
+     top: 40px;
+     z-index: 20;
+     left: 22%;">
+     </div>
     </div>
 
     <!--
