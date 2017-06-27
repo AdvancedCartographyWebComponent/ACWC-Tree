@@ -93,7 +93,9 @@ The geolocation data should follow the structure like this:
     "@id" : "dbr:Alicudi",
     "@type" : "dbo:PopulatedPlace",
     "subject" : "dbc:Aeolian_Islands",
-    "markerAndIcons":["plane","battery-1"],
+    "markerAndIcons":[
+	{icon:"motorcycle",color:"CADETBLUE",number:null},
+	{icon:"some icon",color:"some color",number:null}],
     "label" : {
       "@language" : "fr",
       "@value" : "Alicudi"
@@ -132,7 +134,16 @@ The geolocation data should follow the structure like this:
 **"@id"** is the id of the poi  
 **"@type"** is the type of the poi  
 **"subject"** is the parent of the poi, it works like the external key, linking to the **"@id"** in tree-menu  
-**"markerAndIcons"** is the icons' configuration for markers, you can set the icons inside the markers, maximum 1 anchor marker and 6 surrounding markers  
+**"markerAndIcons"** is the icons' configuration for markers, you can set the icons inside the markers, maximum 1 anchor marker and 6 surrounding markers.   
+	**icon** is the icon style, you can use fontawesome's icon. If you want to add number, you should set it as   
+	```	
+	icon:"number"   
+	```
+	and then add number in **number**  
+	```
+	number:6  
+	```
+	**color** is the color setting.  
 **"label"** is the name of poi  
 **"lat"**,**"long"** is latitude and longitude of the poi      
 
@@ -142,17 +153,27 @@ The geolocation data should follow the structure like this:
         "center":[48.836703,2.334345],
         "zoom": 6
       };
-  var infoKeyForTable=[
+```
+**center** is the default center of map  
+**zoom** is the default zoom of map  
+```javascript
+var infoKeyForTable=[
     {key:'Subject',displayValue:'Subject'},
     {key:'Name',displayValue:'Name'}
     ];
+```
+**key** is the data field(column) of the database  
+**displayValue** is the value you want to display in the table or panel.  
+
+```javascript
   var infoKeyForPanel=[
     {key:'Subject',displayValue:'Subject'},
     {key:'Name',displayValue:'Name'},
     {key:'Abstract',displayValue:'Abstract'}
     ];
 ```
-
+**key** is the data field(column) of the database  
+**displayValue** is the value you want to display in the table or panel.  
 
 # TODO
 Change markers style using following plugin:
