@@ -22,23 +22,45 @@ var treeConstructor = function (rawData,countList,root){
     };
   }
   var treeData = buildTree(tree,root,rawData["@graph"],countList);
+  console.log("buildTree result",treeData);
   for(var num in root){
     countParentsNum(treeData,formatString(root[num]));
   }
   return treeData;
 }
+var treeNameMap = function(rawTreeData){
+  var treeNameMap={};
+  console.log("treeNameMap",rawTreeData);
+  rawTreeData["@graph"].map((value,index)=>{
+    if(!treeNameMap[value["@id"]]&&value["@id"]&&value["skos:prefLabel"]){
+      treeNameMap[value["@id"]]=value["skos:prefLabel"]
+    }
+  })
+  console.log("treeNameMap result",treeNameMap);
+  return treeNameMap
+}
 var formatString = function(strings){
+  return strings;
   var temp = strings.split(':');
-  var format =temp.length==1?temp[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g," "):temp[1].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g," ");
-  return format
+  //console.log("formatString",strings);
+  try {
+    var format =temp.length===1?temp[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g," "):
+                                temp[1].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g," ");
+    return format
+  } catch (e) {
+    console.log("format error",strings);
+  }
+
+
 }
 var buildTree = function(tree,parentId,rawData,countList){
+  //console.log("buildTree parentId",parentId);
   rawData.map((value)=>{
-    var id = value["@id"];
-    var broader = value["broader"];
+    var id = value["@id"]?value["@id"]:"Default ID";
+    var broader = value["broader"]?value["broader"]:null;
     var name = value["prefLabel"]?value["prefLabel"]["@value"]:null;
     var language = value["prefLabel"]?value["prefLabel"]["@language"]:null;
-    if(typeof broader === 'object'){
+    if((typeof broader === 'object')&&broader){
       broader.map((value)=>{
         if (parentId.indexOf(value)!=-1) {
           if(formatString(value) in tree){
@@ -67,12 +89,12 @@ var buildTree = function(tree,parentId,rawData,countList){
             num:0
           };
         }
-        buildTree(tree[formatString(value)]["children"],id,rawData);
+        buildTree(tree[formatString(value)]["children"],[id],rawData);
         }
       })
     }
-    else{
-      if (parentId.indexOf(broader)!=-1) {
+    else if(broader){
+      if (parentId.indexOf(broader)!==-1) {
         if(formatString(broader) in tree){
           tree[formatString(broader)]["children"][formatString(id)] = {
             checked: false,
@@ -100,9 +122,10 @@ var buildTree = function(tree,parentId,rawData,countList){
             num:0
           };
       }
-      buildTree(tree[formatString(broader)]["children"],id,rawData,countList);
+      buildTree(tree[formatString(broader)]["children"],[id],rawData,countList);
     }
   }});
+  //console.log("buildTree tree",tree);
   return tree
 }
 var checkedItem = function(treeData,checkedList){
@@ -135,9 +158,15 @@ var countItem = function(geoData,isTrajet){
 var findRoot = function(data,stateRoot){
   var flattenId = [];
   var flattenBroader = [];
+  var tempRoot = [];
   data["@graph"].map((value)=>{
     var id = value["@id"];
-    var broader = value["broader"];
+    var broader;
+    if(value["broader"]){
+      broader = value["broader"];
+    }else {
+      tempRoot.push(value["@id"]);
+    }
     if(typeof broader=="object"){
       for(var obj in broader){
         flattenBroader.indexOf(broader[obj])==-1?flattenBroader.push(broader[obj]):null;
@@ -148,7 +177,8 @@ var findRoot = function(data,stateRoot){
     flattenId.indexOf(id)==-1?flattenId.push(id):null;
 
   })
-  var root =stateRoot?stateRoot:_.difference(flattenBroader,flattenId);
+  var root =tempRoot.length>0?tempRoot:_.difference(flattenBroader,flattenId);
+  console.log("find root",root,flattenId,flattenBroader);
   return [root,flattenId,flattenBroader];
 
 }
@@ -379,7 +409,8 @@ const initialState = {
   isTyping : false,
   isTrajet : false,
   geojsonForPath :defaultGeoJson[3],
-  checkedItem : []
+  checkedItem : [],
+  nameMap : {}
 };
 var reducer = function (state = initialState, action) {
   switch (action.type) {
@@ -425,32 +456,38 @@ var reducer = function (state = initialState, action) {
       console.log("UseDefaultTreeData");
       var findRootResults = findRoot(defaultTreeData,state.root);
       var defaultTree = treeConstructor(defaultTreeData,countItem(defaultMapData,state.isTrajet),findRootResults[0]);
+      var nameMap = treeNameMap(defaultTreeData);
       return Object.assign({}, state, {
         treeData:defaultTree,
-        root:findRootResults[0]
+        root:findRootResults[0],
+        nameMap : nameMap
       })
     case actionTypes.GetDataFromUrlForMap:
       console.log("GetDataFromUrlForMap",action.urlDataForMap);
       var checkedlist=[];
       var findRootResults = findRoot(state.urlDataForTree?state.urlDataForTree:defaultTreeData,state.root);
       var globalContentSearchResult = globalContentSearch(action.urlDataForMap,state.isTrajet,checkedItem(state.treeData,checkedlist),state.keyword);
+      var nameMap = treeNameMap(state.urlDataForTree?state.urlDataForTree:defaultTreeData);
       return Object.assign({}, state, {
         urlDataForMap:action.urlDataForMap,
         treeData:treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(globalContentSearchResult[1],state.isTrajet),findRootResults[0]),
         geoData:globalContentSearchResult[0],
         geojsonForPath : globalContentSearchResult[3],
         root:findRootResults[0],
-        tableData : globalContentSearchResult[4]
+        tableData : globalContentSearchResult[4],
+        nameMap: nameMap
       })
     case actionTypes.GetDataFromUrlForTree:
       console.log("GetDataFromUrlForTree",action.urlDataForTree);
       var checkedlist=[];
       var findRootResults = findRoot(action.urlDataForTree,state.root);
       var treeConstructorResult = treeConstructor(action.urlDataForTree,countItem(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet),findRootResults[0]);
+      var nameMap = treeNameMap(action.urlDataForTree);
       return Object.assign({}, state, {
         urlDataForTree:action.urlDataForTree,
         treeData:treeConstructorResult,
-        root:findRootResults[0]
+        root:findRootResults[0],
+        nameMap : nameMap
       })
     case actionTypes.GetDataFromUrlForTreeAndMap:
       console.log("GetDataFromUrlForTreeAndMap",action.urlDataForTree,action.urlDataForMap);

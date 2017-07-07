@@ -20,6 +20,7 @@ var TreeNodeMixin = {
 
     return extend({
       ancestor: ancestor,
+      nameMap: rootProps.nameMap,
       onClick: rootProps.onTreeNodeClick,
       onCheckChange: rootProps.onTreeNodeCheckChange,
       onSelectChange: rootProps.onTreeNodeSelectChange,

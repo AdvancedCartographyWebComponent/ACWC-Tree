@@ -32,6 +32,7 @@ var TreeMenu = React.createClass({
       React.PropTypes.array,
       React.PropTypes.object
     ]),
+    nameMap : React.PropTypes.object,
     labelFilter: React.PropTypes.func,
     labelFactory: React.PropTypes.func,
     checkboxFactory: React.PropTypes.func,
@@ -76,7 +77,7 @@ var TreeMenu = React.createClass({
 
 
     treeData = treeMenuProps.data;
-
+    //console.log("menu props",treeMenuProps);
 
     var thisComponent = this;
 
@@ -101,7 +102,7 @@ var TreeMenu = React.createClass({
         }
 
         nodeProps = assign(nodeProps, thisComponent.getTreeNodeProps(treeMenuProps, nodeProps, ancestor, isRootNode, i));
-
+        //console.log("nodeProps",nodeProps);
         return TreeNodeFactory(nodeProps, children);
 
       });

@@ -17,9 +17,7 @@ var App = React.createClass({
     return {isBusy: false};
   },
   componentDidUpdate: function(prevProps, prevState){
-    console.log("tree componentDidUpdate",this.props.urlQuery);
     this.props.urlQuery&&md5(JSON.stringify(this.props.urlQuery))!==md5(JSON.stringify(prevProps.urlQuery))?this._getUrlData(this.props.urlQuery):null;
-    console.log("tree componentDidUpdate again");
   },
   render: function() {
     if(!isQuery){
@@ -28,6 +26,7 @@ var App = React.createClass({
     }
     //this.props.actions.isTyping(false);
     console.log("render");
+    console.log("nameMap",this.props.nameMap);
     var typingTimer = null;             //timer identifier
     var doneTypingInterval = 1000;
     var typingValue = null;  //time in ms, 5 second for example
@@ -50,7 +49,7 @@ var App = React.createClass({
           }}/>
       </div>
       <div className="row">
-        <div className="col-lg-3">
+        <div className="col-lg-4">
           <Scrollbars style={{ width: "100%", height: "90vh" }}>{dynamicExample}</Scrollbars>
 
         </div>
@@ -113,7 +112,8 @@ var App = React.createClass({
         onTreeNodeClick={this._setLastActionState.bind(this, "clicked")}
         onTreeNodeCollapseChange={this._handleDynamicObjectTreeNodePropChange.bind(this,"collapsed")}
         onTreeNodeCheckChange={this._handleDynamicObjectTreeNodePropChange.bind(this,"checked")}
-        data={this.props.treeData} />
+        data={this.props.treeData}
+        nameMap = {this.props.nameMap}/>
     ):
     (<div><i className="fa fa-circle-o-notch fa-spin fa-fw"></i>Loading...</div>);
 
@@ -244,6 +244,7 @@ var App = React.createClass({
 const mapStateToProps = state => ({
   treeData:state.treeData,
   lastChange:state.lastChange,
+  nameMap : state.nameMap
 })
 
 const mapDispatchToProps = dispatch => ({

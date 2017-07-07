@@ -60,7 +60,7 @@ var TreeNode = React.createClass({
         return (
           <label className={labelClassName}>
             <label className={labelClassName}>{"Num: "+count}</label>
-            <label className={labelClassName}>{"        "+displayLabel}</label>
+            <label className={labelClassName}>&#160;&#160;&#160;&#160;{displayLabel}</label>
           </label>);
       },
       checkboxFactory: function (className, isChecked, displayLabel) {
@@ -170,7 +170,7 @@ var TreeNode = React.createClass({
     var count = props.num;
 
     if (props.labelFilter) displayLabel = props.labelFilter(displayLabel);
-
+    if (props.nameMap) displayLabel = props.nameMap[displayLabel]?props.nameMap[displayLabel]:displayLabel;
     return this.props.labelFactory(labelClassName, displayLabel,count, this._getLineage());
   },
 
