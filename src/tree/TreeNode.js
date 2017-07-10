@@ -39,6 +39,7 @@ var TreeNode = React.createClass({
   },
 
   getDefaultProps: function () {
+    //labelFactory : output label of each taxomony 
     return {
       stateful: false,
       collapsible: true,
@@ -59,8 +60,7 @@ var TreeNode = React.createClass({
       labelFactory: function (labelClassName, displayLabel, count) {
         return (
           <label className={labelClassName}>
-            <label className={labelClassName}>{"Num: "+count}</label>
-            <label className={labelClassName}>&#160;&#160;&#160;&#160;{displayLabel}</label>
+            <label className={labelClassName}>&#160;&#160;&#160;&#160;{displayLabel+':'+count}</label>
           </label>);
       },
       checkboxFactory: function (className, isChecked, displayLabel) {

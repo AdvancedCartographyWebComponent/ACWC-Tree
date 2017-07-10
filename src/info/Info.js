@@ -16,7 +16,7 @@ class Info extends Component {
       classNameParent = classNameParent.concat(" show");
       document.getElementById('sidebar').style.zIndex=1;
     }else{
-      document.getElementById('carte').style.width="76%";
+      document.getElementById('carte').style.width="71%";
       document.getElementById('sidebar').style.zIndex=-1;
     }
     return (

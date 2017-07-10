@@ -32,9 +32,9 @@ var App = React.createClass({
     var typingValue = null;  //time in ms, 5 second for example
     var dynamicExample = this._getExamplePanel(this._getDynamicTreeExample());
     return <div className="container">
-      <div className="input-group margin-bottom-sm">
+      <div className="input-group margin-bottom-sm col-md-3">
         <span className="fa fa-search"></span>
-        <input className="global-search" type="text" placeholder="Search"
+        <input className="global-search " type="text" placeholder="Search"
           onChange={(e)=>{
             isTyping?null:this.props.actions.isTyping(true);
             isTyping = true;
@@ -49,7 +49,7 @@ var App = React.createClass({
           }}/>
       </div>
       <div className="row">
-        <div className="col-lg-4">
+        <div className="col-md-4">
           <Scrollbars style={{ width: "100%", height: "90vh" }}>{dynamicExample}</Scrollbars>
 
         </div>

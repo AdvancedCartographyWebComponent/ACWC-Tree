@@ -86,10 +86,11 @@ let actions = {
       trajet
     }
   },
-  toggleTable(isTable){
+  toggleTable(isTable,tableType){
     return{
       type: actionTypes.ToggleTable,
-      isTable
+      isTable,
+      tableType
     }
   }
 };

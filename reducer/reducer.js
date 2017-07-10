@@ -410,7 +410,8 @@ const initialState = {
   isTrajet : false,
   geojsonForPath :defaultGeoJson[3],
   checkedItem : [],
-  nameMap : {}
+  nameMap : {},
+  tableType : 1,
 };
 var reducer = function (state = initialState, action) {
   switch (action.type) {
@@ -542,9 +543,10 @@ var reducer = function (state = initialState, action) {
         isTrajet : action.trajet
       })
     case actionTypes.ToggleTable:
-      console.log("ToggleTable",action.isTable);
+      console.log("ToggleTable",action.isTable,action.tableType);
       return Object.assign({}, state, {
-        isTable : action.isTable
+        isTable : action.isTable,
+        tableType : action.tableType
       })
     default:
       return state;

@@ -12,16 +12,30 @@ class App extends Component {
   render() {
     //console.log("this.props.isTable",this.props.isTable,this.props.tableData);
     if(this.props.isTable){
-      return <Panel header={<span>Admin</span>}><Table/></Panel>;
+      console.log("this.props.isTable",this.props.tableType);
+      if(this.props.tableType==="1"){
+        document.getElementById('table').style.top=null;
+        document.getElementById('table').style.bottom="29px";
+        document.getElementById('carte').style.display="inline-block";
+      }else {
+        document.getElementById('table').style.bottom=null;
+        document.getElementById('table').style.top="10px";
+        document.getElementById('carte').style.display="none";
+      }
+      return <Table isExit={this.props.tableType==="2"?true:false} actions = {this.props.actions}/>;
     }else {
-      //console.log("render nothing");
+      if(this.props.tableType===1){
+      }else {
+        document.getElementById('carte').style.display="inline-block";
+      }
       return null;
     }
   }
 }
 const mapStateToProps = state => ({
   isTable : state.isTable,
-  tableData : state.tableData
+  tableData : state.tableData,
+  tableType : state.tableType
 })
 
 const mapDispatchToProps = dispatch => ({

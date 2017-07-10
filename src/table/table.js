@@ -12,6 +12,26 @@ class Table extends React.Component {
     //console.log("this.props.data",this.props.data,this.props.data.length);
     //console.log("this.props",this.props);
     this.iconFormatter = this.iconFormatter.bind(this);
+    this.createCustomButtonGroup = this.createCustomButtonGroup.bind(this);
+  }
+  createCustomButtonGroup = props => {
+    const style = {
+      left:"65%"
+    };
+    if(this.props.isExit){
+      return (
+        <ButtonGroup style={style} sizeClass='btn-group-md'>
+          <button type='button'
+            className={ `btn btn-info` }
+            onClick={()=>this.props.actions.toggleTable(false,2)}>
+            Back to Map
+          </button>
+        </ButtonGroup>
+      );
+    }else {
+      return null;
+    }
+
   }
   iconFormatter(cell){
     console.log("iconFormatter cell",cell);
@@ -24,11 +44,32 @@ class Table extends React.Component {
   }
   render() {
     console.log("window.infoKeyForTable",window.infoKeyForTable);
+    const options = {
+      page: 1,  // which page you want to show as default
+      sizePerPageList: [ {
+        text: '5 Record Per Page', value: 5
+      }], // you can change the dropdown list for size per page
+      sizePerPage: 5,  // which size per page you want to locate as default
+      pageStartIndex: 1, // where to start counting the pages
+      paginationSize: 5,  // the pagination bar size.
+      prePage: '<', // Previous page button text
+      nextPage: '>', // Next page button text
+      firstPage: '<<', // First page button text
+      lastPage: '>>', // Last page button text
+      prePageTitle: 'Previous', // Previous page button title
+      nextPageTitle: 'Next', // Next page button title
+      firstPageTitle: 'First', // First page button title
+      lastPageTitle: 'Last', // Last page button title
+      paginationPosition: 'bottom',  // default is bottom, top and both is all available
+      btnGroup: this.createCustomButtonGroup
+    }
     return (
       <div>
         <BootstrapTable
           data={ this.props.tableData }
-          pagination>
+          pagination
+          options={ options }
+          maxHeight="695px">
           {
             window.infoKeyForTable?(window.infoKeyForTable.map((value,index)=>{
               console.log("value",value,"index",index);
@@ -46,6 +87,7 @@ class Table extends React.Component {
                   <TableHeaderColumn
                     dataField={value.key}
                     isKey={index===0?true:false}
+                    filter={ { type: 'TextFilter', placeholder: 'Please enter a value' } }
                     dataSort>
                     {value.displayValue}
                   </TableHeaderColumn>);

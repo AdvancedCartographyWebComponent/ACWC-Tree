@@ -20,6 +20,7 @@ let config = {};
 var tableData = [];
 config.params = mapContext.params;
 config.tileLayer = mapContext.tileLayer;
+//TODO ?zoom=7&&centerx=48.836703centery=2.334345
 const USER_TYPE = serverContext.USER_TYPE;
 const SERVICE_PORT = serverContext.SERVICE_PORT;
 class Map extends Component {
@@ -33,7 +34,7 @@ class Map extends Component {
       driversFilter: '*',
       numUser: null,
       sidebar:null,
-      isTable : null
+      isTableMap : null
     };
     this.isServer = this.props.isServer?this.props.isServer:"false";
     this.geojsonDivision = {};
@@ -59,7 +60,8 @@ class Map extends Component {
     this.hideIcons = this.hideIcons.bind(this);
     this.markerAndIcons = this.markerAndIcons.bind(this);
     this.updateGeojsonPath = this.updateGeojsonPath.bind(this);
-    this.handleButtonClick = this.handleButtonClick.bind(this);
+    this.handleTMButtonClick = this.handleTMButtonClick.bind(this);
+    this.handleTButtonClick = this.handleTButtonClick.bind(this);
   }
 
   componentDidMount() {
@@ -135,13 +137,24 @@ class Map extends Component {
      clearInterval(this.postDataID);
   }
 
-  handleButtonClick(event){
-    this.props.actions.toggleTable(!this.state.isTable);
+  handleTMButtonClick(event){
+    this.props.actions.toggleTable(!this.state.isTableMap,"1");
+    if(!this.state.isTableMap){
+      document.getElementById('carte').style.height="51vh";
+    }
+    else{
+      document.getElementById('carte').style.height="95vh";
+    }
+    this.setState({
+      isTableMap:!this.state.isTableMap
+    })
+  }
+  handleTButtonClick(event){
+    this.props.actions.toggleTable(!this.state.isTable,"2");
     this.setState({
       isTable:!this.state.isTable
     })
   }
-
   getData() {
     if(this.urlQuery){
       this.getDataFromUrl(this.urlQuery);
@@ -544,7 +557,7 @@ class Map extends Component {
     let map = L.map(id, config.params);
     map.on('click',function () {
       cur.props.actions.closeSideBar();
-      document.getElementById('carte').style.width="76%";
+      document.getElementById('carte').style.width="71%";
     })
     L.control.zoom({ position: "bottomleft"}).addTo(map);
     L.control.scale({ position: "bottomleft"}).addTo(map);
@@ -562,8 +575,9 @@ class Map extends Component {
           cur.props.isTyping &&
             <LoadingPage/>
         }
-        <div>
-          <button type="button" className='maptable' onClick = {this.handleButtonClick}>{this.state.isTable?'Map View':'Table View'}</button>
+        <div className='maptable'>
+          <button type="button" className='maptableChild' onClick = {this.handleTMButtonClick}>{this.state.isTableMap?'Map':'Table&Map'}</button>
+          <button type="button" className='maptableChild' onClick = {this.handleTButtonClick}>Table</button>
         </div>
         <div ref={(node) => { cur._mapNode = node}} id="map" />
       </div>
