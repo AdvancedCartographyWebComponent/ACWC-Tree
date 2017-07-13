@@ -49,7 +49,7 @@ var params = {
           "mapDataUrl":"https://sementicbus-simonzen.rhcloud.com/data/api/PlateformeWebAlternativeACWC",
           "treeDataUrl" : "https://semanticbus.cleverapps.io/data/api/TaxonomiePWA"
         };
-var paramsString = encodeURIComponent(SON.stringify(params))
+var paramsString = encodeURIComponent(JSON.stringify(params))
 ```  
 **params** have 5 properties: 
 infoKeyForTable  
