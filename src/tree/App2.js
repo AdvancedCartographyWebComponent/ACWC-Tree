@@ -8,33 +8,34 @@ class App2 extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      treeUrl : null
+      treeDataUrl : null
     };
   }
   componentDidMount() {
-    window.treeUrl = null;
     this.checkDataSource = setInterval(
       () => {
         //console.log("window.testValue",window.testValue);
-        if(window.treeUrl&&(!this.state.treeUrl||md5(JSON.stringify(window.treeUrl))!==md5(JSON.stringify(this.state.treeUrl)))){
+        if(window.treeDataUrl&&(!this.state.treeDataUrl||md5(JSON.stringify(window.treeDataUrl))!==md5(JSON.stringify(this.state.treeDataUrl)))){
           console.log("differ");
-          this.setState({treeUrl : window.treeUrl});
-          //this.getDataFromUrl(window.treeUrl);
+          this.setState({treeDataUrl : window.treeDataUrl});
+          //this.getDataFromUrl(window.treeDataUrl);
         }
       },
       100
     );
   }
   render() {
-    //console.log("App 2 tree url search",this.props.location.search.split("&&"));
-    var urlList = this.props.location.search.split("&&");
+    var paramsString = this.props.location.search.split("?params=");
+    paramsString = paramsString.length>1?paramsString[1]:null;
+    var paramsObject = JSON.parse(decodeURIComponent(paramsString));
+    console.log("paramsObject",paramsObject);
+    var params = paramsObject?Object.keys(paramsObject):null;
     var urlForTree = [];
-    for (var obj in urlList){
-      //console.log(urlList[obj]);
-      if(urlList[obj].slice(1,4)==="sko") urlForTree.push(urlList[obj]);
+    if(params&&params.indexOf("treeDataUrl")!=="-1"){
+      urlForTree.push(paramsObject["treeDataUrl"]);
     }
     //console.log("urlForTree",urlForTree);
-    var url = urlForTree.length>0?urlForTree[0]:window.treeUrl?window.treeUrl:null;
+    var url = urlForTree.length>0?urlForTree[0]:window.treeDataUrl?window.treeDataUrl:null;
     console.log("tree url",url);
     return <Tree urlQuery={url}/>;
   }

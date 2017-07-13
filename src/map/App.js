@@ -7,28 +7,28 @@ import { bindActionCreators } from 'redux';
 // App component
 class App extends Component {
   render() {
-    var urlList = this.props.location.search.split("&&");
-    console.log("urls",this.props.location);
-    var urlForMap = [];
-    for (var obj in urlList){
-      //console.log(urlList[obj]);
-      if(urlList[obj].slice(1,5)==="view") {
-        var isTrajetFromUrl=urlList[obj].slice(6);
-        console.log("isTrajetFromUrl",isTrajetFromUrl);
-        switch (isTrajetFromUrl) {
-          case "points":
-            this.props.actions.isTrajet(false);
-            break;
-          case "path":
-            this.props.actions.isTrajet(true);
-            break;
-          default:
-            this.props.actions.isTrajet(false);
-        }
+    var paramsString = this.props.location.search.split("?params=");
+    paramsString = paramsString.length>1?paramsString[1]:null;
+    var paramsObject = JSON.parse(decodeURIComponent(paramsString));
+    console.log("paramsObject",paramsObject);
+    var params = paramsObject?Object.keys(paramsObject):null;
+    if(params&&params.indexOf("view")!=="-1"){
+      switch (paramsObject["view"]) {
+        case "points":
+          this.props.actions.isTrajet(false);
+          break;
+        case "path":
+          this.props.actions.isTrajet(true);
+          break;
+        default:
+          this.props.actions.isTrajet(false);
       }
-      if(urlList[obj].slice(1,4)==="geo"||urlList[obj].slice(1,4)==="sql") urlForMap.push(urlList[obj]);
     }
-    return <Map isServer={this.props.isServer} urlQuery={urlForMap.length>0?urlForMap[0]:null}/>;
+    var urlForMap = [];
+    if(params&&params.indexOf("mapDataUrl")!=="-1"){
+      urlForMap.push(paramsObject["mapDataUrl"])
+    }
+    return <Map isServer={this.props.isServer} mapDataUrl={urlForMap.length>0?urlForMap[0]:null}/>;
   }
 }
 const mapStateToProps = state => ({

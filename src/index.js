@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App_tree from './tree/App2'
 import App_map from './map/App'
-import Info from './info/Info'
+import App_Info from './info/App'
 import App_Table from './table/App'
 import './tree/index.css';
 import './tree/app.css';
@@ -40,13 +40,17 @@ ReactDOM.render(
 );
 ReactDOM.render(
   <Provider store={store}>
-    <Info/>
+    <Router>
+      <Route component={(props) => <App_Info {...props}/>}/>
+    </Router>
   </Provider>,
   document.getElementById('sidebar')
 );
 ReactDOM.render(
   <Provider store={store}>
-    <App_Table/>
+    <Router>
+      <Route component={(props) => <App_Table {...props}/>}/>
+    </Router>
   </Provider>,
   document.getElementById('table')
 );

@@ -6,6 +6,7 @@
     "json-loader": "^0.5.4",
     "classnames": "^2.2.5",
     "prop-types": "^15.5.8",
+    "jsonld" : "0.4.12",
     "leaflet": "^1.0.0",
     "leaflet.markercluster":"^1.0.5",
     "leaflet-extra-markers":"^1.0.4",

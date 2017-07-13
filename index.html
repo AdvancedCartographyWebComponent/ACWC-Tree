@@ -15,34 +15,56 @@
     -->
     <title>React App</title>
     <script>
-      var mapDataUrl = "?geo=https://sementicbus-simonzen.rhcloud.com/data/api/PlateformeWebAlternativeACWC";
-      var mapContext = {
+      mapDataUrl = "https://sementicbus-simonzen.rhcloud.com/data/api/PlateformeWebAlternativeACWC";
+      treeDataUrl = "https://semanticbus.cleverapps.io/data/api/TaxonomiePWA";
+      mapContext = {
         "center":[48.836703,2.334345],
         "zoom": 6
       };
-      var infoKeyForTable=[
-        {key:'Subject',displayValue:'Subject'},
-        {key:'Name',displayValue:'Name'},
-        {key:'markerAndIcons',displayValue:'Icons'}
+      infoKeyForTable=[
+        {"key":"Subject","displayValue":"Subject"},
+        {"key":"Name","displayValue":"Name"},
+        {"key":'markerAndIcons',"displayValue":'Icons'}
       ];
-      var infoKeyForPanel=[
-        {key:'Subject',displayValue:'Subject'},
-        {key:'Name',displayValue:'Name'},
-        {key:'Abstract',displayValue:'Abstract'}];
+      infoKeyForPanel=[
+        {"key":"Subject","displayValue":"Subject"},
+        {"key":"Name","displayValue":"Name"},
+        {"key":"Abstract","displayValue":"Abstract"}];
+
+      /*var params = {
+          "infoKeyForTable":[
+            {"key":"Subject","displayValue":"Subject"},
+            {"key":"Name","displayValue":"Name"},
+            {"key":"markerAndIcons","displayValue":"Icons"}
+          ],
+          "infoKeyForPanel":[
+            {"key":"Subject","displayValue":"Subject"},
+            {"key":"Abstract","displayValue":"Abstract"},
+            {"key":"Name","displayValue":"Name"},
+
+          ],
+          "mapContext": {
+            "center":[48.836703,2.334345],
+            "zoom": 6
+          },
+          "mapDataUrl":"https://sementicbus-simonzen.rhcloud.com/data/api/PlateformeWebAlternativeACWC",
+          "treeDataUrl" : "https://semanticbus.cleverapps.io/data/api/TaxonomiePWA"
+        };*/
     </script>
+
   </head>
   <body>
     <div>
 	     <div id="tree" style="
     	display: inline-block;
-    	border: 1px solid red;
+    	border: 1px solid gainsboro;
     	margin-top: 10px;
     	height: 95vh;
     	width: 25%;
     	position: relative;"></div>
     	<div id="carte" style="
    	 display: inline-block;
-   	 border: 1px solid red;
+   	 border: 1px solid gainsboro;
    	 margin: 10px;
    	 height: 95vh;
      width: 70%;
@@ -56,7 +78,7 @@
      width: 28%;
      position: absolute;
      right : 0px;
-     transition : 0.5s;
+     transition : 0.2s;
      z-index : -1">
      </div>
      <div id="table" style="
@@ -65,7 +87,7 @@
      bottom: 29px;
      z-index: 20;
      left: 26%;
-     border: 1px solid red;
+     border: 1px solid gainsboro;
      transition : 0.5s;
      right : 0px;
      background:white">

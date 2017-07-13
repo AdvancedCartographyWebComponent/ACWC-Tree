@@ -22,8 +22,8 @@ class Table extends React.Component {
       return (
         <ButtonGroup style={style} sizeClass='btn-group-md'>
           <button type='button'
-            className={ `btn btn-info` }
-            onClick={()=>this.props.actions.toggleTable(false,2)}>
+            className={ `btn btn-primary` }
+            onClick={()=>this.props.actions.toggleTable(false,"2")}>
             Back to Map
           </button>
         </ButtonGroup>
@@ -34,22 +34,28 @@ class Table extends React.Component {
 
   }
   iconFormatter(cell){
-    console.log("iconFormatter cell",cell);
+    //console.log("iconFormatter cell",cell);
     let iconString = '';
     cell?cell.map((value,index)=>{
-      console.log('map cell value',value);
+      //console.log('map cell value',value);
       iconString = iconString.concat(`<i class='fa fa-${value.icon}' style='color :${value.color};font-size:18px'></i>`);
     }):iconString='No Icons Info in the Data Set!'
     return iconString;
   }
   render() {
-    console.log("window.infoKeyForTable",window.infoKeyForTable);
+    console.log("render table",this.props.infoKeyForTable);
     const options = {
       page: 1,  // which page you want to show as default
-      sizePerPageList: [ {
+      sizePerPageList: this.props.isExit?[ {
+        text: '15 Record Per Page', value: 15
+      },{
+        text: 'All', value: this.props.tableData.length
+      }]:[ {
         text: '5 Record Per Page', value: 5
+      },{
+        text: 'All', value: this.props.tableData.length
       }], // you can change the dropdown list for size per page
-      sizePerPage: 5,  // which size per page you want to locate as default
+      sizePerPage: this.props.isExit?15:5,  // which size per page you want to locate as default
       pageStartIndex: 1, // where to start counting the pages
       paginationSize: 5,  // the pagination bar size.
       prePage: '<', // Previous page button text
@@ -69,10 +75,10 @@ class Table extends React.Component {
           data={ this.props.tableData }
           pagination
           options={ options }
-          maxHeight="695px">
+          maxHeight={this.props.isExit?"645px":"260px"}>
           {
-            window.infoKeyForTable?(window.infoKeyForTable.map((value,index)=>{
-              console.log("value",value,"index",index);
+            this.props.infoKeyForTable?this.props.infoKeyForTable.map((value,index)=>{
+              //console.log("value",value,"index",index);
               if(value.key==="markerAndIcons"){
                 return (
                   <TableHeaderColumn
@@ -92,7 +98,8 @@ class Table extends React.Component {
                     {value.displayValue}
                   </TableHeaderColumn>);
               }
-            })):null
+            })
+            :null
           }
         </BootstrapTable>
       </div>
@@ -100,7 +107,8 @@ class Table extends React.Component {
   }
 }
 const mapStateToProps = state => ({
-  tableData : state.tableData
+  tableData : state.tableData,
+  mapRef : state.mapRef
 })
 
 const mapDispatchToProps = dispatch => ({

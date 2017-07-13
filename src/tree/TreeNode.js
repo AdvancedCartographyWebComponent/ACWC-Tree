@@ -39,7 +39,7 @@ var TreeNode = React.createClass({
   },
 
   getDefaultProps: function () {
-    //labelFactory : output label of each taxomony 
+    //labelFactory : output label of each taxomony
     return {
       stateful: false,
       collapsible: true,
@@ -57,10 +57,11 @@ var TreeNode = React.createClass({
       checked : false,
       expandIconClass: "",
       collapseIconClass: "",
-      labelFactory: function (labelClassName, displayLabel, count) {
+      labelFactory: function (labelClassName, displayLabel, count, iconString) {
         return (
           <label className={labelClassName}>
             <label className={labelClassName}>&#160;&#160;&#160;&#160;{displayLabel+':'+count}</label>
+            {iconString}
           </label>);
       },
       checkboxFactory: function (className, isChecked, displayLabel) {
@@ -156,6 +157,19 @@ var TreeNode = React.createClass({
     );
 
   },
+  _iconFormatter: function(cell){
+    //console.log("iconFormatter cell",cell);
+    let iconString = '';
+    cell&&cell.length>0?iconString = cell.map((value,index)=>{
+      //console.log('map cell value',value);
+      const style = {
+        "color" :value["color"],
+        "font-size":"18px"
+      };
+      return <i className={'fa fa-'+value["icon"]} style={style}></i>
+    }):iconString='';
+    return iconString;
+  },
 
   _getLabelNode: function () {
 
@@ -168,10 +182,11 @@ var TreeNode = React.createClass({
 
     var displayLabel = props.label;
     var count = props.num;
-
+    var markerAndIcons = props.markerAndIcons;
+    var iconString = this._iconFormatter(markerAndIcons);
     if (props.labelFilter) displayLabel = props.labelFilter(displayLabel);
     if (props.nameMap) displayLabel = props.nameMap[displayLabel]?props.nameMap[displayLabel]:displayLabel;
-    return this.props.labelFactory(labelClassName, displayLabel,count, this._getLineage());
+    return this.props.labelFactory(labelClassName, displayLabel,count, iconString, this._getLineage());
   },
 
   _getCheckboxNode: function () {

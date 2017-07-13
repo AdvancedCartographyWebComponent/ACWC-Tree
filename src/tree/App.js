@@ -83,7 +83,6 @@ var App = React.createClass({
 
   _getUrlData: function(url){
     var cur = this;
-    console.log("Tree _getUrlData",url.slice(5));
     this.geoCollection = {
       "type": "FeatureCollection",
       "features": []
@@ -91,7 +90,7 @@ var App = React.createClass({
     if(1){
       axios({
       method: 'get',
-      url: url.slice(5),
+      url: url,
       headers: {
           'Accept': 'application/ld+json, application/json',
           'Content-Type': 'application/ld+json, application/json'

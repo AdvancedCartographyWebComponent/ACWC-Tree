@@ -28,16 +28,26 @@ class Info extends Component {
                         Info of POI
                         <span className="sidebar-close"  onClick={()=>this.props.actions.closeSideBar()}><i className="fa fa-caret-right"></i></span>
                     </h1>
+                    <div>
                     {
-                      !window.infoKeyForPanel?
-                        (this.props.Info?Object.keys(this.props.Info.properties).map((key, index)=>{
-                          if(key!=="markerAndIcons") return (<p key={key}>{key+"\t:\t"+this.props.Info.properties[key]}</p>)
-                        }):null):
-                        (this.props.Info?window.infoKeyForPanel.map((value,index)=>{
-                          return (<p key={value.key}>{value.displayValue+"\t:\t"+this.props.Info.properties[value.key]}</p>)
-                        }):null)
+                      !this.props.infoKeyForPanel?
+                      (
+                        !window.infoKeyForPanel?
+                          (this.props.Info?Object.keys(this.props.Info.properties).map((key, index)=>{
+                            if(key!=="markerAndIcons") return (<p key={key}>{key+"\t:\t"+this.props.Info.properties[key]}</p>)
+                          }):null)
+                          :
+                          (this.props.Info?window.infoKeyForPanel.map((value,index)=>{
+                            return (<p key={value.key}>{value.displayValue+"\t:\t"+this.props.Info.properties[value.key]}</p>)
+                          }):null)
+                      )
+                      :
+                      (this.props.Info?this.props.infoKeyForPanel.map((value,index)=>{
+                        return (<p key={value.key}>{value.displayValue+"\t:\t"+this.props.Info.properties[value.key]}</p>)
+                      }):null)
 
                     }
+                    </div>
                 </div>
             </div>
       </div>):null
@@ -47,7 +57,8 @@ class Info extends Component {
 }
 const mapStateToProps = state => ({
   isInfo:state.isInfo,
-  Info:state.Info
+  Info:state.Info,
+  mapRef : state.mapRef
 })
 
 const mapDispatchToProps = dispatch => ({

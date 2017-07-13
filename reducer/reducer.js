@@ -1,9 +1,10 @@
 const actionTypes = require('../actiontype/actionType');
-const defaultTreeData = require('json!../data/test/World_Heritage_Sites.skos.jsonld');
+const defaultTreeData = {"@graph":[]};//require('json!../data/test/World_Heritage_Sites.skos.jsonld');
 //const defaultTreeData = require('json!../data/test/scooterTree.jsonld');
-const defaultMapData = require('json!../data/test/exemple_villes.jsonld');
+const defaultMapData = {"@graph":[]};//require('json!../data/test/exemple_villes.jsonld');
 //const defaultMapData = require('json!../data/test/scooter2.jsonld');
 const ScooterInfo = require('../Context/scooterInfo');
+var jsonld = require('jsonld');
 var _ = require('lodash');
 var simplify = require('simplify-geometry');
 var Immutable = require('immutable');
@@ -17,12 +18,12 @@ var treeConstructor = function (rawData,countList,root){
         checkbox: false,
         collapsed:true,
         children:{},
+        markerAndIcons:[],
         num:countList["Exclued Data"]
       }
     };
   }
   var treeData = buildTree(tree,root,rawData["@graph"],countList);
-  console.log("buildTree result",treeData);
   for(var num in root){
     countParentsNum(treeData,formatString(root[num]));
   }
@@ -60,6 +61,7 @@ var buildTree = function(tree,parentId,rawData,countList){
     var broader = value["broader"]?value["broader"]:null;
     var name = value["prefLabel"]?value["prefLabel"]["@value"]:null;
     var language = value["prefLabel"]?value["prefLabel"]["@language"]:null;
+    var markerAndIcons = value["markerAndIcons"]?value["markerAndIcons"]:null;//[{"icon":"motorcycle","color":"CADETBLUE","number":null}];
     if((typeof broader === 'object')&&broader){
       broader.map((value)=>{
         if (parentId.indexOf(value)!=-1) {
@@ -69,6 +71,7 @@ var buildTree = function(tree,parentId,rawData,countList){
               checkbox: true,
               collapsed:true,
               children:{},
+              markerAndIcons:markerAndIcons,
               num:countList[formatString(id)]?countList[formatString(id)]:0
             };
           }
@@ -79,17 +82,19 @@ var buildTree = function(tree,parentId,rawData,countList){
               checkbox: true,
               collapsed:true,
               children:{},
+              markerAndIcons:markerAndIcons,
               num:countList[formatString(id)]?countList[formatString(id)]:0
             };
             tree[formatString(value)] = {
-            checked: false,
-            checkbox: true,
-            collapsed:true,
-            children:child,
-            num:0
-          };
-        }
-        buildTree(tree[formatString(value)]["children"],[id],rawData);
+              checked: false,
+              checkbox: true,
+              collapsed:true,
+              children:child,
+              markerAndIcons:[],
+              num:0
+            };
+          }
+          buildTree(tree[formatString(value)]["children"],[id],rawData);
         }
       })
     }
@@ -101,17 +106,18 @@ var buildTree = function(tree,parentId,rawData,countList){
             checkbox: true,
             collapsed:true,
             children:{},
+            markerAndIcons:markerAndIcons,
             num:countList[formatString(id)]?countList[formatString(id)]:0
           };
         }
-        else
-        {
+        else{
           var child = {};
           child[formatString(id)]= {
             checked: false,
             checkbox: true,
             collapsed:true,
             children:{},
+            markerAndIcons:markerAndIcons,
             num:countList[formatString(id)]?countList[formatString(id)]:0
           };
           tree[formatString(broader)]={
@@ -119,23 +125,28 @@ var buildTree = function(tree,parentId,rawData,countList){
             checkbox: true,
             collapsed:true,
             children:child,
+            markerAndIcons:[],
             num:0
           };
+        }
+        buildTree(tree[formatString(broader)]["children"],[id],rawData,countList);
       }
-      buildTree(tree[formatString(broader)]["children"],[id],rawData,countList);
     }
-  }});
+  });
   //console.log("buildTree tree",tree);
   return tree
 }
 var checkedItem = function(treeData,checkedList){
   for(var obj in treeData){
     if(_.size(treeData[obj]["children"])>0){
+      treeData[obj]["checked"]&&checkedList.indexOf(obj)===-1?checkedList.push(obj):null;
       checkedItem(treeData[obj]["children"],checkedList);
     }
     else{
-      treeData[obj]["checked"]&&checkedList.indexOf(obj)==-1?checkedList.push(obj):null;    }
+      treeData[obj]["checked"]&&checkedList.indexOf(obj)===-1?checkedList.push(obj):null;
+    }
   }
+  console.log("checkedList",checkedList);
   return checkedList;
 }
 var countItem = function(geoData,isTrajet){
@@ -148,11 +159,23 @@ var countItem = function(geoData,isTrajet){
       else {
         allNames[name] = 1;
       }
+      var graph = instance["@graph"]?instance["@graph"]:null;
+      if (graph&&graph.length>=0) {
+        for (var i = 0; i < graph.length; i++) {
+          if (graph[i]["@id"] in allNames) {
+            allNames[graph[i]["@id"]]++;
+          }
+          else {
+            allNames[graph[i]["@id"]] = 1;
+          }
+        }
+      }
       return allNames;
     }, {});
   }else{
     var countList = {};
   }
+  console.log("countList",countList);
   return countList;
 }
 var findRoot = function(data,stateRoot){
@@ -178,7 +201,7 @@ var findRoot = function(data,stateRoot){
 
   })
   var root =tempRoot.length>0?tempRoot:_.difference(flattenBroader,flattenId);
-  console.log("find root",root,flattenId,flattenBroader);
+  //console.log("find root",root,flattenId,flattenBroader);
   return [root,flattenId,flattenBroader];
 
 }
@@ -204,7 +227,7 @@ var linkStringInLabel = function(labels){
   }
   return stringFinal;
 }
-var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
+var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keyword){
   var geojson = {};
   var dataForTable = [];
   var geojsonForPath = {
@@ -222,12 +245,11 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
   rawData["@graph"].map((instance,index) =>{
     var timestamp = instance["date"]||instance["http://purl.org/dc/terms/date"]?instance["date"]||instance["http://purl.org/dc/terms/date"]:null;
     var scooterId = instance["mobile"]?instance["mobile"].split(':')[1]:null;
-    //console.log("scooterId",scooterId,parseInt(scooterId),ScooterInfo[parseInt(scooterId)]);
     scooterId?scooterId =ScooterInfo[parseInt(scooterId)]:null;
     timestamp = timestamp?timestamp.slice(0,18).replace(/\D/g,""):null;
     var name = formatString(instance["label"]?linkStringInLabel(instance["label"]):"scooter");
     var subject = formatString(instance["subject"]?instance["subject"]:scooterId?scooterId:"Exclued Data");
-    //console.log("subject",subject);
+    var graph = instance["@graph"]?instance["@graph"]:null;
     var abstract = formatString(instance["abstract"]?instance["abstract"]["@value"]:"No Abstract Found");
     var markerAndIcons = instance["markerAndIcons"]?instance["markerAndIcons"]:null;
     var lat = instance["lat"];
@@ -237,29 +259,46 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
     var temp = (_.values(instance));
     //console.log('globalContentSearch',temp);
     if(_.size(keyWordList)>0){
-        for(var obj in temp){
-          if(!related){
-            if (typeof temp[obj] != 'object'){
-              for(var index in keyWordList){
-                if(!related){
-                  if(_.toLower(temp[obj]).includes(keyWordList[index])){
+      for(var obj in temp){
+        if(!related){
+          if (typeof temp[obj] != 'object'){
+            for(var index in keyWordList){
+              if(!related){
+                if(_.toLower(temp[obj]).includes(keyWordList[index])){
                     related = true;
-                    if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
+                    //TODO read data and construct a table of "@graph", then if linked to "@graph", checked
+                    if(!checkedItem||checkedItem.length===0||_.indexOf(checkedItem,subject)>=0){
                       matched = true;
                     }
+                    else if(graph&&graph.length>0){
+                      for (var i = 0; i < graph.length; i++) {
+                        if(_.indexOf(checkedItem,graph[i]["@id"])>=0&&graph[i]["@type"].slice(0,5)==="skos:"){
+                          matched = true;
+                          return;
+                        }
+                      }
+                    }
                   }
-                }
               }
-            }else{
+            }
+          }
+          else{
               var value = (_.values(temp[obj]));
               for(var indexV in value){
                 if(!related){
                   for(var indexK in keyWordList){
-                  if(!related){
-                    if(_.toLower(value[indexV]).includes(keyWordList[indexK])){
+                    if(!related){
+                      if(_.toLower(value[indexV]).includes(keyWordList[indexK])){
                         related = true;
                         if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
                           matched = true;
+                        }else if(graph&&graph.length>0){
+                          for (var i = 0; i < graph.length; i++) {
+                            if(_.indexOf(checkedItem,graph[i]["@id"])>=0&&graph[i]["@type"].slice(0,5)==="skos:"){
+                              matched = true;
+                              return;
+                            }
+                          }
                         }
                       }
                     }
@@ -267,15 +306,24 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
                 }
               }
             }
-          }
-        }
-      }else{
-        related=true;
-        if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
-          matched = true;
         }
       }
-      if(matched){
+    }
+    else{
+      related=true;
+      if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
+          matched = true;
+        }
+      else if(graph&&graph.length>0){
+          for (var i = 0; i < graph.length; i++) {
+            if(_.indexOf(checkedItem,graph[i]["@id"])>=0&&graph[i]["@type"].slice(0,5)==="skos:"){
+              matched = true;
+              break;
+            }
+          }
+        }
+    }
+    if(matched){
         if(isTrajet){
           matchedRawData["@graph"].push(instance);
           var dateWithTime = instance["@id"].split('/')[2];
@@ -288,38 +336,68 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
           }
           geoLine[scooterId]?null:geoLine[scooterId]=[];
           geoLine[scooterId].push(temp);
-        }else{
-          var feature =
-          {
-            "type": "Feature",
-            "properties": {
-              "Subject": subject,
-              "Name": name,
-              "Abstract":abstract,
-              "markerAndIcons":markerAndIcons
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [long,lat]
-            }
-          };
-          if(!geojson["features"]){
-            geojson ={
-              "type": "FeatureCollection",
-              "features": []
+        }
+        else{
+          var feature;
+          if(isScooter){
+            feature =
+            {
+              "type": "Feature",
+              "properties": {
+                "Details": "",
+                "Name": geoLine[count][obj]["scooterId"],
+                "markerAndIcons":[
+                  {icon:"motorcycle",color:"CADETBLUE",number:null},
+                  {icon:"number",color:"CADETBLUE",number:dateTemp%1000}],
+                "Date" : geoLine[count][obj]['date'],
+                "Time" : geoLine[count][obj]['time'],
+                "Battery Status" : "To be Getted",
+                "Speed" : "To be Getted"
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [long,lat]
+              }
             };
+            if(!geojson["features"]){
+              geojson ={
+                "type": "FeatureCollection",
+                "features": []
+              };
+            }
+          }
+          else {
+            feature =
+            {
+              "type": "Feature",
+              "properties": {
+                "Subject": subject,
+                "Name": name,
+                "Abstract":abstract,
+                "markerAndIcons":markerAndIcons
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [long,lat]
+              }
+            };
+            if(!geojson["features"]){
+              geojson ={
+                "type": "FeatureCollection",
+                "features": []
+              };
+            }
           }
           geojson["features"].push(feature);
           matchedRawData["@graph"].push(instance);
           dataForTable.push(feature.properties);
         }
       }
-      if(related){
+    if(related){
         relatedRawData["@graph"].push(instance);
       }
-
-    });
-    if(isTrajet) {
+  });
+  if(isTrajet) {
       geoLine = _.sortBy(geoLine, ['timestamp']);
       for(var count in geoLine){
         for(var obj in geoLine[count]){
@@ -370,7 +448,7 @@ var globalContentSearch = function(rawData,isTrajet,checkedItem,keyword){
         }
       }
     }
-    console.log("globalContentSearch",dataForTable);
+  console.log("globalContentSearch",[geojson,matchedRawData,relatedRawData,geojsonForPath,dataForTable]);
   return [geojson,matchedRawData,relatedRawData,geojsonForPath,dataForTable];
 }
 var updateTreeNum = function(tree,countList){
@@ -389,7 +467,7 @@ var updateTreeNum = function(tree,countList){
   }
   return temp;
 }
-const defaultGeoJson = globalContentSearch(defaultMapData,false);
+const defaultGeoJson = globalContentSearch(defaultMapData,false,false);
 //console.log('reducer window',window.infoKeyForPanel);
 const initialState = {
   content: "hello",
@@ -408,10 +486,12 @@ const initialState = {
   dynamicUrl : null,
   isTyping : false,
   isTrajet : false,
+  isScooter : false,
   geojsonForPath :defaultGeoJson[3],
   checkedItem : [],
   nameMap : {},
   tableType : 1,
+  mapRef : null
 };
 var reducer = function (state = initialState, action) {
   switch (action.type) {
@@ -433,7 +513,7 @@ var reducer = function (state = initialState, action) {
         var checkedlist=[];
         var tempCheckedItem = checkedItem(action.newdata,checkedlist);
         var findRootResults = findRoot(state.urlDataForTree?state.urlDataForTree:defaultTreeData,state.root);
-        var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet,
+        var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isScooter,state.isTrajet,
           tempCheckedItem,state.keyword);
         if(!state.isTrajet){
           return Object.assign({}, state, {
@@ -467,7 +547,7 @@ var reducer = function (state = initialState, action) {
       console.log("GetDataFromUrlForMap",action.urlDataForMap);
       var checkedlist=[];
       var findRootResults = findRoot(state.urlDataForTree?state.urlDataForTree:defaultTreeData,state.root);
-      var globalContentSearchResult = globalContentSearch(action.urlDataForMap,state.isTrajet,checkedItem(state.treeData,checkedlist),state.keyword);
+      var globalContentSearchResult = globalContentSearch(action.urlDataForMap,state.isScooter,state.isTrajet,checkedItem(state.treeData,checkedlist),state.keyword);
       var nameMap = treeNameMap(state.urlDataForTree?state.urlDataForTree:defaultTreeData);
       return Object.assign({}, state, {
         urlDataForMap:action.urlDataForMap,
@@ -503,7 +583,7 @@ var reducer = function (state = initialState, action) {
       console.log("GlobalSearch",action.keyword);
       var checkedlist=[];
       var tempCheckedItem = checkedItem(state.treeData,checkedlist);
-      var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet,tempCheckedItem,action.keyword);
+      var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isScooter,state.isTrajet,tempCheckedItem,action.keyword);
       var countItemResult = countItem(globalContentSearchResult[2]);//all matched points
       var updateTreeNumResult = updateTreeNum(state.treeData,countItemResult)
       for(var num in state.root){
@@ -547,6 +627,11 @@ var reducer = function (state = initialState, action) {
       return Object.assign({}, state, {
         isTable : action.isTable,
         tableType : action.tableType
+      })
+    case actionTypes.SendMapRef:
+      console.log("send map ref",action.mapRef);
+      return Object.assign({}, state, {
+        mapRef : action.mapRef
       })
     default:
       return state;

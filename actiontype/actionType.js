@@ -13,5 +13,6 @@ module.exports = {
   ReceiveGeoDataFromUrl : "ReceiveGeoDataFromUrl",
   IsTyping : "IsTyping",
   IsTrajet : "IsTrajet",
-  ToggleTable : "ToggleTable"
+  ToggleTable : "ToggleTable",
+  SendMapRef : "SendMapRef"
 };

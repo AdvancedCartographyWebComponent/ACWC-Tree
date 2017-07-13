@@ -92,6 +92,12 @@ let actions = {
       isTable,
       tableType
     }
+  },
+  sendMapRef(mapRef){
+    return{
+      type: actionTypes.SendMapRef,
+      mapRef
+    }
   }
 };
 module.exports = actions;

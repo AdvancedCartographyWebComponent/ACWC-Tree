@@ -34,12 +34,12 @@ class Map extends Component {
       driversFilter: '*',
       numUser: null,
       sidebar:null,
-      isTableMap : null
+      isTableMap : false
     };
     this.isServer = this.props.isServer?this.props.isServer:"false";
     this.geojsonDivision = {};
     this.geoPathDivision = {};
-    this.urlQuery = this.props.urlQuery?this.props.urlQuery:null;
+    this.mapDataUrl = this.props.mapDataUrl?this.props.mapDataUrl:null;
     this.geoCollection = {};
     this.prevGeoCollection = null;
     this._mapNode = null;
@@ -139,67 +139,57 @@ class Map extends Component {
 
   handleTMButtonClick(event){
     this.props.actions.toggleTable(!this.state.isTableMap,"1");
-    if(!this.state.isTableMap){
-      document.getElementById('carte').style.height="51vh";
-    }
-    else{
-      document.getElementById('carte').style.height="95vh";
-    }
     this.setState({
       isTableMap:!this.state.isTableMap
     })
   }
   handleTButtonClick(event){
-    this.props.actions.toggleTable(!this.state.isTable,"2");
+    this.props.actions.toggleTable(true,"2");
     this.setState({
-      isTable:!this.state.isTable
+      isTableMap:false
     })
   }
   getData() {
-    if(this.urlQuery){
-      this.getDataFromUrl(this.urlQuery);
+    if(this.mapDataUrl){
+      console.log("before getDataFromUrl",this.mapDataUrl);
+      this.getDataFromUrl(this.mapDataUrl);
     }
-    else{
-      //TODO Read URL before loading the map if url already done in another js
-      //
-      console.log("testMapContext",window.testMapContext);
-      //window.mapDataUrl = null;
-      //window.geojsonUrl = null;
-      window.isTrajet = this.props.isTrajet;
-      this.isTrajet = this.props.isTrajet;
-      this.checkDataSource = setInterval(
-        () => {
-          if(window.mapDataUrl&&(!this.mapDataUrl||md5(JSON.stringify(window.mapDataUrl))!==md5(JSON.stringify(this.mapDataUrl)))){
-            console.log("mapDataUrl differ");
-            this.mapDataUrl = window.mapDataUrl;
-            this.getDataFromUrl(window.mapDataUrl);
-          }
-          if(window.geojsonUrl&&(!this.geojsonUrl||md5(JSON.stringify(window.geojsonUrl))!==md5(JSON.stringify(this.geojsonUrl)))){
-            console.log("geojsonUrl differ");
-            this.geojsonUrl = window.geojsonUrl;
-            this.getGeojsonFromUrl(window.geojsonUrl);
-          }
-          if(window.isTrajet!==this.isTrajet){
-            console.log("isTrajet differ");
-            this.isTrajet = window.isTrajet;
-            this.props.actions.isTrajet(this.isTrajet);
-          }
-        },
-        100
-      );
-
-    }
+    this.isTrajet = this.props.isTrajet;
+    this.checkDataSource = setInterval(
+      () => {
+        //console.log("window.mapDataUrl",window.mapDataUrl);
+        if(window.mapDataUrl&&(!this.mapDataUrl||md5(JSON.stringify(window.mapDataUrl))!==md5(JSON.stringify(this.mapDataUrl)))){
+          console.log("mapDataUrl differ");
+          this.mapDataUrl = window.mapDataUrl;
+          this.getDataFromUrl(this.mapDataUrl);
+          delete window.mapDataUrl;
+        }
+        if(window.geojsonUrl&&(!this.geojsonUrl||md5(JSON.stringify(window.geojsonUrl))!==md5(JSON.stringify(this.geojsonUrl)))){
+          console.log("geojsonUrl differ");
+          this.geojsonUrl = window.geojsonUrl;
+          this.getGeojsonFromUrl(window.geojsonUrl);
+          delete window.geojsonUrl;
+        }
+        if(window.isTrajet&&window.isTrajet!==this.isTrajet){
+          console.log("isTrajet differ");
+          this.isTrajet = window.isTrajet;
+          this.props.actions.isTrajet(this.isTrajet);
+          delete window.isTrajet;
+        }
+      },
+      100
+    );
   }
   getDataFromUrl(url){
     var cur = this;
-    console.log("map data from url",url.slice(1,4),url.slice(5));
+    console.log("map data from url",url);
     this.geoCollection = {
       "type": "FeatureCollection",
       "features": []
     };
     axios({
       method: 'get',
-      url: url.slice(1,4)==="geo"?url.slice(5):null,
+      url: url,
       headers: {
           'Accept': 'application/ld+json, application/json',
           'Content-Type': 'application/ld+json, application/json'
@@ -212,14 +202,14 @@ class Map extends Component {
   }
   getGeojsonFromUrl(url){
     var cur = this;
-    console.log("getGeojsonFromUrl",url.slice(1,4),url.slice(5));
+    console.log("getGeojsonFromUrl",url);
     this.geoCollection = {
       "type": "FeatureCollection",
       "features": []
     };
     axios({
       method: 'get',
-      url: url.slice(1,4)==="geo"?url.slice(5):null,
+      url: url,
       headers: {
           'Accept': 'application/ld+json, application/json',
           'Content-Type': 'application/ld+json, application/json'
@@ -523,8 +513,12 @@ class Map extends Component {
                         .on('click',(e)=>{
                           console.log("click button, show sidebar",cur.props.actions);
                           cur.props.actions.clickMarker(e.target,feature);
-                          document.getElementById('carte').style.width="50%";
-                          this.state.map.setView(e.target.getLatLng());
+                          document.getElementById('carte').style.width="45%";
+                          setTimeout(()=>{
+                            this.state.map.invalidateSize();
+                            this.state.map.panTo(e.target.getLatLng());
+                          },250);
+
                         },);
       return testMarker;
     }else{
@@ -562,7 +556,8 @@ class Map extends Component {
     L.control.zoom({ position: "bottomleft"}).addTo(map);
     L.control.scale({ position: "bottomleft"}).addTo(map);
     const tileLayer = L.tileLayer(config.tileLayer.uri, config.tileLayer.params).addTo(map);
-
+    //console.log("map",map._layers[Object.keys(map._layers)[0]]);
+    this.props.actions.sendMapRef(map);
     this.setState({ map:map, tileLayer:tileLayer});
   }
 
@@ -576,8 +571,8 @@ class Map extends Component {
             <LoadingPage/>
         }
         <div className='maptable'>
-          <button type="button" className='maptableChild' onClick = {this.handleTMButtonClick}>{this.state.isTableMap?'Map':'Table&Map'}</button>
-          <button type="button" className='maptableChild' onClick = {this.handleTButtonClick}>Table</button>
+          <button type="button" className='maptableChild btn btn-primary' disabled = {!this.props.tableData?true:false} onClick = {this.handleTMButtonClick}>{this.state.isTableMap?'Map':'Table&Map'}</button>
+          <button type="button" className='maptableChild btn btn-primary' disabled = {!this.props.tableData?true:false} onClick = {this.handleTButtonClick}>Table</button>
         </div>
         <div ref={(node) => { cur._mapNode = node}} id="map" />
       </div>
@@ -591,7 +586,8 @@ const mapStateToProps = state => ({
   isTyping : state.isTyping,
   geojsonForPath : state.geojsonForPath,
   checkedItem : state.checkedItem,
-  isTrajet : state.isTrajet
+  isTrajet : state.isTrajet,
+  tableData : state.tableData
 })
 
 const mapDispatchToProps = dispatch => ({
