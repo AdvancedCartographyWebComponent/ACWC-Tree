@@ -24,130 +24,41 @@ Then:
 
 # Get data from URL (2 Ways)
 ## Way 1
-Use ?sko for tree-menu data and ?geo for geolocation data, if you use both, add "&&" between two url
-
-For example, when you want to set tree-menu data, add ?sko=(your url)
-```url
-http://localhost:3000/?sko=https://api.myjson.com/bins/p9ytt
+Add ?params=**QueryString** after the url. For example:  
 ```
-when you want to set geo-location data, add ?geo=(your url)
-for example:
-```url
-http://localhost:3000/?geo=https://semantic-forms.cc:8111/sparql?query=%0D%0APREFIX+rdfs%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2000%2F01%2Frdf-schema%23%3E%0D%0A%0D%0A%0D%0A%0D%0A%0D%0APrefix+geo%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2003%2F01%2Fgeo%2Fwgs84_pos%23%3E%0D%0A%0D%0ACONSTRUCT+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A%0D%0A%7D%0D%0AWHERE+%7B%0D%0A++GRAPH+%3FGRAPH+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A++%7D%0D%0A%7D
+http://localhost:3000/?params=%7B%22infoKeyForTable%22%3A%5B%7B%22key%22%3A%22Subject%22%2C%22displayValue%22%3A%22Subject%22%7D%2C%7B%22key%22%3A%22Name%22%2C%22displayValue%22%3A%22Name%22%7D%2C%7B%22key%22%3A%22markerAndIcons%22%2C%22displayValue%22%3A%22Icons%22%7D%5D%2C%22infoKeyForPanel%22%3A%5B%7B%22key%22%3A%22Subject%22%2C%22displayValue%22%3A%22Subject%22%7D%2C%7B%22key%22%3A%22Name%22%2C%22displayValue%22%3A%22Name%22%7D%2C%7B%22key%22%3A%22Abstract%22%2C%22displayValue%22%3A%22Abstract%22%7D%5D%2C%22mapContext%22%3A%7B%22center%22%3A%5B48.836703%2C2.334345%5D%2C%22zoom%22%3A6%7D%2C%22mapDataUrl%22%3A%22https%3A%2F%2Fsementicbus-simonzen.rhcloud.com%2Fdata%2Fapi%2FPlateformeWebAlternativeACWC%22%7D
 ```
-Or you can use both url:
+In order to Generate the proper **QueryString**, you can follow the command below:  
 ```
-http://localhost:3000/?sko=https://api.myjson.com/bins/p9ytt&&?geo=https://semantic-forms.cc:8111/sparql?query=%0D%0APREFIX+rdfs%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2000%2F01%2Frdf-schema%23%3E%0D%0A%0D%0A%0D%0A%0D%0A%0D%0APrefix+geo%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2003%2F01%2Fgeo%2Fwgs84_pos%23%3E%0D%0A%0D%0ACONSTRUCT+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A%0D%0A%7D%0D%0AWHERE+%7B%0D%0A++GRAPH+%3FGRAPH+%7B%0D%0A++++%3Fsub+geo%3Along+%3FLON+.%0D%0A++++%3Fsub+geo%3Alat+%3FLAT+.%0D%0A%3Fsub+rdfs%3Alabel+%3FLAB.%0D%0A++%7D%0D%0A%7D
-```
-## Way 2 
-**Import**: All the request should be loaded over https.
+var params = {
+          "infoKeyForTable":[
+            {"key":"Subject","displayValue":"Subject"},
+            {"key":"Name","displayValue":"Name"},
+            {"key":"markerAndIcons","displayValue":"Icons"}
+          ],
+          "infoKeyForPanel":[
+            {"key":"Subject","displayValue":"Subject"},
+            {"key":"Abstract","displayValue":"Abstract"},
+            {"key":"Name","displayValue":"Name"},
 
-There are two global variables for configure the data.
-You can reset the value of **window.treeUrl** to be the url for tree-menu with the prefix **?sko=**, for example:
-```javascript
-window.treeUrl = "?sko=https://api.myjson.com/bins/p9ytt"
-```
-And you can do the same thing with **window.mapDataUrl** to set the map data with the prefix **?geo=**.
-
-Also, you can do the same thing with **window.geojsonUrl** to set the map data with the prefix **?geo=**. **Important**:It can not work with the tree-menu and the url should contain the [geojson](http://geojson.org/) data.
-
-```javascript
-window.treeUrl = "?geo=https://sementicbus-simonzen.rhcloud.com/data/api/AlternatibaMartigue"
-```
-
-
-In this case, we use semantic form to query and structure geo-location data.
-See more info of semantic forms [**here**](semantic-forms.cc:9111/tools)
-
-The tree data should follow the structure like this:
-```json
-{
-  "@graph" : [ {
-    "@id" : "dbc:Abbey_of_Saint_Gall",
-    "broader" : "dbc:World_Heritage_Sites_in_Switzerland"
-  }, {...}],
-  "@context" : {
-    "broader" : {
-      "@id" : "http://www.w3.org/2004/02/skos/core#broader",
-      "@type" : "@id"
-    },
-    "dbc" : "http://dbpedia.org/resource/Category:",
-    "skos" : "http://www.w3.org/2004/02/skos/core#"
-  }
-}
-
-```
-**"broader"** is the parent of **"@id"**  
-So the structure will be like the following graph if you have plusieur records.<br />
-**"broader"**<br />
- -**"@id"**<br />
- -**"@id"**<br />
- -**"@id"**<br />
-
-
-The geolocation data should follow the structure like this:
-
-```json
-{
-  "@graph" : [ {
-    "@id" : "dbr:Alicudi",
-    "@type" : "dbo:PopulatedPlace",
-    "subject" : "dbc:Aeolian_Islands",
-    "markerAndIcons":[
-	{icon:"motorcycle",color:"CADETBLUE",number:null},
-	{icon:"some icon",color:"some color",number:null}],
-    "label" : {
-      "@language" : "fr",
-      "@value" : "Alicudi"
-    },
-    "lat" : "38.545833587646484375",
-    "long" : "14.350000381469726562",
-    "any data you want";"data"
-  }, {...}],
-  "@context" : {
-    "subject" : {
-      "@id" : "http://purl.org/dc/terms/subject",
-      "@type" : "@id"
-    },
-    "long" : {
-      "@id" : "http://www.w3.org/2003/01/geo/wgs84_pos#long",
-      "@type" : "http://www.w3.org/2001/XMLSchema#float"
-    },
-    "lat" : {
-      "@id" : "http://www.w3.org/2003/01/geo/wgs84_pos#lat",
-      "@type" : "http://www.w3.org/2001/XMLSchema#float"
-    },
-    "label" : {
-      "@id" : "http://www.w3.org/2000/01/rdf-schema#label"
-    },
-    "geo" : "http://www.w3.org/2003/01/geo/wgs84_pos#",
-    "dbo" : "http://dbpedia.org/ontology/",
-    "dct" : "http://purl.org/dc/terms/",
-    "dbc" : "http://dbpedia.org/resource/Category:",
-    "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    "dbr" : "http://dbpedia.org/resource/",
-    "xsd" : "http://www.w3.org/2001/XMLSchema#",
-    "rdfs" : "http://www.w3.org/2000/01/rdf-schema#"
-  }
-}
+          ],
+          "mapContext": {
+            "center":[48.836703,2.334345],
+            "zoom": 6
+          },
+          "mapDataUrl":"https://sementicbus-simonzen.rhcloud.com/data/api/PlateformeWebAlternativeACWC",
+          "treeDataUrl" : "https://semanticbus.cleverapps.io/data/api/TaxonomiePWA"
+        };
+var paramsString = encodeURIComponent(SON.stringify(params))
 ```  
-**"@id"** is the id of the poi  
-**"@type"** is the type of the poi  
-**"subject"** is the parent of the poi, it works like the external key, linking to the **"@id"** in tree-menu  
-**"markerAndIcons"** is the icons' configuration for markers, you can set the icons inside the markers, maximum 1 anchor marker and 6 surrounding markers.   
-	**icon** is the icon style, you can use fontawesome's icon. If you want to add number, you should set it as   
-	```	
-	icon:"number"   
-	```
-	and then add number in **number**  
-	```
-	number:6  
-	```
-	**color** is the color setting.  
-**"label"** is the name of poi  
-**"lat"**,**"long"** is latitude and longitude of the poi      
+**params** have 5 properties: 
+infoKeyForTable  
+infoKeyForPanel  
+mapContext 
+mapDataUrl  
+treeDataUrl  
 
-# Set Map Context and information displayed on the panel and table
+### Set Map Context and information displayed on the panel and table
 ```javascript
   var mapContext = {
         "center":[48.836703,2.334345],
@@ -174,6 +85,138 @@ var infoKeyForTable=[
 ```
 **key** is the data field(column) of the database  
 **displayValue** is the value you want to display in the table or panel.  
+
+## Way 2 
+**Import**: All the request should be loaded over https.
+
+There are two global variables for configure the data.
+You can reset the value of **window.treeDataUrl** to be the url for tree-menu with the prefix **?sko=**, for example:
+```javascript
+window.treeDataUrl = "https://api.myjson.com/bins/p9ytt"
+```
+And you can do the same thing with **window.mapDataUrl** to set the map data with the prefix **?geo=**.
+
+Also, you can do the same thing with **window.geojsonUrl** to set the map data with the prefix **?geo=**. **Important**:It can not work with the tree-menu and the url should contain the [geojson](http://geojson.org/) data.
+
+```javascript
+window.treeDataUrl = "https://sementicbus-simonzen.rhcloud.com/data/api/AlternatibaMartigue"
+```
+
+
+In this case, we use semantic form to query and structure geo-location data.
+See more info of semantic forms [**here**](semantic-forms.cc:9111/tools)
+
+The tree data should follow the structure like this:
+```json
+{
+  "@context": {
+    "broader": {
+      "@id": "skos:broader",
+      "@type": "@id"
+    },
+    "skos": "http://www.w3.org/2004/02/skos/core#"
+  },
+  "@graph": [
+    {
+      "@type": "skos:Concept",
+      "@id": "http://PWA/SKOS/domaine",
+      "skos:prefLabel": "domaine"
+    },
+    {
+      "@type": "skos:Concept",
+      "@id": "http://PWA/SKOS/0dechet",
+      "broader": "http://PWA/SKOS/domaine",
+      "skos:prefLabel": "fabriquer, réparer, zéro déchets"
+    },
+    {
+      "@type": "skos:Concept",
+      "@id": "http://PWA/SKOS/ressourcerie",
+      "broader": "http://PWA/SKOS/0dechet",
+      "skos:prefLabel": "ressourceries"
+    }
+  ]
+}
+
+```
+**"broader"** is the parent of **"@id"**  
+**"skos:prefLabel"** is the name of the **Child**
+So the structure will be like the following graph if you have plusieur records.<br />
+**"broader"**<br />
+ -**"@id"**<br />
+ -**"@id"**<br />
+ -**"@id"**<br />
+
+
+The geolocation data should follow the structure like this:
+
+```json
+{
+  "@context": {
+    "subject": {
+      "@id": "http://purl.org/dc/terms/subject",
+      "@type": "@id"
+    },
+    "long": {
+      "@id": "http://www.w3.org/2003/01/geo/wgs84_pos#long",
+      "@type": "http://www.w3.org/2001/XMLSchema#float"
+    },
+    "lat": {
+      "@id": "http://www.w3.org/2003/01/geo/wgs84_pos#lat",
+      "@type": "http://www.w3.org/2001/XMLSchema#float"
+    },
+    "label": {
+      "@id": "http://www.w3.org/2000/01/rdf-schema#label"
+    },
+    "geo": "http://www.w3.org/2003/01/geo/wgs84_pos#",
+    "dbo": "http://dbpedia.org/ontology/",
+    "dct": "http://purl.org/dc/terms/",
+    "dbc": "http://dbpedia.org/resource/Category:",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "dbr": "http://dbpedia.org/resource/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "skos": "http://www.w3.org/2004/02/skos/core#"
+  },
+  "@graph": [
+    {
+      "subject": "Economie démocratique",
+      "@graph": [
+        {
+          "@type": "skos:Concept",
+          "@id": "http://PWA/SKOS/Economie démocratique"
+        }
+      ],
+      "long": -1.184316,
+      "lat": 47.365373,
+      "label": {
+        "@language": "fr",
+        "@value": "ACIPA"
+      },
+      "@type": "dbo:PopulatedPlace",
+      "@id": "http://PWA/POI/ACIPA"
+    }
+  ]
+}
+```  
+**"@graph"** shows the links between the datas
+--**"@id"** is the name of the type  
+--**"@type"** is the type of the semantique link  
+**"subject"** is the parent of the poi, it works like the external key, linking to the **"@id"** in tree-menu  
+**"markerAndIcons"** is the icons' configuration for markers, you can set the icons inside the markers, maximum 1 anchor marker and 6 surrounding markers.   
+	**icon** is the icon style, you can use fontawesome's icon. If you want to add number, you should set it as   
+	```	
+	icon:"number"   
+	```
+	and then add number in **number**  
+	```
+	number:6  
+	```
+	**color** is the color setting.  
+**"label"** is the name of poi  
+**"lat"**,**"long"** is latitude and longitude of the poi      
+--**"@id"** is the name of the semantique link  
+--**"@type"** is the type of the POI
+
 
 # TODO
 Change markers style using following plugin:
