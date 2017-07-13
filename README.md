@@ -198,9 +198,9 @@ The geolocation data should follow the structure like this:
   ]
 }
 ```  
-**"@graph"** shows the links between the datas
---**"@id"** is the name of the type  
---**"@type"** is the type of the semantique link  
+**"@graph"** shows the links between the datas  
+--**"@id"** is the name of the type    
+--**"@type"** is the type of the semantique link    
 **"subject"** is the parent of the poi, it works like the external key, linking to the **"@id"** in tree-menu  
 **"markerAndIcons"** is the icons' configuration for markers, you can set the icons inside the markers, maximum 1 anchor marker and 6 surrounding markers.   
 	**icon** is the icon style, you can use fontawesome's icon. If you want to add number, you should set it as   
@@ -212,10 +212,10 @@ The geolocation data should follow the structure like this:
 	number:6  
 	```
 	**color** is the color setting.  
-**"label"** is the name of poi  
-**"lat"**,**"long"** is latitude and longitude of the poi      
---**"@id"** is the name of the semantique link  
---**"@type"** is the type of the POI
+**"label"** is the name of poi    
+**"lat"**,**"long"** is latitude and longitude of the poi        
+**"@id"** is the name of the semantique link    
+**"@type"** is the type of the POI  
 
 
 # TODO
