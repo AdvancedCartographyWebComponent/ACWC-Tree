@@ -26,7 +26,7 @@ Then:
 ## Way 1
 Add ?params=**QueryString** after the url. For example:  
 ```
-http://localhost:3000/?params=%7B%22infoKeyForTable%22%3A%5B%7B%22key%22%3A%22Subject%22%2C%22displayValue%22%3A%22Subject%22%7D%2C%7B%22key%22%3A%22Name%22%2C%22displayValue%22%3A%22Name%22%7D%2C%7B%22key%22%3A%22markerAndIcons%22%2C%22displayValue%22%3A%22Icons%22%7D%5D%2C%22infoKeyForPanel%22%3A%5B%7B%22key%22%3A%22Subject%22%2C%22displayValue%22%3A%22Subject%22%7D%2C%7B%22key%22%3A%22Name%22%2C%22displayValue%22%3A%22Name%22%7D%2C%7B%22key%22%3A%22Abstract%22%2C%22displayValue%22%3A%22Abstract%22%7D%5D%2C%22mapContext%22%3A%7B%22center%22%3A%5B48.836703%2C2.334345%5D%2C%22zoom%22%3A6%7D%2C%22mapDataUrl%22%3A%22https%3A%2F%2Fsementicbus-simonzen.rhcloud.com%2Fdata%2Fapi%2FPlateformeWebAlternativeACWC%22%7D
+http://localhost:3000/?params=%7B%22infoKeyForTable%22%3A%5B%7B%22key%22%3A%22Subject%22%2C%22displayValue%22%3A%22Subject%22%7D%2C%7B%22key%22%3A%22Name%22%2C%22displayValue%22%3A%22Name%22%7D%2C%7B%22key%22%3A%22markerAndIcons%22%2C%22displayValue%22%3A%22Icons%22%7D%5D%2C%22infoKeyForPanel%22%3A%5B%7B%22key%22%3A%22Subject%22%2C%22displayValue%22%3A%22Subject%22%7D%2C%7B%22key%22%3A%22Abstract%22%2C%22displayValue%22%3A%22Abstract%22%7D%2C%7B%22key%22%3A%22Name%22%2C%22displayValue%22%3A%22Name%22%7D%5D%2C%22mapContext%22%3A%7B%22center%22%3A%5B48.836703%2C2.334345%5D%2C%22zoom%22%3A6%7D%2C%22mapDataUrl%22%3A%22https%3A%2F%2Fsementicbus-simonzen.rhcloud.com%2Fdata%2Fapi%2FPlateformeWebAlternativeACWC%22%2C%22treeDataUrl%22%3A%22https%3A%2F%2Fsemanticbus.cleverapps.io%2Fdata%2Fapi%2FTaxonomiePWA%22%7D
 ```
 In order to Generate the proper **QueryString**, you can follow the command below:  
 ```
