@@ -54,6 +54,9 @@ class Map extends Component {
     this.entityShortName = this.entityShortName.bind(this);
     this.transformToGeoJSON = this.transformToGeoJSON.bind(this);
     this.getDataFromUrl = this.getDataFromUrl.bind(this);
+    this.getScooterDataFromServer = this.getScooterDataFromServer.bind(this);
+    this.updateScooterDataFromServer = this.updateScooterDataFromServer.bind(this);
+    this.formatScooterData = this.formatScooterData.bind(this);
     this.transformSparqlQueryToGeoJSON = this.transformSparqlQueryToGeoJSON.bind(this);
     this.generateIcon = this.generateIcon.bind(this);
     this.showIcons = this.showIcons.bind(this);
@@ -150,10 +153,14 @@ class Map extends Component {
     })
   }
   getData() {
+    this.updateScooterDataFromServer();
+    this.updateScooterData = setInterval(()=>{
+      this.updateScooterDataFromServer();
+    },20000);
     if(this.mapDataUrl){
       console.log("before getDataFromUrl",this.mapDataUrl);
       this.getDataFromUrl(this.mapDataUrl);
-      delete window.mapDataUrl;
+      if(window.mapDataUrl) delete window.mapDataUrl;
     }
     this.isTrajet = this.props.isTrajet;
     this.checkDataSource = setInterval(
@@ -176,6 +183,12 @@ class Map extends Component {
           this.isTrajet = window.isTrajet;
           this.props.actions.isTrajet(this.isTrajet);
           delete window.isTrajet;
+        }
+        if(window.isScooter&&window.isScooter!==this.isScooter){
+          console.log("isScooter differ");
+          this.isScooter = window.isScooter;
+          this.props.actions.isScooter(this.isScooter);
+          delete window.isScooter;
         }
       },
       100
@@ -221,8 +234,75 @@ class Map extends Component {
       console.log(error);
     });;
   }
+  updateScooterDataFromServer(){
+    var cur = this;
+    if(window.mapDataUrl) delete window.mapDataUrl;
+    console.log("get Scooter Data From Server");
+    this.geoCollection = {
+      "type": "FeatureCollection",
+      "features": []
+    };
+    axios({
+      method: 'get',
+      url: "http://www.mobion.io/lastposition.php"
+    }).then(function(res) {
+      console.log("result",res.status);
+      if(res.status==200){
+        cur.getScooterDataFromServer();
+      }
+    }).catch(function (error) {
+      console.log(error);
+    });;
+  }
+  getScooterDataFromServer(){
+    var cur = this;
+    console.log("get Scooter Data From Server");
+    this.geoCollection = {
+      "type": "FeatureCollection",
+      "features": []
+    };
+    axios({
+      method: 'get',
+      url: "http://www.mobion.io/fichier.txt",
+      headers: {
+          'Accept': 'text/plain',
+          'Content-Type': 'text/plain'
+      }
+    }).then(function(res) {
+      if (res.status==304||res.status==200) {
+        //console.log("result",res.data);
+        cur.formatScooterData(res.data);
+      }
 
-
+    }).catch(function (error) {
+      console.log(error);
+    });;
+  }
+  formatScooterData(data){
+    let scooterData = {
+      "@graph":[]
+    }
+    let lines = data.split(/[\r\n]+/g);
+    console.log("format scooter data ",lines);
+    lines.map((value,index)=>{
+      if(value.length>0){
+        let details = value.split(' | ');
+        //863977030761766 | Scooter79 | Kilometre | 2017-07-13 13:27:35 | 48.8371616666667 | 2.334425 | 74 Avenue Denfert-Rochereau, Paris, Île-de-France, FR
+        let scooterDetails={
+          "mobile":"imei:"+details[0],
+          "mileage" : details[2]+"Km",
+          "date":details[3],
+          "lat":details[4],
+          "long":details[5],
+          "address":details[6]
+        }
+        scooterData["@graph"].push(scooterDetails);
+      }
+    });
+    this.props.actions.isScooter(true);
+    this.props.actions.getDataFromUrlForMap(scooterData);
+    console.log("formatScooterData",scooterData);
+  }
   entityShortName(iri){
       if (typeof iri === 'undefined') {
           return true;
@@ -356,7 +436,7 @@ class Map extends Component {
         filter: this.filterFeatures
       }):null;
       this.geojsonDivision = geojsonLayer;
-      //this.zoomToFeature(this.geojsonDivision);
+      this.geojsonDivision?this.zoomToFeature(this.geojsonDivision):null;
       geojsonLayer?markerCluster.addLayer(geojsonLayer):null;
     }
     markerCluster.addTo(this.state.map);
@@ -552,7 +632,10 @@ class Map extends Component {
     let map = L.map(id, config.params);
     map.on('click',function () {
       cur.props.actions.closeSideBar();
-      document.getElementById('carte').style.width="71%";
+      document.getElementById('carte').style.width="70%";
+      setTimeout(()=>{
+        map.invalidateSize();
+      },500);
     })
     L.control.zoom({ position: "bottomleft"}).addTo(map);
     L.control.scale({ position: "bottomleft"}).addTo(map);

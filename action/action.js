@@ -86,6 +86,12 @@ let actions = {
       trajet
     }
   },
+  isScooter(scooter){
+    return{
+      type: actionTypes.IsScooter,
+      scooter
+    }
+  },
   toggleTable(isTable,tableType){
     return{
       type: actionTypes.ToggleTable,

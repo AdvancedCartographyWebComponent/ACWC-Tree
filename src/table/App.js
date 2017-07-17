@@ -36,11 +36,7 @@ class App extends Component {
       return <Table
               isExit={this.props.tableType==="2"?true:false}
               actions = {this.props.actions}
-              infoKeyForTable = {[
-                {"key":"Subject","displayValue":"Subject"},
-                {"key":"Name","displayValue":"Name"},
-                {"key":'markerAndIcons',"displayValue":'Icons'}
-              ]}
+              infoKeyForTable = {infoKeyForTable}
             />;
     }else {
       document.getElementById('carte').style.height="95vh";

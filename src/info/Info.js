@@ -16,7 +16,7 @@ class Info extends Component {
       classNameParent = classNameParent.concat(" show");
       document.getElementById('sidebar').style.zIndex=1;
     }else{
-      document.getElementById('carte').style.width="71%";
+      document.getElementById('carte').style.width="70%";
       document.getElementById('sidebar').style.zIndex=-1;
     }
     return (
@@ -25,7 +25,7 @@ class Info extends Component {
             <div className="sidebar-content sidebar-right">
                 <div className="sidebar-pane" id="home">
                     <h1 className="sidebar-header">
-                        Info of POI
+                        Info
                         <span className="sidebar-close"  onClick={()=>this.props.actions.closeSideBar()}><i className="fa fa-caret-right"></i></span>
                     </h1>
                     <div>

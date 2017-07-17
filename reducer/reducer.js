@@ -8,7 +8,7 @@ var jsonld = require('jsonld');
 var _ = require('lodash');
 var simplify = require('simplify-geometry');
 var Immutable = require('immutable');
-var treeConstructor = function (rawData,countList,root){
+var treeConstructor = function (rawData,countList,root,rawMapData){
   if(!countList["Exclued Data"]||countList["Exclued Data"]==0){
     var tree ={};
   }else{
@@ -23,10 +23,12 @@ var treeConstructor = function (rawData,countList,root){
       }
     };
   }
-  var treeData = buildTree(tree,root,rawData["@graph"],countList);
+  var timeList = updateTime(rawMapData);
+  var treeData = buildTree(tree,root,rawData["@graph"],countList,timeList);
   for(var num in root){
     countParentsNum(treeData,formatString(root[num]));
   }
+  console.log("treeData",treeData);
   return treeData;
 }
 var treeNameMap = function(rawTreeData){
@@ -54,14 +56,14 @@ var formatString = function(strings){
 
 
 }
-var buildTree = function(tree,parentId,rawData,countList){
-  //console.log("buildTree parentId",parentId);
+var buildTree = function(tree,parentId,rawData,countList,TimeList){
   rawData.map((value)=>{
     var id = value["@id"]?value["@id"]:"Default ID";
     var broader = value["broader"]?value["broader"]:null;
     var name = value["prefLabel"]?value["prefLabel"]["@value"]:null;
     var language = value["prefLabel"]?value["prefLabel"]["@language"]:null;
     var markerAndIcons = value["markerAndIcons"]?value["markerAndIcons"]:null;//[{"icon":"motorcycle","color":"CADETBLUE","number":null}];
+    var updateTime = TimeList?(TimeList[id]?TimeList[id]:null):null;
     if((typeof broader === 'object')&&broader){
       broader.map((value)=>{
         if (parentId.indexOf(value)!=-1) {
@@ -72,7 +74,8 @@ var buildTree = function(tree,parentId,rawData,countList){
               collapsed:true,
               children:{},
               markerAndIcons:markerAndIcons,
-              num:countList[formatString(id)]?countList[formatString(id)]:0
+              num:countList[formatString(id)]?countList[formatString(id)]:0,
+              updateTime : updateTime
             };
           }
           else{
@@ -83,18 +86,19 @@ var buildTree = function(tree,parentId,rawData,countList){
               collapsed:true,
               children:{},
               markerAndIcons:markerAndIcons,
-              num:countList[formatString(id)]?countList[formatString(id)]:0
+              num:countList[formatString(id)]?countList[formatString(id)]:0,
+              updateTime : updateTime
             };
             tree[formatString(value)] = {
               checked: false,
               checkbox: true,
-              collapsed:true,
+              collapsed:false,
               children:child,
               markerAndIcons:[],
               num:0
             };
           }
-          buildTree(tree[formatString(value)]["children"],[id],rawData);
+          buildTree(tree[formatString(value)]["children"],[id],rawData,countList,TimeList);
         }
       })
     }
@@ -107,7 +111,8 @@ var buildTree = function(tree,parentId,rawData,countList){
             collapsed:true,
             children:{},
             markerAndIcons:markerAndIcons,
-            num:countList[formatString(id)]?countList[formatString(id)]:0
+            num:countList[formatString(id)]?countList[formatString(id)]:0,
+            updateTime : updateTime
           };
         }
         else{
@@ -118,18 +123,19 @@ var buildTree = function(tree,parentId,rawData,countList){
             collapsed:true,
             children:{},
             markerAndIcons:markerAndIcons,
-            num:countList[formatString(id)]?countList[formatString(id)]:0
+            num:countList[formatString(id)]?countList[formatString(id)]:0,
+            updateTime : updateTime
           };
           tree[formatString(broader)]={
             checked: false,
             checkbox: true,
-            collapsed:true,
+            collapsed:false,
             children:child,
             markerAndIcons:[],
             num:0
           };
         }
-        buildTree(tree[formatString(broader)]["children"],[id],rawData,countList);
+        buildTree(tree[formatString(broader)]["children"],[id],rawData,countList,TimeList);
       }
     }
   });
@@ -177,6 +183,16 @@ var countItem = function(geoData,isTrajet){
   }
   console.log("countList",countList);
   return countList;
+}
+var updateTime = function(rawData){
+  let updateTime = {};
+  rawData["@graph"].map((instance,index)=>{
+    var scooterId = instance["mobile"]?instance["mobile"].split(':')[1]:null;
+    scooterId?scooterId =ScooterInfo[parseInt(scooterId)]:null;
+    updateTime[scooterId] = instance["date"]
+  })
+  console.log("updateTime",updateTime);
+  return updateTime;
 }
 var findRoot = function(data,stateRoot){
   var flattenId = [];
@@ -244,9 +260,9 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
   var keyWordList = _.words(_.toLower(keyword),/\S*\w/g);
   rawData["@graph"].map((instance,index) =>{
     var timestamp = instance["date"]||instance["http://purl.org/dc/terms/date"]?instance["date"]||instance["http://purl.org/dc/terms/date"]:null;
-    var scooterId = instance["mobile"]?instance["mobile"].split(':')[1]:null;
-    scooterId?scooterId =ScooterInfo[parseInt(scooterId)]:null;
-    timestamp = timestamp?timestamp.slice(0,18).replace(/\D/g,""):null;
+    var imei = instance["mobile"]?instance["mobile"].split(':')[1]:null;
+    var scooterId = imei?ScooterInfo[parseInt(imei)]:null;
+    timestamp = timestamp?timestamp.slice(0,19).replace(/\D/g,""):null;
     var name = formatString(instance["label"]?linkStringInLabel(instance["label"]):"scooter");
     var subject = formatString(instance["subject"]?instance["subject"]:scooterId?scooterId:"Exclued Data");
     var graph = instance["@graph"]?instance["@graph"]:null;
@@ -254,6 +270,8 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
     var markerAndIcons = instance["markerAndIcons"]?instance["markerAndIcons"]:null;
     var lat = instance["lat"];
     var long = instance["long"];
+    var mileage = instance["mileage"]?instance["mileage"]:null;
+    var address = instance["address"]?instance["address"]:null;
     var related = false;
     var matched = false;
     var temp = (_.values(instance));
@@ -345,14 +363,17 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
               "type": "Feature",
               "properties": {
                 "Details": "",
-                "Name": geoLine[count][obj]["scooterId"],
+                "Name": scooterId,
                 "markerAndIcons":[
                   {icon:"motorcycle",color:"CADETBLUE",number:null},
-                  {icon:"number",color:"CADETBLUE",number:dateTemp%1000}],
-                "Date" : geoLine[count][obj]['date'],
-                "Time" : geoLine[count][obj]['time'],
+                  {icon:"number",color:"CADETBLUE",number:'Bon'}],
+                "Date" : instance["date"].split(' ')[0],
+                "Time" : instance["date"].split(' ')[1],
                 "Battery Status" : "To be Getted",
-                "Speed" : "To be Getted"
+                "Mileage" : mileage,
+                "Address" : address,
+                "Speed" : "To be Getted",
+                "IMEI" : imei
               },
               "geometry": {
                 "type": "Point",
@@ -395,7 +416,7 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
       }
     if(related){
         relatedRawData["@graph"].push(instance);
-      }
+    }
   });
   if(isTrajet) {
       geoLine = _.sortBy(geoLine, ['timestamp']);
@@ -425,7 +446,7 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
         "features": []
         };
         for(var obj in geoLine[count]){
-          var dateTemp =  Math.floor(parseInt(geoLine[count][obj]["timestamp"]/100000));
+          var dateTemp =  Math.floor(parseInt(geoLine[count][obj]["timestamp"]/1000000));
           var feature ={
             "type": "Feature",
             "properties": {
@@ -536,7 +557,7 @@ var reducer = function (state = initialState, action) {
     case actionTypes.UseDefaultTreeData :
       console.log("UseDefaultTreeData");
       var findRootResults = findRoot(defaultTreeData,state.root);
-      var defaultTree = treeConstructor(defaultTreeData,countItem(defaultMapData,state.isTrajet),findRootResults[0]);
+      var defaultTree = treeConstructor(defaultTreeData,countItem(defaultMapData,state.isTrajet),findRootResults[0],defaultMapData);
       var nameMap = treeNameMap(defaultTreeData);
       return Object.assign({}, state, {
         treeData:defaultTree,
@@ -551,7 +572,7 @@ var reducer = function (state = initialState, action) {
       var nameMap = treeNameMap(state.urlDataForTree?state.urlDataForTree:defaultTreeData);
       return Object.assign({}, state, {
         urlDataForMap:action.urlDataForMap,
-        treeData:treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(globalContentSearchResult[1],state.isTrajet),findRootResults[0]),
+        treeData:treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(globalContentSearchResult[1],state.isTrajet),findRootResults[0],globalContentSearchResult[1]),
         geoData:globalContentSearchResult[0],
         geojsonForPath : globalContentSearchResult[3],
         root:findRootResults[0],
@@ -562,7 +583,7 @@ var reducer = function (state = initialState, action) {
       console.log("GetDataFromUrlForTree",action.urlDataForTree);
       var checkedlist=[];
       var findRootResults = findRoot(action.urlDataForTree,state.root);
-      var treeConstructorResult = treeConstructor(action.urlDataForTree,countItem(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet),findRootResults[0]);
+      var treeConstructorResult = treeConstructor(action.urlDataForTree,countItem(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet),findRootResults[0],state.urlDataForMap?state.urlDataForMap:defaultMapData);
       var nameMap = treeNameMap(action.urlDataForTree);
       return Object.assign({}, state, {
         urlDataForTree:action.urlDataForTree,
@@ -573,7 +594,7 @@ var reducer = function (state = initialState, action) {
     case actionTypes.GetDataFromUrlForTreeAndMap:
       console.log("GetDataFromUrlForTreeAndMap",action.urlDataForTree,action.urlDataForMap);
       return Object.assign({}, state, {
-        treeData:treeConstructor(action.urlDataForTree,countItem(action.urlDataForMap,state.isTrajet),state.root)
+        treeData:treeConstructor(action.urlDataForTree,countItem(action.urlDataForMap,state.isTrajet),state.root,action.urlDataForMap)
       })
     case actionTypes.UpdateServerData:
       return Object.assign({}, state, {
@@ -621,6 +642,11 @@ var reducer = function (state = initialState, action) {
       console.log("isTrajet",action.trajet);
       return Object.assign({}, state, {
         isTrajet : action.trajet
+      })
+    case actionTypes.IsScooter:
+      console.log("isScooter",action.scooter);
+      return Object.assign({}, state, {
+        isScooter : action.scooter
       })
     case actionTypes.ToggleTable:
       console.log("ToggleTable",action.isTable,action.tableType);

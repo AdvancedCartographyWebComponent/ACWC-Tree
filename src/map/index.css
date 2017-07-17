@@ -50,7 +50,7 @@ html, body {
   width: 50%;
 }
 .tableBottom{
-  width: 71%;
+  width: 70%;
   position: absolute;
   bottom: 10px;
   z-index: 20;

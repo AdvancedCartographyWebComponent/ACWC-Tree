@@ -5,14 +5,34 @@ import { connect } from 'react-redux'
 import actions from '../../action/action';
 import { bindActionCreators } from 'redux';
 import 'react-bootstrap-table/dist/react-bootstrap-table-all.min.css'
-
+const activeStatus = [
+  {
+  value: '0',
+  text: 'Y'
+  },
+  {
+  value: '1',
+  text: 'N'
+  }
+];
 class Table extends React.Component {
   constructor(props) {
     super(props);
     //console.log("this.props.data",this.props.data,this.props.data.length);
     //console.log("this.props",this.props);
+    this.handleGestionButtonClick = this.handleGestionButtonClick.bind(this);
     this.iconFormatter = this.iconFormatter.bind(this);
     this.createCustomButtonGroup = this.createCustomButtonGroup.bind(this);
+    this.ActionFormatter = this.ActionFormatter.bind(this);
+  }
+  handleGestionButtonClick(event,args,row){
+    //console.log("gestion click",event.target.value,args);
+    if(args==="Activer"){
+      console.log("Activer Scooter"," row data",row);
+    }
+    else if(args==="Blocker"){
+      console.log("Blocker Scooter"," row data",row);
+    }
   }
   createCustomButtonGroup = props => {
     const style = {
@@ -38,12 +58,24 @@ class Table extends React.Component {
     let iconString = '';
     cell?cell.map((value,index)=>{
       //console.log('map cell value',value);
-      iconString = iconString.concat(`<i class='fa fa-${value.icon}' style='color :${value.color};font-size:18px'></i>`);
+      value.icon==="number"?null:iconString = iconString.concat(`<i class='fa fa-${value.icon}' style='color :${value.color};font-size:18px'></i>`);
     }):iconString='No Icons Info in the Data Set!'
     return iconString;
   }
+  ActionFormatter(cell,row,formatExtraData,rowIdx){
+    if(cell==='0'){
+      return (
+        <button className='btn btn-sm btn-success btn-block' onClick = {(e)=>this.handleGestionButtonClick(e,"Activer",row)}>Activer</button>
+      );
+    }else {
+      return (
+        <button className='btn btn-sm btn-danger btn-block' onClick = {(e)=>this.handleGestionButtonClick(e,"Blocker",row)}>Blocker</button>
+      );
+    }
+  }
   render() {
     console.log("render table",this.props.infoKeyForTable);
+    console.log("table data",this.props.tableData);
     const options = {
       page: 1,  // which page you want to show as default
       sizePerPageList: this.props.isExit?[ {
@@ -88,19 +120,32 @@ class Table extends React.Component {
                     dataFormat={this.iconFormatter}>
                     {value.displayValue}
                   </TableHeaderColumn>);
-              }else{
+              }else if (value.key==="ActiveList") {
+                return (
+                  <TableHeaderColumn
+                    dataField={value.key}
+                    isKey={index===0?true:false}
+                    dataSort
+                    dataFormat={this.ActionFormatter}>
+                    {value.displayValue}
+                  </TableHeaderColumn>);
+              }
+              else{
                 return (
                   <TableHeaderColumn
                     dataField={value.key}
                     isKey={index===0?true:false}
                     filter={ { type: 'TextFilter', placeholder: 'Please enter a value' } }
-                    dataSort>
+                    dataSort
+                    width={value.config?(value.config.width?value.config.width:null):null}
+                    hidden={value.config?(value.config.hidden?value.config.hidden:false):false}>
                     {value.displayValue}
                   </TableHeaderColumn>);
               }
             })
             :null
           }
+
         </BootstrapTable>
       </div>
     );

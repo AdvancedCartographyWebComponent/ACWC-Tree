@@ -16,20 +16,30 @@
     <title>React App</title>
     <script>
       mapDataUrl = "https://sementicbus-simonzen.rhcloud.com/data/api/PlateformeWebAlternativeACWC";
-      treeDataUrl = "https://semanticbus.cleverapps.io/data/api/TaxonomiePWA";
+      //treeDataUrl = "https://semanticbus.cleverapps.io/data/api/TaxonomiePWA";
+      treeDataUrl = "http://api.myjson.com/bins/zoyan";
       mapContext = {
         "center":[48.836703,2.334345],
-        "zoom": 6
+        "zoom": 10
       };
       infoKeyForTable=[
-        {"key":"Subject","displayValue":"Subject"},
-        {"key":"Name","displayValue":"Name"},
-        {"key":'markerAndIcons',"displayValue":'Icons'}
+        {"key":"Name","displayValue":"Scooter Id"},
+        {"key":"Date","displayValue":"Date"},
+        {"key":"Time","displayValue":"Time"},
+        {"key":"Mileage","displayValue":"Mileage","config":{"width":"150px"}},
+        {"key":'markerAndIcons',"displayValue":'Icons'},
+        {"key":"Address","displayValue":"Address","config":{"width":"400px"}},
+        {"key":'ActiveList',"displayValue":"Gestion"},
+        {"key":'IMEI',"displayValue":"IMEI","config":{"hidden":true}}
       ];
       infoKeyForPanel=[
-        {"key":"Subject","displayValue":"Subject"},
-        {"key":"Name","displayValue":"Name"},
-        {"key":"Abstract","displayValue":"Abstract"}];
+        {"key":"Name","displayValue":"Scooter Id"},
+        {"key":"Date","displayValue":"Date"},
+        {"key":"Time","displayValue":"Time"},
+        {"key":"Speed","displayValue":"Speed"},
+        {"key":"Mileage","displayValue":"Mileage"},
+        {"key":"Address","displayValue":"Address"}
+      ];
 
       /*var params = {
           "infoKeyForTable":[
@@ -82,11 +92,12 @@
      z-index : -1">
      </div>
      <div id="table" style="
-     width: 71%;
+     width: 70%;
      position: absolute;
      bottom: 29px;
      z-index: 20;
      left: 26%;
+     margin-left : -3px;
      border: 1px solid gainsboro;
      transition : 0.5s;
      right : 0px;

@@ -13,6 +13,7 @@ module.exports = {
   ReceiveGeoDataFromUrl : "ReceiveGeoDataFromUrl",
   IsTyping : "IsTyping",
   IsTrajet : "IsTrajet",
+  IsScooter : "IsScooter",
   ToggleTable : "ToggleTable",
   SendMapRef : "SendMapRef"
 };
