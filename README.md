@@ -49,15 +49,15 @@ var params = {
           "mapDataUrl":"https://sementicbus-simonzen.rhcloud.com/data/api/PlateformeWebAlternativeACWC",
           "treeDataUrl" : "https://semanticbus.cleverapps.io/data/api/TaxonomiePWA"
         };
-var paramsString = encodeURIComponent(JSON.stringify(params))
+var QueryString = encodeURIComponent(JSON.stringify(params))
 ```  
-**params** have 5 properties: 
-infoKeyForTable  
-infoKeyForPanel  
-mapContext 
-mapDataUrl  
-treeDataUrl  
-
+**params** have 5 properties:   
+infoKeyForTable    
+infoKeyForPanel    
+mapContext   
+mapDataUrl    
+treeDataUrl    
+ 
 ### Set Map Context and information displayed on the panel and table
 ```javascript
   var mapContext = {
