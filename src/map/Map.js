@@ -153,6 +153,7 @@ class Map extends Component {
     if(this.mapDataUrl){
       console.log("before getDataFromUrl",this.mapDataUrl);
       this.getDataFromUrl(this.mapDataUrl);
+      delete window.mapDataUrl;
     }
     this.isTrajet = this.props.isTrajet;
     this.checkDataSource = setInterval(
