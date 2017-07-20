@@ -137,7 +137,7 @@ class Table extends React.Component {
                     isKey={index===0?true:false}
                     filter={ { type: 'TextFilter', placeholder: 'Please enter a value' } }
                     dataSort
-                    width={value.config?(value.config.width?value.config.width:null):null}
+                    width={value.config?(value.config.width?value.config.width:"100px"):"100px"}
                     hidden={value.config?(value.config.hidden?value.config.hidden:false):false}>
                     {value.displayValue}
                   </TableHeaderColumn>);

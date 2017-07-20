@@ -8,7 +8,7 @@ var jsonld = require('jsonld');
 var _ = require('lodash');
 var simplify = require('simplify-geometry');
 var Immutable = require('immutable');
-var treeConstructor = function (rawData,countList,root,rawMapData){
+var treeConstructor = function (rawData,countList,root,rawMapData, checkedList){
   if(!countList["Exclued Data"]||countList["Exclued Data"]==0){
     var tree ={};
   }else{
@@ -24,7 +24,8 @@ var treeConstructor = function (rawData,countList,root,rawMapData){
     };
   }
   var timeList = updateTime(rawMapData);
-  var treeData = buildTree(tree,root,rawData["@graph"],countList,timeList);
+  var scooterStatus = status(rawMapData);
+  var treeData = buildTree(tree,root,rawData["@graph"],countList,timeList,scooterStatus,checkedList);
   for(var num in root){
     countParentsNum(treeData,formatString(root[num]));
   }
@@ -56,7 +57,7 @@ var formatString = function(strings){
 
 
 }
-var buildTree = function(tree,parentId,rawData,countList,TimeList){
+var buildTree = function(tree,parentId,rawData,countList,TimeList, Status, CheckedList){
   rawData.map((value)=>{
     var id = value["@id"]?value["@id"]:"Default ID";
     var broader = value["broader"]?value["broader"]:null;
@@ -64,30 +65,33 @@ var buildTree = function(tree,parentId,rawData,countList,TimeList){
     var language = value["prefLabel"]?value["prefLabel"]["@language"]:null;
     var markerAndIcons = value["markerAndIcons"]?value["markerAndIcons"]:null;//[{"icon":"motorcycle","color":"CADETBLUE","number":null}];
     var updateTime = TimeList?(TimeList[id]?TimeList[id]:null):null;
+    var scooterStatus = Status?(Status[id]?Status[id]:null):null;
     if((typeof broader === 'object')&&broader){
       broader.map((value)=>{
         if (parentId.indexOf(value)!=-1) {
           if(formatString(value) in tree){
             tree[formatString(value)]["children"][formatString(id)] = {
-              checked: false,
+              checked: CheckedList?(CheckedList.indexOf(id)===-1?false:true):false,
               checkbox: true,
               collapsed:true,
               children:{},
               markerAndIcons:markerAndIcons,
               num:countList[formatString(id)]?countList[formatString(id)]:0,
-              updateTime : updateTime
+              updateTime : updateTime,
+              scooterStatus : scooterStatus
             };
           }
           else{
             var child = {};
             child[formatString(id)]= {
-              checked: false,
+              checked: CheckedList?(CheckedList.indexOf(id)===-1?false:true):false,
               checkbox: true,
               collapsed:true,
               children:{},
               markerAndIcons:markerAndIcons,
               num:countList[formatString(id)]?countList[formatString(id)]:0,
-              updateTime : updateTime
+              updateTime : updateTime,
+              scooterStatus : scooterStatus
             };
             tree[formatString(value)] = {
               checked: false,
@@ -106,25 +110,27 @@ var buildTree = function(tree,parentId,rawData,countList,TimeList){
       if (parentId.indexOf(broader)!==-1) {
         if(formatString(broader) in tree){
           tree[formatString(broader)]["children"][formatString(id)] = {
-            checked: false,
+            checked: CheckedList?(CheckedList.indexOf(id)===-1?false:true):false,
             checkbox: true,
             collapsed:true,
             children:{},
             markerAndIcons:markerAndIcons,
             num:countList[formatString(id)]?countList[formatString(id)]:0,
-            updateTime : updateTime
+            updateTime : updateTime,
+            scooterStatus : scooterStatus
           };
         }
         else{
           var child = {};
           child[formatString(id)]= {
-            checked: false,
+            checked: CheckedList?(CheckedList.indexOf(id)===-1?false:true):false,
             checkbox: true,
             collapsed:true,
             children:{},
             markerAndIcons:markerAndIcons,
             num:countList[formatString(id)]?countList[formatString(id)]:0,
-            updateTime : updateTime
+            updateTime : updateTime,
+            scooterStatus : scooterStatus
           };
           tree[formatString(broader)]={
             checked: false,
@@ -194,6 +200,16 @@ var updateTime = function(rawData){
   console.log("updateTime",updateTime);
   return updateTime;
 }
+var status = function(rawData){
+  let status = {};
+  rawData["@graph"].map((instance,index)=>{
+    var scooterId = instance["mobile"]?instance["mobile"].split(':')[1]:null;
+    scooterId?scooterId =ScooterInfo[parseInt(scooterId)]:null;
+    status[scooterId] = instance["status"]
+  })
+  console.log("status",status);
+  return status;
+}
 var findRoot = function(data,stateRoot){
   var flattenId = [];
   var flattenBroader = [];
@@ -262,7 +278,7 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
     var timestamp = instance["date"]||instance["http://purl.org/dc/terms/date"]?instance["date"]||instance["http://purl.org/dc/terms/date"]:null;
     var imei = instance["mobile"]?instance["mobile"].split(':')[1]:null;
     var scooterId = imei?ScooterInfo[parseInt(imei)]:null;
-    timestamp = timestamp?timestamp.slice(0,19).replace(/\D/g,""):null;
+    timestamp = new Date(timestamp);
     var name = formatString(instance["label"]?linkStringInLabel(instance["label"]):"scooter");
     var subject = formatString(instance["subject"]?instance["subject"]:scooterId?scooterId:"Exclued Data");
     var graph = instance["@graph"]?instance["@graph"]:null;
@@ -272,9 +288,16 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
     var long = instance["long"];
     var mileage = instance["mileage"]?instance["mileage"]:null;
     var address = instance["address"]?instance["address"]:null;
+    var group = instance["group"]?instance["group"]:null;
+    var phone = instance["phone"]?instance["phone"]:null;
+    var speed = instance["speed"]?instance["speed"]:null;
+    var status = instance["status"]?instance["status"]:null;
     var related = false;
     var matched = false;
     var temp = (_.values(instance));
+    if (scooterId==='79') {
+      console.log('globalContentSearch',temp);
+    }
     //console.log('globalContentSearch',temp);
     if(_.size(keyWordList)>0){
       for(var obj in temp){
@@ -282,7 +305,7 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
           if (typeof temp[obj] != 'object'){
             for(var index in keyWordList){
               if(!related){
-                if(_.toLower(temp[obj]).includes(keyWordList[index])){
+                if(_.toLower(temp[obj]).includes(keyWordList[index])||_.toLower(scooterId).includes(keyWordList[index])){
                     related = true;
                     //TODO read data and construct a table of "@graph", then if linked to "@graph", checked
                     if(!checkedItem||checkedItem.length===0||_.indexOf(checkedItem,subject)>=0){
@@ -306,7 +329,7 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
                 if(!related){
                   for(var indexK in keyWordList){
                     if(!related){
-                      if(_.toLower(value[indexV]).includes(keyWordList[indexK])){
+                      if(_.toLower(value[indexV]).includes(keyWordList[indexK])||_.toLower(scooterId).includes(keyWordList[index])){
                         related = true;
                         if(!checkedItem||checkedItem.length==0||_.indexOf(checkedItem,subject)>=0){
                           matched = true;
@@ -344,13 +367,12 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
     if(matched){
         if(isTrajet){
           matchedRawData["@graph"].push(instance);
-          var dateWithTime = instance["@id"].split('/')[2];
           var temp = {
-            "timestamp" : timestamp,
+            "timestamp" : timestamp.getTime(),
             "coordinates": [long,lat],
             "scooterId" : scooterId,
-            "date":dateWithTime.split('T')[0],
-            "time":dateWithTime.split('T')[1]
+            "date":timestamp.toLocaleDateString(),
+            "time":timestamp.toLocaleTimeString()
           }
           geoLine[scooterId]?null:geoLine[scooterId]=[];
           geoLine[scooterId].push(temp);
@@ -366,14 +388,20 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
                 "Name": scooterId,
                 "markerAndIcons":[
                   {icon:"motorcycle",color:"CADETBLUE",number:null},
-                  {icon:"number",color:"CADETBLUE",number:'Bon'}],
-                "Date" : instance["date"].split(' ')[0],
-                "Time" : instance["date"].split(' ')[1],
+                  {icon:"cog",color:"#ff4d4d",number:null},
+                  {icon:"number",color:"#cc6699",number:scooterId},
+                  {icon:"battery-full",color:"Green",number:null}],
+                "Date" : timestamp.toLocaleDateString(),
+                "Time" : timestamp.toLocaleTimeString(),
                 "Battery Status" : "To be Getted",
                 "Mileage" : mileage,
                 "Address" : address,
                 "Speed" : "To be Getted",
-                "IMEI" : imei
+                "IMEI" : imei,
+                "Group" : group,
+                "Phone" : phone,
+                "Status" : status,
+                "Speed" : speed
               },
               "geometry": {
                 "type": "Point",
@@ -446,7 +474,7 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
         "features": []
         };
         for(var obj in geoLine[count]){
-          var dateTemp =  Math.floor(parseInt(geoLine[count][obj]["timestamp"]/1000000));
+          var dateTemp =  timestamp.toLocaleDateString();
           var feature ={
             "type": "Feature",
             "properties": {
@@ -454,7 +482,7 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
               "Name": geoLine[count][obj]["scooterId"],
               "markerAndIcons":[
                 {icon:"motorcycle",color:"CADETBLUE",number:null},
-                {icon:"number",color:"CADETBLUE",number:dateTemp%1000}],
+                {icon:"number",color:"CADETBLUE",number:"Bon"}],
               "Date" : geoLine[count][obj]['date'],
               "Time" : geoLine[count][obj]['time'],
               "Battery Status" : "To be Getted",
@@ -572,7 +600,7 @@ var reducer = function (state = initialState, action) {
       var nameMap = treeNameMap(state.urlDataForTree?state.urlDataForTree:defaultTreeData);
       return Object.assign({}, state, {
         urlDataForMap:action.urlDataForMap,
-        treeData:treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(globalContentSearchResult[1],state.isTrajet),findRootResults[0],globalContentSearchResult[1]),
+        treeData:treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(globalContentSearchResult[1],state.isTrajet),findRootResults[0],action.urlDataForMap,checkedlist),
         geoData:globalContentSearchResult[0],
         geojsonForPath : globalContentSearchResult[3],
         root:findRootResults[0],

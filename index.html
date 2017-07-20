@@ -15,7 +15,7 @@
     -->
     <title>React App</title>
     <script>
-      mapDataUrl = "https://sementicbus-simonzen.rhcloud.com/data/api/PlateformeWebAlternativeACWC";
+      //mapDataUrl = "https://sementicbus-simonzen.rhcloud.com/data/api/PlateformeWebAlternativeACWC";
       //treeDataUrl = "https://semanticbus.cleverapps.io/data/api/TaxonomiePWA";
       treeDataUrl = "http://api.myjson.com/bins/zoyan";
       mapContext = {
@@ -30,7 +30,11 @@
         {"key":'markerAndIcons',"displayValue":'Icons'},
         {"key":"Address","displayValue":"Address","config":{"width":"400px"}},
         {"key":'ActiveList',"displayValue":"Gestion"},
-        {"key":'IMEI',"displayValue":"IMEI","config":{"hidden":true}}
+        {"key":'IMEI',"displayValue":"IMEI","config":{"hidden":true}},
+        {"key":'Group',"displayValue":"Group"},
+        {"key":'Phone',"displayValue":"Phone"},
+        {"key":'Status',"displayValue":"Status"},
+        {"key":'Speed',"displayValue":"Speed"}
       ];
       infoKeyForPanel=[
         {"key":"Name","displayValue":"Scooter Id"},
@@ -38,7 +42,11 @@
         {"key":"Time","displayValue":"Time"},
         {"key":"Speed","displayValue":"Speed"},
         {"key":"Mileage","displayValue":"Mileage"},
-        {"key":"Address","displayValue":"Address"}
+        {"key":"Address","displayValue":"Address"},
+        {"key":'Group',"displayValue":"Group"},
+        {"key":'Phone',"displayValue":"Phone"},
+        {"key":'Status',"displayValue":"Status"},
+        {"key":'Speed',"displayValue":"Speed"}
       ];
 
       /*var params = {
@@ -84,10 +92,11 @@
      <div id="sidebar" style="
      display: inline-block;
      margin-top: 10px;
+     margin-right : -7px;
      height: 95vh;
-     width: 28%;
+     width: 24%;
      position: absolute;
-     right : 0px;
+     right : 4%;
      transition : 0.2s;
      z-index : -1">
      </div>

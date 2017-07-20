@@ -47,7 +47,8 @@
             if (options.isAnchor) {
               return "<div class =\"marker-wrapper icon-marker\"></div><i " + iconNumber + iconColorStyle +"class='" + options.extraClasses + " " + options.prefix + " " + options.icon + "'></i>";
             }else {
-              return "<i " + iconNumber + iconColorStyle +"class='" + options.extraClasses + " " + options.prefix + " " + options.icon + "'></i>";
+              //return "<i " + iconNumber + iconColorStyle +"class='" + options.extraClasses + " " + options.prefix + " " + options.icon + "'></i>";
+              return `<i ${iconNumber} ${iconColorStyle} class="${options.extraClasses} ${options.prefix} ${options.icon}"></i>`
             }
 
 

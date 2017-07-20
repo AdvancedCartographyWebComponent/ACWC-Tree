@@ -3,6 +3,8 @@ import L from 'leaflet';
 import 'leaflet.markercluster'
 import serverContext from '../../Context/Server.config.js'
 import mapContext from '../../Context/Map.config.js'
+import CommandModal from '../Command/CommandModal'
+import LoginModal from '../Login/LoginModal'
 import 'leaflet/dist/leaflet.css';
 import 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet.markercluster/dist/MarkerCluster.css'
@@ -34,11 +36,18 @@ class Map extends Component {
       driversFilter: '*',
       numUser: null,
       sidebar:null,
-      isTableMap : false
+      isTableMap : false,
+      isCommand : false,
+      isLogin : true,
+      username:"",
+      password:"",
+      isLoginFailed:false
     };
+    this.isZoomed = false;
     this.isServer = this.props.isServer?this.props.isServer:"false";
     this.geojsonDivision = {};
     this.geoPathDivision = {};
+    this.geojsonLayer = null;
     this.mapDataUrl = this.props.mapDataUrl?this.props.mapDataUrl:null;
     this.geoCollection = {};
     this.prevGeoCollection = null;
@@ -57,6 +66,9 @@ class Map extends Component {
     this.getScooterDataFromServer = this.getScooterDataFromServer.bind(this);
     this.updateScooterDataFromServer = this.updateScooterDataFromServer.bind(this);
     this.formatScooterData = this.formatScooterData.bind(this);
+    this.getScooterDeviceData = this.getScooterDeviceData.bind(this);
+    this.getScooterPositionData = this.getScooterPositionData.bind(this);
+    this.getScooterGroupData = this.getScooterGroupData.bind(this);
     this.transformSparqlQueryToGeoJSON = this.transformSparqlQueryToGeoJSON.bind(this);
     this.generateIcon = this.generateIcon.bind(this);
     this.showIcons = this.showIcons.bind(this);
@@ -65,6 +77,8 @@ class Map extends Component {
     this.updateGeojsonPath = this.updateGeojsonPath.bind(this);
     this.handleTMButtonClick = this.handleTMButtonClick.bind(this);
     this.handleTButtonClick = this.handleTButtonClick.bind(this);
+    this.loginScooterServer = this.loginScooterServer.bind(this);
+
   }
 
   componentDidMount() {
@@ -77,15 +91,7 @@ class Map extends Component {
       this.init(this._mapNode);
       //var target = document.getElementById('testGlobal');
       console.log("map init");
-      this.postDataID = setInterval(
-        () => {
-          if(this.isServer!=="false"){
-            this.postData();
-          }
-        },
-        10000
-      );
-    };
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -137,7 +143,6 @@ class Map extends Component {
 
   componentWillUnmount() {
     this.state.map.remove();
-     clearInterval(this.postDataID);
   }
 
   handleTMButtonClick(event){
@@ -153,10 +158,6 @@ class Map extends Component {
     })
   }
   getData() {
-    this.updateScooterDataFromServer();
-    this.updateScooterData = setInterval(()=>{
-      this.updateScooterDataFromServer();
-    },20000);
     if(this.mapDataUrl){
       console.log("before getDataFromUrl",this.mapDataUrl);
       this.getDataFromUrl(this.mapDataUrl);
@@ -232,9 +233,57 @@ class Map extends Component {
         cur.props.actions.receiveGeoDataFromUrl(res.data);
     }).catch(function (error) {
       console.log(error);
-    });;
+    });
   }
-  updateScooterDataFromServer(){
+  loginScooterServer(){
+    let cur = this;
+    let email = this.username.value;
+    let password = this.password.value;
+    let data = {
+      email: this.username.value,
+      password: this.password.value,
+      undefined : false
+    };
+    let formData="";
+    for (var i in data) {
+      formData = formData.concat(i,"=",data[i],'&')
+    }
+    formData = formData.substr(0,formData.length-1);
+    let request = {
+      method: 'post',
+      url: "http://vps92599.ovh.net:8082/api/session",
+      data: formData
+    };
+    let step1 = new Promise((resolve, reject) => {
+      axios(request).then(function(res) {
+        resolve(res.data);
+      }).catch(function (error) {
+        reject(error);
+      });
+    });
+    step1.then(
+      (value)=>{
+        console.log("log success",value);
+        this.setState({
+          isLogin:false,
+          username:email,
+          password:password,
+        });
+        cur.updateScooterDataFromServer();
+        cur.updateScooterData = setInterval(()=>{
+          cur.updateScooterDataFromServer();
+        },20000);
+      }
+    ).catch(
+      (value)=>{
+        this.setState({
+          isLoginFailed:true
+        });
+        console.log(value);
+      }
+    );
+  }
+  /*updateScooterDataFromServer(){
     var cur = this;
     if(window.mapDataUrl) delete window.mapDataUrl;
     console.log("get Scooter Data From Server");
@@ -248,11 +297,28 @@ class Map extends Component {
     }).then(function(res) {
       console.log("result",res.status);
       if(res.status==200){
-        cur.getScooterDataFromServer();
+        //cur.getScooterDataFromServer();
+        let Devices = cur.getScooterDeviceData();
+        let Groups = cur.getScooterGroupData();
+        let Positions = cur.getScooterPositionData();
+        Promise.all([Devices, Groups, Positions]).then(values => {
+          console.log("get data from java server",values);
+          cur.formatScooterDataAll(values);
+        });
       }
     }).catch(function (error) {
       console.log(error);
     });;
+  }*/
+  updateScooterDataFromServer(){
+    var cur = this;
+    let Devices = cur.getScooterDeviceData();
+    let Groups = cur.getScooterGroupData();
+    let Positions = cur.getScooterPositionData();
+    Promise.all([Devices, Groups, Positions]).then(values => {
+      console.log("get data from java server",values);
+      cur.formatScooterDataAll(values);
+    });
   }
   getScooterDataFromServer(){
     var cur = this;
@@ -302,6 +368,112 @@ class Map extends Component {
     this.props.actions.isScooter(true);
     this.props.actions.getDataFromUrlForMap(scooterData);
     console.log("formatScooterData",scooterData);
+  }
+  formatScooterDataAll(data){
+    let scooterData = {
+      "@graph":[]
+    }
+    //[Devices, Groups, Positions]
+    data[0].map((value,index)=>{
+      if(value){
+
+        //863977030761766 | Scooter79 | Kilometre | 2017-07-13 13:27:35 | 48.8371616666667 | 2.334425 | 74 Avenue Denfert-Rochereau, Paris, Île-de-France, FR
+        let scooterDetails={
+          "mobile":value["uniqueId"]?"imei:"+value["uniqueId"]:"To be getted",
+          "mileage" : data[2]?data[2][index]["attributes"]["totalDistance"]+"Km":"To be getted",
+          "date":data[2]?data[2][index]["deviceTime"]:"To be getted",
+          "lat":data[2]?data[2][index]["latitude"]:"To be getted",
+          "long":data[2]?data[2][index]["longitude"]:"To be getted",
+          "speed":data[2]?data[2][index]["speed"]+"Km/h": "To be getted",
+          "address":data[2]?data[2][index]["address"]:"To be getted",
+          "attributes":value["attributes"]?value["attributes"]:"To be getted",
+          "category":value["category"]?value["category"]:"To be getted",
+          "contact":value["contact"]?value["contact"]:"To be getted",
+          "geofenceIds":value["geofenceIds"]?value["geofenceIds"]:"To be getted",
+          "groupId":value["groupId"]?value["groupId"]:"To be getted",
+          "group" : data[1]&&value["groupId"]?data[1][value["groupId"]-1]["name"]:"To be getted",
+          "id":value["id"]?value["id"]:"To be getted",
+          "lastUpdate":value["lastUpdate"]?value["lastUpdate"]:"To be getted",
+          "model":value["model"]?value["model"]:"To be getted",
+          "name":value["name"]?value["name"]:"To be getted",
+          "phone":value["phone"]?value["phone"]:"To be getted",
+          "positionId":value["positionId"]?value["positionId"]:"To be getted",
+          "status" : value["status"]?value["status"]:"To be getted"
+
+        }
+        scooterData["@graph"].push(scooterDetails);
+      }
+    });
+    this.props.actions.isScooter(true);
+    this.props.actions.getDataFromUrlForMap(scooterData);
+    console.log("formatScooterDataALL",scooterData);
+  }
+  getScooterDeviceData(){
+    let request = {
+      method: 'get',
+      url: "http://vps92599.ovh.net:8082/api/devices",
+      headers: {
+          'Accept': 'application/ld+json, application/json',
+          'Content-Type': 'application/ld+json, application/json'
+      },
+      auth: {
+        username: this.state.username,
+        password: this.state.password
+      }
+    };
+    return new Promise((resolve, reject) => {
+      axios(request).then(function(res) {
+        resolve(res.data);
+        console.log("getScooterDeviceData",Devices);
+      }).catch(function (error) {
+        reject(error);
+      });
+    });
+  }
+  getScooterPositionData(){
+    let request = {
+      method: 'get',
+      url: "http://vps92599.ovh.net:8082/api/positions",
+      headers: {
+          'Accept': 'application/ld+json, application/json',
+          'Content-Type': 'application/ld+json, application/json'
+      },
+      auth: {
+        username: this.state.username,
+        password: this.state.password
+      }
+    };
+    return new Promise((resolve, reject) => {
+      axios(request).then(function(res) {
+        resolve(res.data);
+        console.log("getScooterDeviceData",Devices);
+      }).catch(function (error) {
+        reject(error);
+      });
+    });
+  }
+
+  getScooterGroupData(){
+    let request = {
+      method: 'get',
+      url: "http://vps92599.ovh.net:8082/api/groups",
+      headers: {
+          'Accept': 'application/ld+json, application/json',
+          'Content-Type': 'application/ld+json, application/json'
+      },
+      auth: {
+        username: this.state.username,
+        password: this.state.password
+      }
+    };
+    return new Promise((resolve, reject) => {
+      axios(request).then(function(res) {
+        resolve(res.data);
+        console.log("getScooterDeviceData",Devices);
+      }).catch(function (error) {
+        reject(error);
+      });
+    });
   }
   entityShortName(iri){
       if (typeof iri === 'undefined') {
@@ -408,6 +580,7 @@ class Map extends Component {
       chunkedLoading: true,
       spiderfyOnMaxZoom : false
     });
+    var geojsonLayer;
     markerCluster.on('clusterclick', function (a) {
        if(a.layer._zoom === mapContext.params.maxZoom){
          if(a.layer.getAllChildMarkers().length>100){
@@ -420,7 +593,7 @@ class Map extends Component {
     });
     if(this.props.isTrajet){
       for (var geojsonIndex in geojson) {
-        var geojsonLayer = L.geoJson(geojson[geojsonIndex], {
+          geojsonLayer = L.geoJson(geojson[geojsonIndex], {
           onEachFeature: this.onEachFeature,
           pointToLayer: this.pointToLayer,
           filter: this.filterFeatures
@@ -430,16 +603,26 @@ class Map extends Component {
       }
     }else{
       console.log("!isTrajet geojson",geojson);
-      var geojsonLayer = _.size(geojson)>0?L.geoJson(geojson, {
+        geojsonLayer = _.size(geojson)>0?L.geoJson(geojson, {
         onEachFeature: this.onEachFeature,
         pointToLayer: this.pointToLayer,
         filter: this.filterFeatures
       }):null;
-      this.geojsonDivision = geojsonLayer;
-      this.geojsonDivision?this.zoomToFeature(this.geojsonDivision):null;
+      this.geojsonLayer = geojsonLayer;
+      !this.isZoomed&&geojsonLayer&&this.props.isScooter?this.zoomToFeature(this.geojsonLayer):null;
       geojsonLayer?markerCluster.addLayer(geojsonLayer):null;
     }
-    markerCluster.addTo(this.state.map);
+    geojsonLayer?geojsonLayer.addTo(this.state.map):null;
+    var cogList = document.getElementsByClassName("fa-cog");
+    console.log("cogList",cogList);
+    for (var i = 0; i < cogList.length; i++) {
+      cogList[i].parentElement.onclick=(e)=>{
+        e.stopPropagation();
+        this.setState({
+          isCommand : true
+        });
+      }
+    }
     this.props.isTrajet?this.updateGeojsonPath(geojsonForPath):null;
     //TODO
     this.setState(
@@ -474,10 +657,11 @@ class Map extends Component {
   }
   filterGeoJSONLayer() {
     this.state.markerCluster.clearLayers();
+
     for (var i in this.geoPathDivision) {
       this.state.map.removeLayer(this.geoPathDivision[i]);
     }
-
+    this.geojsonLayer?this.geojsonLayer.clearLayers():null;
     this.geojsonDivision = {};
     this.geoPathDivision = {};
     this.addGeoJSONLayer(this.props.geoData,this.props.geojsonForPath);
@@ -522,7 +706,8 @@ class Map extends Component {
     if(!iconIndex||iconIndex === 0) {
       template['isAnchor'] = true;
     }
-    var outerHTMLElement = L.MyMarkers.icon(template).createIcon().outerHTML;
+    var iconHTMLElement =  L.MyMarkers.icon(template).createIcon();
+    var outerHTMLElement = iconHTMLElement.outerHTML;
     return outerHTMLElement;
   }
   showIcons(marker){
@@ -556,8 +741,9 @@ class Map extends Component {
     var fitBoundsParams = {
       paddingTopLeft: [10,10],
       paddingBottomRight: [10,10],
-      maxZoom : 14
+      maxZoom : 18
     };
+    this.isZoomed = true;
     this.state.map.fitBounds(target.getBounds(), fitBoundsParams);
   }
   filterFeatures(feature, layer) {
@@ -588,8 +774,7 @@ class Map extends Component {
   pointToLayer(feature, latlng) {
     var cur = this;
     if(feature.geometry.type ==="Point"){
-      var Marker1 = this.markerAndIcons(feature.properties.markerAndIcons?feature.properties.markerAndIcons:null);
-      var markers = Marker1;
+      var markers = this.markerAndIcons(feature.properties.markerAndIcons?feature.properties.markerAndIcons:null);
       var testMarker = L.marker(latlng,{icon: L.divIcon({className: 'markers', html:markers, iconSize:[35,35],iconAnchor : [17,42]}),riseOnHover:true})
                         .on('click',(e)=>{
                           console.log("click button, show sidebar",cur.props.actions);
@@ -654,6 +839,30 @@ class Map extends Component {
           cur.props.isTyping &&
             <LoadingPage/>
         }
+        {
+          cur.state.isCommand &&
+            <CommandModal
+              close={()=>{
+                cur.setState({
+                  isCommand : false
+                });
+              }}
+              show={cur.state.isCommand}/>
+        }
+        {
+          cur.state.isLogin &&
+            <LoginModal
+              close={()=>{
+                cur.setState({
+                  isLogin : false
+                });
+              }}
+              username = {(username)=>{cur.username = username}}
+              password = {(password)=>{cur.password = password}}
+              login = {()=>{cur.loginScooterServer()}}
+              isLoginFailed = {this.state.isLoginFailed}
+              show={cur.state.isLogin}/>
+        }
         <div className='maptable'>
           <button type="button" className='maptableChild btn btn-primary' disabled = {!this.props.tableData?true:false} onClick = {this.handleTMButtonClick}>{this.state.isTableMap?'Map':'Table&Map'}</button>
           <button type="button" className='maptableChild btn btn-primary' disabled = {!this.props.tableData?true:false} onClick = {this.handleTButtonClick}>Table</button>
@@ -671,6 +880,7 @@ const mapStateToProps = state => ({
   geojsonForPath : state.geojsonForPath,
   checkedItem : state.checkedItem,
   isTrajet : state.isTrajet,
+  isScooter : state.isScooter,
   tableData : state.tableData
 })
 

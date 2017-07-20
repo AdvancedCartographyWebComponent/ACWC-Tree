@@ -27,12 +27,16 @@ class App extends Component {
         document.getElementById('carte').style.display="inline-block";
         document.getElementById('carte').style.height="51vh";
         document.getElementById('sidebar').style.height="51vh";
+
       }else {
         document.getElementById('table').style.bottom=null;
         document.getElementById('table').style.top="10px";
         document.getElementById('table').style.height="95vh";
         document.getElementById('carte').style.display="none";
       }
+      setTimeout(()=>{
+        this.props.mapRef.invalidateSize();
+      },250);
       return <Table
               isExit={this.props.tableType==="2"?true:false}
               actions = {this.props.actions}
@@ -43,6 +47,9 @@ class App extends Component {
       document.getElementById('carte').style.display="inline-block";
       document.getElementById('sidebar').style.height="95vh";
       document.getElementById('table').style.display="none";
+      setTimeout(()=>{
+        this.props.mapRef.invalidateSize();
+      },250);
       return null;
     }
   }
