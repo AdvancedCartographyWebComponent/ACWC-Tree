@@ -245,6 +245,7 @@ class Map extends Component {
       undefined : false
     };
     let formData="";
+    axios.defaults.withCredentials = true;
     for (var i in data) {
       formData = formData.concat(i,"=",data[i],'&')
     }
@@ -256,6 +257,7 @@ class Map extends Component {
     };
     let step1 = new Promise((resolve, reject) => {
       axios(request).then(function(res) {
+        console.log("result ",res);
         resolve(res.data);
       }).catch(function (error) {
         reject(error);
@@ -266,8 +268,6 @@ class Map extends Component {
         console.log("log success",value);
         this.setState({
           isLogin:false,
-          username:email,
-          password:password,
         });
         cur.updateScooterDataFromServer();
         cur.updateScooterData = setInterval(()=>{
@@ -373,6 +373,9 @@ class Map extends Component {
     let scooterData = {
       "@graph":[]
     }
+    let scooterList = {
+      "@graph":[]
+    }
     //[Devices, Groups, Positions]
     data[0].map((value,index)=>{
       if(value){
@@ -401,12 +404,18 @@ class Map extends Component {
           "status" : value["status"]?value["status"]:"To be getted"
 
         }
+        let scooter = {
+          "@id":value["name"].split(' ')[1],
+          "broader" : "ScooterList"
+        }
         scooterData["@graph"].push(scooterDetails);
+        scooterList["@graph"].push(scooter);
       }
     });
     this.props.actions.isScooter(true);
+    this.props.actions.getDataFromUrlForTree(scooterList);
     this.props.actions.getDataFromUrlForMap(scooterData);
-    console.log("formatScooterDataALL",scooterData);
+    console.log("formatScooterDataALL",scooterData,scooterList);
   }
   getScooterDeviceData(){
     let request = {
@@ -415,10 +424,6 @@ class Map extends Component {
       headers: {
           'Accept': 'application/ld+json, application/json',
           'Content-Type': 'application/ld+json, application/json'
-      },
-      auth: {
-        username: this.state.username,
-        password: this.state.password
       }
     };
     return new Promise((resolve, reject) => {
@@ -437,10 +442,6 @@ class Map extends Component {
       headers: {
           'Accept': 'application/ld+json, application/json',
           'Content-Type': 'application/ld+json, application/json'
-      },
-      auth: {
-        username: this.state.username,
-        password: this.state.password
       }
     };
     return new Promise((resolve, reject) => {
@@ -460,10 +461,6 @@ class Map extends Component {
       headers: {
           'Accept': 'application/ld+json, application/json',
           'Content-Type': 'application/ld+json, application/json'
-      },
-      auth: {
-        username: this.state.username,
-        password: this.state.password
       }
     };
     return new Promise((resolve, reject) => {
@@ -864,8 +861,8 @@ class Map extends Component {
               show={cur.state.isLogin}/>
         }
         <div className='maptable'>
-          <button type="button" className='maptableChild btn btn-primary' disabled = {!this.props.tableData?true:false} onClick = {this.handleTMButtonClick}>{this.state.isTableMap?'Map':'Table&Map'}</button>
-          <button type="button" className='maptableChild btn btn-primary' disabled = {!this.props.tableData?true:false} onClick = {this.handleTButtonClick}>Table</button>
+          <button type="button" className='maptableChild btn btn-primary' disabled = {!this.props.tableData||this.props.tableData.length===0?true:false} onClick = {this.handleTMButtonClick}>{this.state.isTableMap?'Map':'Table&Map'}</button>
+          <button type="button" className='maptableChild btn btn-primary' disabled = {!this.props.tableData||this.props.tableData.length===0?true:false} onClick = {this.handleTButtonClick}>Table</button>
         </div>
         <div ref={(node) => { cur._mapNode = node}} id="map" />
       </div>

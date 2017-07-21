@@ -52,7 +52,7 @@ export default class CommandModal extends React.Component {
         <Modal
           show={this.props.show}
           style={{height: "400px",top : "20%"}}>
-          <Modal.Header closeButton>
+          <Modal.Header>
             <Modal.Title id="contained-modal-title">Intervention</Modal.Title>
           </Modal.Header>
           <Modal.Body>
