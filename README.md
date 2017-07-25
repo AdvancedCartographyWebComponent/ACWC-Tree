@@ -186,6 +186,9 @@ The geolocation data should follow the structure like this:
           "@id": "http://PWA/SKOS/Economie démocratique"
         }
       ],
+      "markerAndIcons":[
+                  {icon:"motorcycle",color:"CADETBLUE",number:null},
+                  {icon:"number",color:"CADETBLUE",number:dateTemp%1000}],
       "long": -1.184316,
       "lat": 47.365373,
       "label": {
@@ -203,13 +206,14 @@ The geolocation data should follow the structure like this:
 --**"@type"** is the type of the semantique link    
 **"subject"** is the parent of the poi, it works like the external key, linking to the **"@id"** in tree-menu  
 **"markerAndIcons"** is the icons' configuration for markers, you can set the icons inside the markers, maximum 1 anchor marker and 6 surrounding markers.   
-	**icon** is the icon style, you can use fontawesome's icon. If you want to add number, you should set it as   
+	**icon** is the icon style, you can use fontawesome's icon(set number to be null). If you want to use number or string, you should set it as   
 	```	
 	icon:"number"   
 	```
-	and then add number in **number**  
+	and then add number or string in **number**  
 	```
 	number:6  
+	number : "ABC"
 	```
 	**color** is the color setting.  
 **"label"** is the name of poi    
