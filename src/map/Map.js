@@ -41,7 +41,9 @@ class Map extends Component {
       isLogin : true,
       username:"",
       password:"",
-      isLoginFailed:false
+      isLoginFailed:false,
+      session : null,
+      isRestoring : true
     };
     this.isZoomed = false;
     this.isServer = this.props.isServer?this.props.isServer:"false";
@@ -58,10 +60,6 @@ class Map extends Component {
     this.pointToLayer = this.pointToLayer.bind(this);
     this.filterFeatures = this.filterFeatures.bind(this);
     this.filterGeoJSONLayer = this.filterGeoJSONLayer.bind(this);
-    this.plot = this.plot.bind(this);
-    this.postData = this.postData.bind(this);
-    this.entityShortName = this.entityShortName.bind(this);
-    this.transformToGeoJSON = this.transformToGeoJSON.bind(this);
     this.getDataFromUrl = this.getDataFromUrl.bind(this);
     this.getScooterDataFromServer = this.getScooterDataFromServer.bind(this);
     this.updateScooterDataFromServer = this.updateScooterDataFromServer.bind(this);
@@ -69,7 +67,6 @@ class Map extends Component {
     this.getScooterDeviceData = this.getScooterDeviceData.bind(this);
     this.getScooterPositionData = this.getScooterPositionData.bind(this);
     this.getScooterGroupData = this.getScooterGroupData.bind(this);
-    this.transformSparqlQueryToGeoJSON = this.transformSparqlQueryToGeoJSON.bind(this);
     this.generateIcon = this.generateIcon.bind(this);
     this.showIcons = this.showIcons.bind(this);
     this.hideIcons = this.hideIcons.bind(this);
@@ -83,12 +80,7 @@ class Map extends Component {
   }
 
   componentDidMount() {
-    if(this.isServer !=="false"){
-      this.postData();
-    }else{
-      this.restoreSession();
-      //this.getData();
-    }
+    this.restoreSession();
     if (!this.state.map) {
       this.init(this._mapNode);
       //var target = document.getElementById('testGlobal');
@@ -256,6 +248,8 @@ class Map extends Component {
         console.log("log success",value);
         this.setState({
           isLogin:false,
+          session:value,
+          isRestoring:false
         });
         cur.updateScooterDataFromServer();
         cur.updateScooterData = setInterval(()=>{
@@ -265,8 +259,9 @@ class Map extends Component {
     ).catch(
       (value)=>{
         this.setState({
-          isLoginFailed:true
+          isRestoring:false
         });
+        console.log("log failed");
       }
     );
   }
@@ -432,8 +427,9 @@ class Map extends Component {
     data[0].map((value,index)=>{
       if(value){
         let positionIndex = this.findPositonIndex(value["id"],data[2]);
-        let groupIndex = this.findGroupIndex(value["id"],data[1]);
+        let groupIndex = this.findGroupIndex(value["groupId"],data[1]);
         console.log("positionIndex",positionIndex);
+        console.log("positionIndex",groupIndex);
         //863977030761766 | Scooter79 | Kilometre | 2017-07-13 13:27:35 | 48.8371616666667 | 2.334425 | 74 Avenue Denfert-Rochereau, Paris, Île-de-France, FR
         let scooterDetails={
           "mobile":value["uniqueId"]?"imei:"+value["uniqueId"]:"To be getted",
@@ -448,7 +444,7 @@ class Map extends Component {
           "contact":value["contact"]?value["contact"]:"To be getted",
           "geofenceIds":value["geofenceIds"]?value["geofenceIds"]:"To be getted",
           "groupId":value["groupId"]?value["groupId"]:"To be getted",
-          "group":groupIndex>=0?data[1][i]["name"]:"Unknown Group",
+          "group":groupIndex>=0?data[1][groupIndex]["name"]:"Unknown Group",
           "id":value["id"]?value["id"]:"To be getted",
           "lastUpdate":value["lastUpdate"]?value["lastUpdate"]:"To be getted",
           "model":value["model"]?value["model"]:"To be getted",
@@ -527,106 +523,6 @@ class Map extends Component {
       }).catch(function (error) {
         reject(error);
       });
-    });
-  }
-  entityShortName(iri){
-      if (typeof iri === 'undefined') {
-          return true;
-      } else {
-          return iri.split('#')[1];
-      }
-  }
-
-  plot(cur,JSONData){
-      if (typeof JSONData['@graph'] === 'undefined') {
-          if (cur.entityShortName(JSONData['@type']) === 'Driver') {
-              cur.transformToGeoJSON([JSONData],cur);
-          } else {
-          }
-      } else {
-          var points = JSONData['@graph'].filter(function (objet) {return ( cur.entityShortName(objet['@type']) === 'Driver'); });
-          if (points.length > 0) {
-              cur.transformToGeoJSON(points);
-          } else {
-          }
-      }
-  }
-
-  transformToGeoJSON(data){
-    data.map(
-      (value, index)=>
-      {
-
-        var geoFeatures ={
-          "type": "Feature",
-          "geometry" : {
-            "type": "Point",
-            "coordinates": [value["long"], value["lat"]],
-          },
-          "properties" : {
-            "NAME": value["name"],
-            "URL" : value["url"]
-          }
-        }
-        this.geoCollection.features.push(geoFeatures);
-      });
-  }
-  transformSparqlQueryToGeoJSON(data){
-    data.map(
-      (value, index)=>
-      {
-
-        var geoFeatures ={
-          "type": "Feature",
-          "geometry" : {
-            "type": "Point",
-            "coordinates": [value["LON"]["value"], value["LAT"]["value"]],
-          },
-          "properties" : {
-            "NAME": value["LAB"]["value"],
-            "URL" : value["LAB"]["value"]
-          }
-        }
-        this.geoCollection.features.push(geoFeatures);
-      });
-  }
-  postData(){
-
-    var current = {
-        "@context": serverContext.ONTOLOGY,
-        "@type": USER_TYPE,
-        "lat": 48.826703 ,
-        "long": 2.344345,
-        "timestamp": Math.round(new Date().getTime()),
-        "@id" : "lalala",
-        "error": 0
-      };
-    var currentPosition = JSON.stringify(current);
-    this.prevGeoCollection = this.geoCollection;
-    this.geoCollection = {
-      "type": "FeatureCollection",
-      "features": []
-    };
-    var cur = this;
-    axios({
-      method: 'post',
-      url: SERVICE_PORT,
-      data: currentPosition,
-      headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-      }
-    }).then(function(res) {
-      cur.plot(cur,res.data);
-      if(md5(JSON.stringify(cur.geoCollection))!==md5(JSON.stringify(cur.prevGeoCollection))){
-        cur.props.actions.updateServerData(cur.geoCollection);
-        cur.setState({
-          numUser: cur.geoCollection.features.length,
-          geojson: cur.geoCollection
-        });
-      }
-    })
-    .catch(function (error) {
     });
   }
   addGeoJSONLayer(geojson,geojsonForPath) {
@@ -833,11 +729,11 @@ class Map extends Component {
                         .on('click',(e)=>{
                           console.log("click button, show sidebar",cur.props.actions);
                           cur.props.actions.clickMarker(e.target,feature);
-                          document.getElementById('carte').style.width="45%";
+                          document.getElementById('carte').style.width="48%";
                           setTimeout(()=>{
                             this.state.map.invalidateSize();
                             this.state.map.panTo(e.target.getLatLng());
-                          },250);
+                          },501);
 
                         },);
       return testMarker;
@@ -871,10 +767,10 @@ class Map extends Component {
     let map = L.map(id, config.params);
     map.on('click',function () {
       cur.props.actions.closeSideBar();
-      document.getElementById('carte').style.width="70%";
+      document.getElementById('carte').style.width="75%";
       setTimeout(()=>{
         map.invalidateSize();
-      },500);
+      },501);
     })
     L.control.zoom({ position: "bottomleft"}).addTo(map);
     L.control.scale({ position: "bottomleft"}).addTo(map);
@@ -886,7 +782,15 @@ class Map extends Component {
 
   render() {
     var cur = this;
+    const buttonGroupStyle ={
+      "margin": "10px",
+      "padding": "0px",
+      "cursor": "pointer",
+      "position":"absolute",
+      "right":"2%"
+    }
     console.log("render map");
+
     return (
       <div id="mapUI">
         {
@@ -915,11 +819,29 @@ class Map extends Component {
               password = {(password)=>{cur.password = password}}
               login = {()=>{cur.loginScooterServer()}}
               isLoginFailed = {this.state.isLoginFailed}
+              isRestoring = {this.state.isRestoring}
               show={cur.state.isLogin}/>
         }
-        <div className='maptable'>
-          <button type="button" className='maptableChild btn btn-primary' disabled = {!this.props.tableData||this.props.tableData.length===0?true:false} onClick = {this.handleTMButtonClick}>{this.state.isTableMap?'Map':'Table&Map'}</button>
-          <button type="button" className='maptableChild btn btn-primary' disabled = {!this.props.tableData||this.props.tableData.length===0?true:false} onClick = {this.handleTButtonClick}>Table</button>
+        <div className="btn-group-vertical btn-group-sm leaflet-control" style={buttonGroupStyle}>
+          <button type="button" className="btn btn-default">
+            <i className="fa fa-crosshairs"></i>
+          </button>
+          <button type="button" className="btn btn-info" disabled = {!this.props.tableData||this.props.tableData.length===0?true:false} onClick = {this.handleTMButtonClick}>
+            <i className="fa fa-map"></i>/
+            <i className="fa fa-table"></i>
+          </button>
+          <button type="button" className="btn btn-primary" disabled = {!this.props.tableData||this.props.tableData.length===0?true:false} onClick = {this.handleTButtonClick}>
+            <i className="fa fa-table"></i>
+          </button>
+          <button type="button" className="btn btn-danger">
+            <i className="fa fa-cog"></i>
+          </button>
+          <button type="button" className="btn btn-success">
+            <i className="fa fa-check"></i>
+          </button>
+          <button type="button" className="btn btn-warning">
+            <i className="fa fa-exclamation-triangle"></i>
+          </button>
         </div>
         <div ref={(node) => { cur._mapNode = node}} id="map" />
       </div>

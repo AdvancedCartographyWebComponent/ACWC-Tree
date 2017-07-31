@@ -50,7 +50,7 @@ var App = React.createClass({
       </div>
       <div className="row">
         <div className="col-md-4">
-          <Scrollbars style={{ width: "100%", height: "90vh" }}>{dynamicExample}</Scrollbars>
+          <Scrollbars style={{ width: "100%", height: "85vh" }}>{dynamicExample}</Scrollbars>
 
         </div>
       </div>

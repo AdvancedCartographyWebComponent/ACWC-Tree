@@ -43,8 +43,38 @@ export default class loginModal extends React.Component {
     let username = this.props.username;
     let password = this.props.password;
     let login = this.props.login;
+    let isRestoring = this.props.isRestoring;
+    const restoreSessionTextStyle={
+      "width": "30%",
+      "marginLeft": "35%",
+      "fontSize": "40px"
+    };
+    const restoreSessionIconStyle={
+      "marginLeft": "40%",
+      "width": "20%"
+    };
     return (
+      isRestoring?
       <div
+        className="modal-container">
+        <Modal
+          show={this.props.show}
+          style={{height: "400px",top : "20%"}}>
+          <Modal.Header>
+            <Modal.Title id="contained-modal-title">Login</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <div style={restoreSessionTextStyle}>Loading...</div>
+            <div style={restoreSessionIconStyle}>
+              <i className="fa fa-spinner fa-pulse fa-5x fa-fw "></i>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button bsStyle="info" onClick={this.handleRegisterClick} disabled>Register</Button>
+            <Button bsStyle="primary" onClick={login}>Login</Button>
+          </Modal.Footer>
+        </Modal>
+      </div>:<div
         className="modal-container">
         <Modal
           show={this.props.show}

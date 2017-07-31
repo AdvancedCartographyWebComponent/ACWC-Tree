@@ -4,6 +4,7 @@ import App_tree from './tree/App2'
 import App_map from './map/App'
 import App_Info from './info/App'
 import App_Table from './table/App'
+import App_header from './header/Header'
 import './tree/index.css';
 import './tree/app.css';
 import './tree/tree-view.css';
@@ -20,7 +21,10 @@ const createStore=require('redux').createStore;
 
 var store=createStore(Reducer);
 
-
+ReactDOM.render(
+  <App_header/>,
+  document.getElementById('header')
+);
 
 ReactDOM.render(
   <Provider store={store}>

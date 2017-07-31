@@ -3,7 +3,12 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
     <!--
       Notice the use of %PUBLIC_URL% in the tag above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -73,44 +78,44 @@
   </head>
   <body>
     <div>
+      <div id="header">
+      </div>
 	     <div id="tree" style="
     	display: inline-block;
     	border: 1px solid gainsboro;
     	margin-top: 10px;
-    	height: 95vh;
+    	height: 90vh;
     	width: 25%;
     	position: relative;"></div>
     	<div id="carte" style="
    	 display: inline-block;
    	 border: 1px solid gainsboro;
    	 margin: 10px;
-   	 height: 95vh;
-     width: 70%;
+   	 height: 90vh;
+     width: 75%;
    	 position: absolute;
      transition : 0.5s;
      z-index : 0;"></div>
      <div id="sidebar" style="
      display: inline-block;
      margin-top: 10px;
-     margin-right : -7px;
-     height: 95vh;
-     width: 24%;
+     margin-right : 0px;
+     height: 90vh;
+     width: 25%;
      position: absolute;
-     right : 4%;
+     right : 0%;
      transition : 0.2s;
      z-index : -1">
      </div>
      <div id="table" style="
-     width: 70%;
+     width: 74%;
      position: absolute;
-     bottom: 29px;
+     bottom: 0px;
      z-index: 20;
-     left: 26%;
-     margin-left : -3px;
+     margin-left : 10px;
      border: 1px solid gainsboro;
      transition : 0.5s;
-     right : 0px;
-     background:white">
+     left : 25%;">
      </div>
     </div>
 

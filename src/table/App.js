@@ -22,34 +22,36 @@ class App extends Component {
       document.getElementById('table').style.display="inline-block";
       if(this.props.tableType==="1"){
         document.getElementById('table').style.top=null;
-        document.getElementById('table').style.bottom="29px";
-        document.getElementById('table').style.height="43vh";
+        document.getElementById('table').style.bottom="1px";
+        document.getElementById('table').style.height="38vh";
         document.getElementById('carte').style.display="inline-block";
         document.getElementById('carte').style.height="51vh";
         document.getElementById('sidebar').style.height="51vh";
 
       }else {
         document.getElementById('table').style.bottom=null;
-        document.getElementById('table').style.top="10px";
-        document.getElementById('table').style.height="95vh";
+        document.getElementById('table').style.top="62px";
+        document.getElementById('table').style.height="90vh";
         document.getElementById('carte').style.display="none";
+        document.getElementById('carte').style.width="75%";
+        document.getElementById('sidebar').style.display="none";
       }
       setTimeout(()=>{
         this.props.mapRef.invalidateSize();
-      },250);
+      },501);
       return <Table
               isExit={this.props.tableType==="2"?true:false}
               actions = {this.props.actions}
               infoKeyForTable = {infoKeyForTable}
             />;
     }else {
-      document.getElementById('carte').style.height="95vh";
+      document.getElementById('carte').style.height="90vh";
       document.getElementById('carte').style.display="inline-block";
-      document.getElementById('sidebar').style.height="95vh";
+      document.getElementById('sidebar').style.height="90vh";
       document.getElementById('table').style.display="none";
       setTimeout(()=>{
         this.props.mapRef.invalidateSize();
-      },250);
+      },501);
       return null;
     }
   }
