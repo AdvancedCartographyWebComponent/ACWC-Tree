@@ -600,7 +600,7 @@ var reducer = function (state = initialState, action) {
       var nameMap = treeNameMap(state.urlDataForTree?state.urlDataForTree:defaultTreeData);
       return Object.assign({}, state, {
         urlDataForMap:action.urlDataForMap,
-        treeData:treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(globalContentSearchResult[1],state.isTrajet),findRootResults[0],action.urlDataForMap,checkedlist),
+        treeData:treeConstructor(state.urlDataForTree?state.urlDataForTree:defaultTreeData,countItem(globalContentSearchResult[1],state.isTrajet),findRootResults[0],action.urlDataForMap,state.checkedItem),
         geoData:globalContentSearchResult[0],
         geojsonForPath : globalContentSearchResult[3],
         root:findRootResults[0],
@@ -611,9 +611,11 @@ var reducer = function (state = initialState, action) {
       console.log("GetDataFromUrlForTree",action.urlDataForTree);
       var checkedlist=[];
       var findRootResults = findRoot(action.urlDataForTree,state.root);
-      var treeConstructorResult = treeConstructor(action.urlDataForTree,countItem(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet),findRootResults[0],state.urlDataForMap?state.urlDataForMap:defaultMapData);
+      var treeConstructorResult = treeConstructor(action.urlDataForTree,countItem(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isTrajet),findRootResults[0],state.urlDataForMap?state.urlDataForMap:defaultMapData,state.checkedItem);
+      var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isScooter,state.isTrajet,state.checkedItem,state.keyword);
       var nameMap = treeNameMap(action.urlDataForTree);
       return Object.assign({}, state, {
+        geoData:globalContentSearchResult[0],
         urlDataForTree:action.urlDataForTree,
         treeData:treeConstructorResult,
         root:findRootResults[0],

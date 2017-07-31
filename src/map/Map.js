@@ -78,6 +78,7 @@ class Map extends Component {
     this.handleTMButtonClick = this.handleTMButtonClick.bind(this);
     this.handleTButtonClick = this.handleTButtonClick.bind(this);
     this.loginScooterServer = this.loginScooterServer.bind(this);
+    this.restoreSession = this.restoreSession.bind(this);
 
   }
 
@@ -85,7 +86,8 @@ class Map extends Component {
     if(this.isServer !=="false"){
       this.postData();
     }else{
-      this.getData();
+      this.restoreSession();
+      //this.getData();
     }
     if (!this.state.map) {
       this.init(this._mapNode);
@@ -235,6 +237,39 @@ class Map extends Component {
       console.log(error);
     });
   }
+  restoreSession(){
+    let cur = this;
+    axios.defaults.withCredentials = true;
+    let request = {
+      method: 'get',
+      url: "http://vps92599.ovh.net:8082/api/session"
+    };
+    let step1 = new Promise((resolve, reject) => {
+      axios(request).then(function(res) {
+        resolve(res.data);
+      }).catch(function (error) {
+        reject(error);
+      });
+    });
+    step1.then(
+      (value)=>{
+        console.log("log success",value);
+        this.setState({
+          isLogin:false,
+        });
+        cur.updateScooterDataFromServer();
+        cur.updateScooterData = setInterval(()=>{
+          cur.updateScooterDataFromServer();
+        },20000);
+      }
+    ).catch(
+      (value)=>{
+        this.setState({
+          isLoginFailed:true
+        });
+      }
+    );
+  }
   loginScooterServer(){
     let cur = this;
     let email = this.username.value;
@@ -369,6 +404,23 @@ class Map extends Component {
     this.props.actions.getDataFromUrlForMap(scooterData);
     console.log("formatScooterData",scooterData);
   }
+  findPositonIndex(id,data){
+    for (var i = 0; i < data.length; i++) {
+      if(data[i]["deviceId"]===id){
+        return i;
+      }
+    }
+    return -1;
+  }
+  findGroupIndex(id,data){
+    for (var i = 0; i < data.length; i++) {
+      if(data[i]["id"]===id){
+
+        return i;
+      }
+    }
+    return -1;
+  }
   formatScooterDataAll(data){
     let scooterData = {
       "@graph":[]
@@ -379,37 +431,42 @@ class Map extends Component {
     //[Devices, Groups, Positions]
     data[0].map((value,index)=>{
       if(value){
-
+        let positionIndex = this.findPositonIndex(value["id"],data[2]);
+        let groupIndex = this.findGroupIndex(value["id"],data[1]);
+        console.log("positionIndex",positionIndex);
         //863977030761766 | Scooter79 | Kilometre | 2017-07-13 13:27:35 | 48.8371616666667 | 2.334425 | 74 Avenue Denfert-Rochereau, Paris, Île-de-France, FR
         let scooterDetails={
           "mobile":value["uniqueId"]?"imei:"+value["uniqueId"]:"To be getted",
-          "mileage" : data[2]?data[2][index]["attributes"]["totalDistance"]+"Km":"To be getted",
-          "date":data[2]?data[2][index]["deviceTime"]:"To be getted",
-          "lat":data[2]?data[2][index]["latitude"]:"To be getted",
-          "long":data[2]?data[2][index]["longitude"]:"To be getted",
-          "speed":data[2]?data[2][index]["speed"]+"Km/h": "To be getted",
-          "address":data[2]?data[2][index]["address"]:"To be getted",
+          "mileage" : positionIndex>=0?(data[2][positionIndex]["attributes"]["totalDistance"]/1000).toFixed(2)+"Km":"To be getted",
+          "date":positionIndex>=0?data[2][positionIndex]["deviceTime"]:"To be getted",
+          "lat":positionIndex>=0?data[2][positionIndex]["latitude"]:null,
+          "long":positionIndex>=0?data[2][positionIndex]["longitude"]:null,
+          "speed":positionIndex>=0?data[2][positionIndex]["speed"]+"Km/h": "To be getted",
+          "address":positionIndex>=0?data[2][positionIndex]["address"]:"To be getted",
           "attributes":value["attributes"]?value["attributes"]:"To be getted",
           "category":value["category"]?value["category"]:"To be getted",
           "contact":value["contact"]?value["contact"]:"To be getted",
           "geofenceIds":value["geofenceIds"]?value["geofenceIds"]:"To be getted",
           "groupId":value["groupId"]?value["groupId"]:"To be getted",
-          "group" : data[1]&&value["groupId"]?data[1][value["groupId"]-1]["name"]:"To be getted",
+          "group":groupIndex>=0?data[1][i]["name"]:"Unknown Group",
           "id":value["id"]?value["id"]:"To be getted",
           "lastUpdate":value["lastUpdate"]?value["lastUpdate"]:"To be getted",
           "model":value["model"]?value["model"]:"To be getted",
-          "name":value["name"]?value["name"]:"To be getted",
+          "name":value["name"]?value["name"].replace( /\D+/g, ''):"To be getted",
           "phone":value["phone"]?value["phone"]:"To be getted",
           "positionId":value["positionId"]?value["positionId"]:"To be getted",
           "status" : value["status"]?value["status"]:"To be getted"
 
         }
+
         let scooter = {
-          "@id":value["name"].split(' ')[1],
+          "@id":value["name"].replace( /\D+/g, ''),
           "broader" : "ScooterList"
         }
-        scooterData["@graph"].push(scooterDetails);
+        console.log("scooterDetails",scooterDetails,scooter);
+        positionIndex>=0?scooterData["@graph"].push(scooterDetails):null;
         scooterList["@graph"].push(scooter);
+        console.log("scooterDetails",scooterData,scooterList);
       }
     });
     this.props.actions.isScooter(true);
