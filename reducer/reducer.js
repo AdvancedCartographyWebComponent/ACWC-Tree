@@ -540,7 +540,8 @@ const initialState = {
   checkedItem : [],
   nameMap : {},
   tableType : 1,
-  mapRef : null
+  mapRef : null,
+  scooterTableList : []
 };
 var reducer = function (state = initialState, action) {
   switch (action.type) {
@@ -688,6 +689,11 @@ var reducer = function (state = initialState, action) {
       console.log("send map ref",action.mapRef);
       return Object.assign({}, state, {
         mapRef : action.mapRef
+      })
+    case actionTypes.SendScooterTableList:
+      console.log("Send Scooter Table List",action.scooterTableList);
+      return Object.assign({}, state, {
+        scooterTableList : action.scooterTableList
       })
     default:
       return state;

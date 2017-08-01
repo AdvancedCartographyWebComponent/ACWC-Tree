@@ -34,23 +34,26 @@ var App = React.createClass({
     const style = {
       "width" : "100%"
     };
+    /*
+    <div className="input-group margin-bottom-sm">
+      <span className="fa fa-search"></span>
+      <input className="global-search " type="text" placeholder="Search"
+        onChange={(e)=>{
+          isTyping?null:this.props.actions.isTyping(true);
+          isTyping = true;
+          typingValue = e.target.value;
+          typingTimer?clearTimeout(typingTimer):null;
+          typingTimer = setTimeout(
+            ()=>{
+            this.props.actions.isTyping(false);
+            isTyping = false;
+            this.props.actions.globalSearch(typingValue);
+          }, doneTypingInterval);
+        }}/>
+    </div>
+    */
     return <div className="container" style={style}>
-      <div className="input-group margin-bottom-sm">
-        <span className="fa fa-search"></span>
-        <input className="global-search " type="text" placeholder="Search"
-          onChange={(e)=>{
-            isTyping?null:this.props.actions.isTyping(true);
-            isTyping = true;
-            typingValue = e.target.value;
-            typingTimer?clearTimeout(typingTimer):null;
-            typingTimer = setTimeout(
-              ()=>{
-              this.props.actions.isTyping(false);
-              isTyping = false;
-              this.props.actions.globalSearch(typingValue);
-            }, doneTypingInterval);
-          }}/>
-      </div>
+
       <div className="row">
         <div>
           <Scrollbars style={{ width: "100%", height: "85vh" }}>{dynamicExample}</Scrollbars>

@@ -5,6 +5,7 @@ import App_map from './map/App'
 import App_Info from './info/App'
 import App_Table from './table/App'
 import App_header from './header/Header'
+import App_ScooterTableList from './scooterTableList/ScooterTableList'
 import './tree/index.css';
 import './tree/app.css';
 import './tree/tree-view.css';
@@ -29,7 +30,7 @@ ReactDOM.render(
 ReactDOM.render(
   <Provider store={store}>
     <Router>
-      <Route component={App_tree}/>
+      <Route component={App_ScooterTableList}/>
     </Router>
   </Provider>,
   document.getElementById('tree')

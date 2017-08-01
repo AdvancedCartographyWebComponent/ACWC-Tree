@@ -15,5 +15,6 @@ module.exports = {
   IsTrajet : "IsTrajet",
   IsScooter : "IsScooter",
   ToggleTable : "ToggleTable",
-  SendMapRef : "SendMapRef"
+  SendMapRef : "SendMapRef",
+  SendScooterTableList : "SendScooterTableList"
 };

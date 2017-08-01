@@ -423,6 +423,7 @@ class Map extends Component {
     let scooterList = {
       "@graph":[]
     }
+    let scooterTableList = [];
     //[Devices, Groups, Positions]
     data[0].map((value,index)=>{
       if(value){
@@ -452,15 +453,28 @@ class Map extends Component {
           "phone":value["phone"]?value["phone"]:"To be getted",
           "positionId":value["positionId"]?value["positionId"]:"To be getted",
           "status" : value["status"]?value["status"]:"To be getted"
-
         }
 
         let scooter = {
           "@id":value["name"].replace( /\D+/g, ''),
           "broader" : "ScooterList"
         }
-        console.log("scooterDetails",scooterDetails,scooter);
+        let timeString = null;
+        if(positionIndex>=0){
+          let deviceTime = data[2][positionIndex]["deviceTime"];
+          let updateTime = new Date(deviceTime);
+          let clientTime = new Date();
+          let timeDifs = ((clientTime.getTime()-updateTime.getTime())/60/1000).toFixed(1);
+          timeString = timeDifs?(timeDifs>=60?(timeDifs>=1440?(timeDifs/1440).toFixed(1)+' Days ago':(timeDifs/60).toFixed(1)+' Hours ago'):(timeDifs)+' Minutes ago'):null;
+        }
+        let scooterListTableData = {
+          "name":value["name"].replace( /\D+/g, ''),
+          "updateTime":timeString?timeString:"Unknown",
+          "status":value["status"]?value["status"]:"Not Getted"
+        }
+        console.log("scooterList",scooterListTableData);
         positionIndex>=0?scooterData["@graph"].push(scooterDetails):null;
+        scooterTableList.push(scooterListTableData);
         scooterList["@graph"].push(scooter);
         console.log("scooterDetails",scooterData,scooterList);
       }
@@ -468,6 +482,7 @@ class Map extends Component {
     this.props.actions.isScooter(true);
     this.props.actions.getDataFromUrlForTree(scooterList);
     this.props.actions.getDataFromUrlForMap(scooterData);
+    this.props.actions.sendScooterTableList(scooterTableList);
     console.log("formatScooterDataALL",scooterData,scooterList);
   }
   getScooterDeviceData(){

@@ -35,7 +35,6 @@ class App extends Component {
         document.getElementById('table').style.marginTop="0px";
         document.getElementById('table').style.height="90vh";
         document.getElementById('carte').style.display="none";
-        //document.getElementById('carte').style.width="75%";
         document.getElementById('sidebar').style.display="none";
       }
       setTimeout(()=>{

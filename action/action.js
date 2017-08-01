@@ -104,6 +104,12 @@ let actions = {
       type: actionTypes.SendMapRef,
       mapRef
     }
+  },
+  sendScooterTableList(scooterTableList){
+    return{
+      type: actionTypes.SendScooterTableList,
+      scooterTableList
+    }
   }
 };
 module.exports = actions;

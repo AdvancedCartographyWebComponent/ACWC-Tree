@@ -19,7 +19,7 @@ export default class loginModal extends React.Component {
           <Brand>
             <span>
               <img src={logo}/>
-              <span>&nbsp;SB Admin React - </span>
+              <span>&nbsp;Scooter Admin React - </span>
                 <a href="https://www.cruisr.fr/" title="Cruis'R">CruisR</a>
             </span>
           </Brand>
