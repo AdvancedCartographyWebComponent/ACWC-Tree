@@ -767,7 +767,7 @@ class Map extends Component {
     let map = L.map(id, config.params);
     map.on('click',function () {
       cur.props.actions.closeSideBar();
-      document.getElementById('carte').style.width="75%";
+      document.getElementById('carte').style.width="74%";
       setTimeout(()=>{
         map.invalidateSize();
       },501);

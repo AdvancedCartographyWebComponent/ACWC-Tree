@@ -22,7 +22,7 @@ class Info extends Component {
       classNameParent = classNameParent.concat(" show");
       document.getElementById('sidebar').style.zIndex=1;
     }else{
-      document.getElementById('carte').style.width="75%";
+      document.getElementById('carte').style.width="74%";
       document.getElementById('sidebar').style.zIndex=-1;
     }
     return (

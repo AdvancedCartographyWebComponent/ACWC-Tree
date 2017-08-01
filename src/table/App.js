@@ -21,8 +21,8 @@ class App extends Component {
       console.log("this.props.isTable",this.props.tableType);
       document.getElementById('table').style.display="inline-block";
       if(this.props.tableType==="1"){
-        document.getElementById('table').style.top=null;
-        document.getElementById('table').style.bottom="1px";
+        document.getElementById('table').style.top="51vh";
+        document.getElementById('table').style.marginTop="68px";
         document.getElementById('table').style.height="38vh";
         document.getElementById('carte').style.display="inline-block";
         document.getElementById('carte').style.height="51vh";
@@ -31,9 +31,11 @@ class App extends Component {
       }else {
         document.getElementById('table').style.bottom=null;
         document.getElementById('table').style.top="62px";
+
+        document.getElementById('table').style.marginTop="0px";
         document.getElementById('table').style.height="90vh";
         document.getElementById('carte').style.display="none";
-        document.getElementById('carte').style.width="75%";
+        //document.getElementById('carte').style.width="75%";
         document.getElementById('sidebar').style.display="none";
       }
       setTimeout(()=>{
@@ -48,6 +50,7 @@ class App extends Component {
       document.getElementById('carte').style.height="90vh";
       document.getElementById('carte').style.display="inline-block";
       document.getElementById('sidebar').style.height="90vh";
+      document.getElementById('sidebar').style.display="inline-block";
       document.getElementById('table').style.display="none";
       setTimeout(()=>{
         this.props.mapRef.invalidateSize();
