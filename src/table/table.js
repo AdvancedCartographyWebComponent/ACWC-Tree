@@ -24,6 +24,7 @@ class ParentTable extends React.Component{
   groupDataFormatter(data){
     let GroupData = [];
     let GroupList = [];
+    console.log("groupDataFormatter",data);
     data.map((value,key)=>{
       if(GroupList.indexOf(value["Group"])===-1){
         GroupList.push(value["Group"]);

@@ -295,9 +295,6 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
     var related = false;
     var matched = false;
     var temp = (_.values(instance));
-    if (scooterId==='79') {
-      console.log('globalContentSearch',temp);
-    }
     //console.log('globalContentSearch',temp);
     if(_.size(keyWordList)>0){
       for(var obj in temp){
@@ -709,6 +706,7 @@ var reducer = function (state = initialState, action) {
       return Object.assign({}, state, {
         checkList : action.checkedList,
         geoData : globalContentSearchResult[0],
+        tableData : globalContentSearchResult[4],
         checkedItem : action.checkedList,
       })
     default:

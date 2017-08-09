@@ -474,7 +474,7 @@ class Map extends Component {
           "status":value["status"]?value["status"]:"Not Getted"
         }
         //console.log("scooterList",scooterListTableData);
-        positionIndex>=0?scooterData["@graph"].push(scooterDetails):null;
+        scooterData["@graph"].push(scooterDetails);
         scooterTableList.push(scooterListTableData);
         scooterList["@graph"].push(scooter);
         //console.log("scooterDetails",scooterData,scooterList);
@@ -712,6 +712,8 @@ class Map extends Component {
     this.state.map.fitBounds(target.getBounds(), fitBoundsParams);
   }
   filterFeatures(feature, layer) {
+    console.log("filterFeatures",feature);
+    if(!feature.geometry.coordinates[0]||!feature.geometry.coordinates[1]) return false;
     return true;
   }
   markerAndIcons(info){
