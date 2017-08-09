@@ -10,15 +10,15 @@ import {
 // App component
 class App extends Component {
   render() {
-    //console.log("this.props.isTable",this.props.isTable,this.props.tableData);
+    ////console.log("this.props.isTable",this.props.isTable,this.props.tableData);
     var paramsString = this.props.location.search.split("?params=");
     paramsString = paramsString.length>1?paramsString[1]:null;
     var paramsObject = JSON.parse(decodeURIComponent(paramsString));
     var params = paramsObject?Object.keys(paramsObject):null;
     const infoKeyForTable = params&&params.indexOf('infoKeyForTable')!=="-1"?paramsObject['infoKeyForTable']:window.infoKeyForTable;
-    console.log("infoKeyForTable",infoKeyForTable);
+    //console.log("infoKeyForTable",infoKeyForTable);
     if(this.props.isTable){
-      console.log("this.props.isTable",this.props.tableType);
+      //console.log("this.props.isTable",this.props.tableType);
       document.getElementById('table').style.display="inline-block";
       if(this.props.tableType==="1"){
         document.getElementById('table').style.top="51vh";

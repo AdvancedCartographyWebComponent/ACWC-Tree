@@ -78,9 +78,9 @@ class ParentTable extends React.Component{
     );
   }
   render(){
-    console.log('tableData',this.props.tableData);
+    //console.log('tableData',this.props.tableData);
     let groupData = this.groupDataFormatter(this.props.tableData);
-    console.log('groupData',groupData);
+    //console.log('groupData',groupData);
     const options = {
       page: 1,  // which page you want to show as default
       sizePerPageList: this.props.isExit?[ {
@@ -111,6 +111,8 @@ class ParentTable extends React.Component{
         data={ groupData }
         maxHeight={this.props.isExit?"645px":"300px"}
         options = {options}
+        headerStyle = { { "background-color" : "rgb(142, 194, 231)" } }
+        bodyStyle={ { background: 'rgb(152, 216, 178)' } }
         expandableRow={ this.isExpandableRow }
         expandComponent = {this.expandComponent}
         expandColumnOptions={ {
@@ -131,26 +133,26 @@ class ParentTable extends React.Component{
 class Table extends React.Component {
   constructor(props) {
     super(props);
-    //console.log("this.props.data",this.props.data,this.props.data.length);
-    //console.log("this.props",this.props);
+    ////console.log("this.props.data",this.props.data,this.props.data.length);
+    ////console.log("this.props",this.props);
     this.handleGestionButtonClick = this.handleGestionButtonClick.bind(this);
     this.iconFormatter = this.iconFormatter.bind(this);
     this.ActionFormatter = this.ActionFormatter.bind(this);
   }
   handleGestionButtonClick(event,args,row){
-    //console.log("gestion click",event.target.value,args);
+    ////console.log("gestion click",event.target.value,args);
     if(args==="Activer"){
-      console.log("Activer Scooter"," row data",row);
+      //console.log("Activer Scooter"," row data",row);
     }
     else if(args==="Blocker"){
-      console.log("Blocker Scooter"," row data",row);
+      //console.log("Blocker Scooter"," row data",row);
     }
   }
   iconFormatter(cell){
-    //console.log("iconFormatter cell",cell);
+    ////console.log("iconFormatter cell",cell);
     let iconString = '';
     cell?cell.map((value,index)=>{
-      //console.log('map cell value',value);
+      ////console.log('map cell value',value);
       value.icon==="number"?null:iconString = iconString.concat(`<i class='fa fa-${value.icon}' style='color :${value.color};font-size:18px'></i>`);
     }):iconString='No Icons Info in the Data Set!'
     return iconString;
@@ -167,23 +169,27 @@ class Table extends React.Component {
     }
   }
   render() {
-    console.log("render table",this.props.infoKeyForTable);
-    console.log("table data",this.props.tableData);
+    //console.log("render table",this.props.infoKeyForTable);
+    //console.log("table data",this.props.tableData);
     return (
       <div>
         <BootstrapTable
           data={ this.props.tableData }
-          search>
+          search
+          >
           {
             this.props.infoKeyForTable?this.props.infoKeyForTable.map((value,index)=>{
-              //console.log("value",value,"index",index);
+              ////console.log("value",value,"index",index);
               if(value.key==="markerAndIcons"){
                 return (
                   <TableHeaderColumn
                     dataField={value.key}
                     isKey={index===0?true:false}
                     dataSort
-                    dataFormat={this.iconFormatter}>
+                    dataFormat={this.iconFormatter}
+                    thStyle = { { "background-color" : "rgb(188, 173, 230)" } }
+                    tdStyle = { { "background-color" : "#f7d099" } }
+                    ref = {value.key}>
                     {value.displayValue}
                   </TableHeaderColumn>);
               }else if (value.key==="ActiveList") {
@@ -192,7 +198,10 @@ class Table extends React.Component {
                     dataField={value.key}
                     isKey={index===0?true:false}
                     dataSort
-                    dataFormat={this.ActionFormatter}>
+                    dataFormat={this.ActionFormatter}
+                    thStyle = { { "background-color" : "rgb(188, 173, 230)" } }
+                    tdStyle = { { "background-color" : "#f7d099" } }
+                    ref = {value.key}>
                     {value.displayValue}
                   </TableHeaderColumn>);
               }
@@ -204,6 +213,9 @@ class Table extends React.Component {
                     filter={ { type: 'TextFilter', placeholder: 'Please enter a value' } }
                     dataSort
                     width={value.config?(value.config.width?value.config.width:"100px"):"100px"}
+                    thStyle = { { "background-color" : "rgb(188, 173, 230)" } }
+                    tdStyle = { { "background-color" : "#f7d099" } }
+                    ref = {value.key}
                     hidden={value.config?(value.config.hidden?value.config.hidden:false):false}>
                     {value.displayValue}
                   </TableHeaderColumn>);

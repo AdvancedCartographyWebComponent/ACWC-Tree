@@ -25,8 +25,8 @@ var App = React.createClass({
       isQuery = true;
     }
     //this.props.actions.isTyping(false);
-    console.log("render");
-    console.log("nameMap",this.props.nameMap);
+    //console.log("render");
+    //console.log("nameMap",this.props.nameMap);
     var typingTimer = null;             //timer identifier
     var doneTypingInterval = 1000;
     var typingValue = null;  //time in ms, 5 second for example
@@ -143,7 +143,7 @@ var App = React.createClass({
     this._setLastActionState(propName, lineage);
 
     function getNodePath(nodeKey) {
-      console.log("nodeKey",nodeKey);
+      //console.log("nodeKey",nodeKey);
       if (nodeKey.length === 1) return nodeKey;
       return _(nodeKey).zip(nodeKey.map(function () {
         return "children";
@@ -168,7 +168,7 @@ var App = React.createClass({
       var childrenPath = parentPath.concat('children'),
         children = state.getIn(childrenPath);
 
-      //console.log({children});
+      ////console.log({children});
       if (!children || children.size === 0) return;
 
       children.map(function (value, key) {
@@ -183,7 +183,7 @@ var App = React.createClass({
 
       var siblingPath = parentPath.concat('children'),
         sibling = state.getIn(siblingPath);
-      //console.log({sibling});
+      ////console.log({sibling});
       if(!sibling) return;
       sibling.map(function (value, key) {
         keySiblingPaths.push(siblingPath.concat([key, propName]))
@@ -202,7 +202,7 @@ var App = React.createClass({
       var state = !oldState.getIn(keyPaths[0]);
       keySiblingPaths.forEach((val,index)=>{
         if(index >0&&val[val.length-2]!== keyPaths[0][keyPaths[0].length-2]) {
-          //console.log(oldState.getIn(keyPaths[0]));
+          ////console.log(oldState.getIn(keyPaths[0]));
           state = state && oldState.getIn(val);
 
         }
@@ -224,7 +224,7 @@ var App = React.createClass({
     });
 
     newState.toJS();
-    console.log("newState",newState.toJS());
+    //console.log("newState",newState.toJS());
     //if(propName !="collapsed") this.props.actions.isTyping(true);
     this.props.actions.updateTreeData(newState.toJS(),propName);
   },

@@ -46,13 +46,13 @@ var TreeNode = React.createClass({
       collapsed: true,
       checkbox : true,
       onClick: function(lineage) {
-        //console.log("Tree Node clicked: " + lineage.join(" > "));
+        ////console.log("Tree Node clicked: " + lineage.join(" > "));
       },
       onCheckChange: function (lineage) {
-        //console.log("Tree Node indicating a checkbox check state should change: " + lineage.join(" > "));
+        ////console.log("Tree Node indicating a checkbox check state should change: " + lineage.join(" > "));
       },
       onCollapseChange: function (lineage) {
-        //console.log("Tree Node indicating collapse state should change: " + lineage.join(" > "));
+        ////console.log("Tree Node indicating collapse state should change: " + lineage.join(" > "));
       },
       checked : false,
       expandIconClass: "",
@@ -99,12 +99,12 @@ var TreeNode = React.createClass({
       }
       collapseNode = <span onClick={collapseToggleHandler} className={collapseClassName}></span>
     }
-    //console.log("collapseNode",collapseNode);
+    ////console.log("collapseNode",collapseNode);
     return collapseNode;
   },
 
   render : function () {
-    //console.log("node this",this);
+    ////console.log("node this",this);
     return (
       <div className={this._getRootCssClass()+'-lv'+this.props.ancestor.length}>
         {this._getCollapseNode()}
@@ -162,10 +162,10 @@ var TreeNode = React.createClass({
 
   },
   _iconFormatter: function(cell){
-    //console.log("iconFormatter cell",cell);
+    ////console.log("iconFormatter cell",cell);
     let iconString = '';
     cell&&cell.length>0?iconString = cell.map((value,index)=>{
-      //console.log('map cell value',value);
+      ////console.log('map cell value',value);
       const style = {
         "color" :value["color"],
         "font-size":"18px"
@@ -260,7 +260,7 @@ var TreeNode = React.createClass({
       }
       var mutation = {};
       mutation[field] = newValue;
-      //console.log(mutation);
+      ////console.log(mutation);
       this.setState(mutation);
     }
 

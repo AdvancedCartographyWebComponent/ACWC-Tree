@@ -45,7 +45,6 @@ class Map extends Component {
       session : null,
       isRestoring : true
     };
-    this.isZoomed = false;
     this.isServer = this.props.isServer?this.props.isServer:"false";
     this.geojsonDivision = {};
     this.geoPathDivision = {};
@@ -55,7 +54,6 @@ class Map extends Component {
     this.prevGeoCollection = null;
     this._mapNode = null;
     this.isTyping = false;
-    //this.updateFilter = this.updateFilter.bind(this);
     this.onEachFeature = this.onEachFeature.bind(this);
     this.pointToLayer = this.pointToLayer.bind(this);
     this.filterFeatures = this.filterFeatures.bind(this);
@@ -84,17 +82,17 @@ class Map extends Component {
     if (!this.state.map) {
       this.init(this._mapNode);
       //var target = document.getElementById('testGlobal');
-      console.log("map init");
+      //console.log("map init");
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
-    //console.log("checkedItem",this.props.checkedItem);
+    ////console.log("checkedItem",this.props.checkedItem);
     if(this.props.isTyping){
     }
     else{
       if ((this.props.geoData||this.props.geojsonForPath) && this.state.map && !this.state.markerCluster ) {
-        console.log("test2 geodata",this.props.geoData);
+        //console.log("test2 geodata",this.props.geoData);
         this.addGeoJSONLayer(this.props.geoData,this.props.geojsonForPath);
         return;
       }
@@ -128,7 +126,7 @@ class Map extends Component {
         }
       }
       if(md5(JSON.stringify(prevProps.geoData))!==md5(JSON.stringify(this.props.geoData))){
-        console.log("geoData changed");
+        //console.log("geoData changed");
         this.filterGeoJSONLayer();
         return;
       }
@@ -153,34 +151,34 @@ class Map extends Component {
   }
   getData() {
     if(this.mapDataUrl){
-      console.log("before getDataFromUrl",this.mapDataUrl);
+      //console.log("before getDataFromUrl",this.mapDataUrl);
       this.getDataFromUrl(this.mapDataUrl);
       if(window.mapDataUrl) delete window.mapDataUrl;
     }
     this.isTrajet = this.props.isTrajet;
     this.checkDataSource = setInterval(
       () => {
-        //console.log("window.mapDataUrl",window.mapDataUrl);
+        ////console.log("window.mapDataUrl",window.mapDataUrl);
         if(window.mapDataUrl&&(!this.mapDataUrl||md5(JSON.stringify(window.mapDataUrl))!==md5(JSON.stringify(this.mapDataUrl)))){
-          console.log("mapDataUrl differ");
+          //console.log("mapDataUrl differ");
           this.mapDataUrl = window.mapDataUrl;
           this.getDataFromUrl(this.mapDataUrl);
           delete window.mapDataUrl;
         }
         if(window.geojsonUrl&&(!this.geojsonUrl||md5(JSON.stringify(window.geojsonUrl))!==md5(JSON.stringify(this.geojsonUrl)))){
-          console.log("geojsonUrl differ");
+          //console.log("geojsonUrl differ");
           this.geojsonUrl = window.geojsonUrl;
           this.getGeojsonFromUrl(window.geojsonUrl);
           delete window.geojsonUrl;
         }
         if(window.isTrajet&&window.isTrajet!==this.isTrajet){
-          console.log("isTrajet differ");
+          //console.log("isTrajet differ");
           this.isTrajet = window.isTrajet;
           this.props.actions.isTrajet(this.isTrajet);
           delete window.isTrajet;
         }
         if(window.isScooter&&window.isScooter!==this.isScooter){
-          console.log("isScooter differ");
+          //console.log("isScooter differ");
           this.isScooter = window.isScooter;
           this.props.actions.isScooter(this.isScooter);
           delete window.isScooter;
@@ -191,7 +189,7 @@ class Map extends Component {
   }
   getDataFromUrl(url){
     var cur = this;
-    console.log("map data from url",url);
+    //console.log("map data from url",url);
     this.geoCollection = {
       "type": "FeatureCollection",
       "features": []
@@ -206,12 +204,12 @@ class Map extends Component {
     }).then(function(res) {
       cur.props.actions.getDataFromUrlForMap(res.data);
     }).catch(function (error) {
-      console.log(error);
+      //console.log(error);
     });;
   }
   getGeojsonFromUrl(url){
     var cur = this;
-    console.log("getGeojsonFromUrl",url);
+    //console.log("getGeojsonFromUrl",url);
     this.geoCollection = {
       "type": "FeatureCollection",
       "features": []
@@ -226,7 +224,7 @@ class Map extends Component {
     }).then(function(res) {
         cur.props.actions.receiveGeoDataFromUrl(res.data);
     }).catch(function (error) {
-      console.log(error);
+      //console.log(error);
     });
   }
   restoreSession(){
@@ -245,12 +243,13 @@ class Map extends Component {
     });
     step1.then(
       (value)=>{
-        console.log("log success",value);
+        //console.log("log success",value);
         this.setState({
           isLogin:false,
           session:value,
           isRestoring:false
         });
+        cur.props.actions.sendSession(value);
         cur.updateScooterDataFromServer();
         cur.updateScooterData = setInterval(()=>{
           cur.updateScooterDataFromServer();
@@ -261,7 +260,7 @@ class Map extends Component {
         this.setState({
           isRestoring:false
         });
-        console.log("log failed");
+        //console.log("log failed");
       }
     );
   }
@@ -287,7 +286,7 @@ class Map extends Component {
     };
     let step1 = new Promise((resolve, reject) => {
       axios(request).then(function(res) {
-        console.log("result ",res);
+        //console.log("result ",res);
         resolve(res.data);
       }).catch(function (error) {
         reject(error);
@@ -295,10 +294,12 @@ class Map extends Component {
     });
     step1.then(
       (value)=>{
-        console.log("log success",value);
+        //console.log("log success",value);
         this.setState({
           isLogin:false,
+          session:value
         });
+        cur.props.actions.sendSession(value);
         cur.updateScooterDataFromServer();
         cur.updateScooterData = setInterval(()=>{
           cur.updateScooterDataFromServer();
@@ -309,14 +310,14 @@ class Map extends Component {
         this.setState({
           isLoginFailed:true
         });
-        console.log(value);
+        //console.log(value);
       }
     );
   }
   /*updateScooterDataFromServer(){
     var cur = this;
     if(window.mapDataUrl) delete window.mapDataUrl;
-    console.log("get Scooter Data From Server");
+    //console.log("get Scooter Data From Server");
     this.geoCollection = {
       "type": "FeatureCollection",
       "features": []
@@ -325,19 +326,19 @@ class Map extends Component {
       method: 'get',
       url: "http://www.mobion.io/lastposition.php"
     }).then(function(res) {
-      console.log("result",res.status);
+      //console.log("result",res.status);
       if(res.status==200){
         //cur.getScooterDataFromServer();
         let Devices = cur.getScooterDeviceData();
         let Groups = cur.getScooterGroupData();
         let Positions = cur.getScooterPositionData();
         Promise.all([Devices, Groups, Positions]).then(values => {
-          console.log("get data from java server",values);
+          //console.log("get data from java server",values);
           cur.formatScooterDataAll(values);
         });
       }
     }).catch(function (error) {
-      console.log(error);
+      //console.log(error);
     });;
   }*/
   updateScooterDataFromServer(){
@@ -346,13 +347,13 @@ class Map extends Component {
     let Groups = cur.getScooterGroupData();
     let Positions = cur.getScooterPositionData();
     Promise.all([Devices, Groups, Positions]).then(values => {
-      console.log("get data from java server",values);
+      //console.log("get data from java server",values);
       cur.formatScooterDataAll(values);
     });
   }
   getScooterDataFromServer(){
     var cur = this;
-    console.log("get Scooter Data From Server");
+    //console.log("get Scooter Data From Server");
     this.geoCollection = {
       "type": "FeatureCollection",
       "features": []
@@ -366,12 +367,12 @@ class Map extends Component {
       }
     }).then(function(res) {
       if (res.status==304||res.status==200) {
-        //console.log("result",res.data);
+        ////console.log("result",res.data);
         cur.formatScooterData(res.data);
       }
 
     }).catch(function (error) {
-      console.log(error);
+      //console.log(error);
     });;
   }
   formatScooterData(data){
@@ -379,7 +380,7 @@ class Map extends Component {
       "@graph":[]
     }
     let lines = data.split(/[\r\n]+/g);
-    console.log("format scooter data ",lines);
+    //console.log("format scooter data ",lines);
     lines.map((value,index)=>{
       if(value.length>0){
         let details = value.split(' | ');
@@ -397,7 +398,7 @@ class Map extends Component {
     });
     this.props.actions.isScooter(true);
     this.props.actions.getDataFromUrlForMap(scooterData);
-    console.log("formatScooterData",scooterData);
+    //console.log("formatScooterData",scooterData);
   }
   findPositonIndex(id,data){
     for (var i = 0; i < data.length; i++) {
@@ -429,8 +430,8 @@ class Map extends Component {
       if(value){
         let positionIndex = this.findPositonIndex(value["id"],data[2]);
         let groupIndex = this.findGroupIndex(value["groupId"],data[1]);
-        console.log("positionIndex",positionIndex);
-        console.log("positionIndex",groupIndex);
+        //console.log("positionIndex",positionIndex);
+        //console.log("positionIndex",groupIndex);
         //863977030761766 | Scooter79 | Kilometre | 2017-07-13 13:27:35 | 48.8371616666667 | 2.334425 | 74 Avenue Denfert-Rochereau, Paris, Île-de-France, FR
         let scooterDetails={
           "mobile":value["uniqueId"]?"imei:"+value["uniqueId"]:"To be getted",
@@ -472,18 +473,18 @@ class Map extends Component {
           "updateTime":timeString?timeString:"Unknown",
           "status":value["status"]?value["status"]:"Not Getted"
         }
-        console.log("scooterList",scooterListTableData);
+        //console.log("scooterList",scooterListTableData);
         positionIndex>=0?scooterData["@graph"].push(scooterDetails):null;
         scooterTableList.push(scooterListTableData);
         scooterList["@graph"].push(scooter);
-        console.log("scooterDetails",scooterData,scooterList);
+        //console.log("scooterDetails",scooterData,scooterList);
       }
     });
     this.props.actions.isScooter(true);
     this.props.actions.getDataFromUrlForTree(scooterList);
     this.props.actions.getDataFromUrlForMap(scooterData);
     this.props.actions.sendScooterTableList(scooterTableList);
-    console.log("formatScooterDataALL",scooterData,scooterList);
+    //console.log("formatScooterDataALL",scooterData,scooterList);
   }
   getScooterDeviceData(){
     let request = {
@@ -497,7 +498,7 @@ class Map extends Component {
     return new Promise((resolve, reject) => {
       axios(request).then(function(res) {
         resolve(res.data);
-        console.log("getScooterDeviceData",Devices);
+        //console.log("getScooterDeviceData",Devices);
       }).catch(function (error) {
         reject(error);
       });
@@ -515,7 +516,7 @@ class Map extends Component {
     return new Promise((resolve, reject) => {
       axios(request).then(function(res) {
         resolve(res.data);
-        console.log("getScooterDeviceData",Devices);
+        //console.log("getScooterDeviceData",Devices);
       }).catch(function (error) {
         reject(error);
       });
@@ -534,7 +535,7 @@ class Map extends Component {
     return new Promise((resolve, reject) => {
       axios(request).then(function(res) {
         resolve(res.data);
-        console.log("getScooterDeviceData",Devices);
+        //console.log("getScooterDeviceData",Devices);
       }).catch(function (error) {
         reject(error);
       });
@@ -549,7 +550,7 @@ class Map extends Component {
     markerCluster.on('clusterclick', function (a) {
        if(a.layer._zoom === mapContext.params.maxZoom){
          if(a.layer.getAllChildMarkers().length>100){
-           console.log('cluster ' + a.layer.getAllChildMarkers().length);
+           //console.log('cluster ' + a.layer.getAllChildMarkers().length);
          }else {
            a.layer.spiderfy();
          }
@@ -567,19 +568,19 @@ class Map extends Component {
         markerCluster.addLayer(geojsonLayer);
       }
     }else{
-      console.log("!isTrajet geojson",geojson);
+      //console.log("!isTrajet geojson",geojson);
         geojsonLayer = _.size(geojson)>0?L.geoJson(geojson, {
         onEachFeature: this.onEachFeature,
         pointToLayer: this.pointToLayer,
         filter: this.filterFeatures
       }):null;
       this.geojsonLayer = geojsonLayer;
-      !this.isZoomed&&geojsonLayer&&this.props.isScooter?this.zoomToFeature(this.geojsonLayer):null;
+      geojsonLayer&&this.props.isScooter?this.zoomToFeature(this.geojsonLayer):null;
       geojsonLayer?markerCluster.addLayer(geojsonLayer):null;
     }
     geojsonLayer?geojsonLayer.addTo(this.state.map):null;
     var cogList = document.getElementsByClassName("fa-cog");
-    console.log("cogList",cogList);
+    //console.log("cogList",cogList);
     for (var i = 0; i < cogList.length; i++) {
       cogList[i].parentElement.onclick=(e)=>{
         e.stopPropagation();
@@ -596,7 +597,7 @@ class Map extends Component {
      });
   }
   updateGeojsonPath(geojsonForPath){
-    console.log("this.isTrajet",this.isTrajet);
+    //console.log("this.isTrajet",this.isTrajet);
     var myStyle_1 = {
     "color": "#c936c3",
     "weight": 2,
@@ -708,7 +709,6 @@ class Map extends Component {
       paddingBottomRight: [10,10],
       maxZoom : 18
     };
-    this.isZoomed = true;
     this.state.map.fitBounds(target.getBounds(), fitBoundsParams);
   }
   filterFeatures(feature, layer) {
@@ -717,7 +717,7 @@ class Map extends Component {
   markerAndIcons(info){
     //generateIcon(count,iconIndex,iconStyle,color,className,number)
     var cur = this;
-    //console.log("info",info);
+    ////console.log("info",info);
     var markerAndIconsString = "";
     var iconNum = info?info.length:0;
     if(info){
@@ -742,7 +742,7 @@ class Map extends Component {
       var markers = this.markerAndIcons(feature.properties.markerAndIcons?feature.properties.markerAndIcons:null);
       var testMarker = L.marker(latlng,{icon: L.divIcon({className: 'markers', html:markers, iconSize:[35,35],iconAnchor : [17,42]}),riseOnHover:true})
                         .on('click',(e)=>{
-                          console.log("click button, show sidebar",cur.props.actions);
+                          //console.log("click button, show sidebar",cur.props.actions);
                           cur.props.actions.clickMarker(e.target,feature);
                           document.getElementById('carte').style.width="48%";
                           setTimeout(()=>{
@@ -763,7 +763,7 @@ class Map extends Component {
       var isChanged = false;
       marker.on('mouseover', function (e) {
         if(!isChanged) {
-          console.log(marker);
+          //console.log(marker);
           cur.showIcons(marker);
           isChanged = true;
         }
@@ -790,7 +790,7 @@ class Map extends Component {
     L.control.zoom({ position: "bottomleft"}).addTo(map);
     L.control.scale({ position: "bottomleft"}).addTo(map);
     const tileLayer = L.tileLayer(config.tileLayer.uri, config.tileLayer.params).addTo(map);
-    //console.log("map",map._layers[Object.keys(map._layers)[0]]);
+    ////console.log("map",map._layers[Object.keys(map._layers)[0]]);
     this.props.actions.sendMapRef(map);
     this.setState({ map:map, tileLayer:tileLayer});
   }
@@ -804,7 +804,7 @@ class Map extends Component {
       "position":"absolute",
       "right":"2%"
     }
-    console.log("render map");
+    //console.log("render map");
 
     return (
       <div id="mapUI">

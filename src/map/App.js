@@ -10,7 +10,7 @@ class App extends Component {
     var paramsString = this.props.location.search.split("?params=");
     paramsString = paramsString.length>1?paramsString[1]:null;
     var paramsObject = JSON.parse(decodeURIComponent(paramsString));
-    console.log("paramsObject",paramsObject);
+    //console.log("paramsObject",paramsObject);
     var params = paramsObject?Object.keys(paramsObject):null;
     if(params&&params.indexOf("view")!=="-1"){
       switch (paramsObject["view"]) {

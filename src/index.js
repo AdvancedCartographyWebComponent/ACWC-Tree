@@ -23,7 +23,11 @@ const createStore=require('redux').createStore;
 var store=createStore(Reducer);
 
 ReactDOM.render(
-  <App_header/>,
+  <Provider store={store}>
+    <Router>
+      <Route component={App_header}/>
+    </Router>
+  </Provider>,
   document.getElementById('header')
 );
 

@@ -1,0 +1,7 @@
+?geo=http://semantic-forms.cc:7777/sparql?query=PREFIX+rdf%3A+<http%3A%2F%2Fwww.w3.org%2F1999%2F02%2F22-rdf-syntax-ns%23>%0D%0APREFIX+rdfs%3A+<http%3A%2F%2Fwww.w3.org%2F2000%2F01%2Frdf-schema%23>%0D%0APREFIX+geoloc%3A+<http%3A%2F%2Fdeductions.github.io%2Fgeoloc.owl.ttl%23>%0D%0APREFIX+geo%3A+<http%3A%2F%2Fwww.w3.org%2F2003%2F01%2Fgeo%2Fwgs84_pos%23>%0D%0A%0D%0ACONSTRUCT+%7B%0D%0A++%3FDEPART+geo%3Alat+%3FLAT%3B%0D%0A++++geo%3Along+%3FLONG+.%0D%0A%7D+WHERE+%7B%0D%0A++GRAPH+%3FG+%7B%0D%0A++++++%3FDEPART+geoloc%3Amobile+%3Fp+%3B%0D%0A++++++++++++++geo%3Along+%3FLONG+%3B%0D%0A++++++++++++++geo%3Alat++%3FLAT+.%0D%0A++%7D++%7D
+
+
+http://semantic-forms.cc:7777/sparql?query=PREFIX+geoloc%3A+%3Chttp%3A%2F%2Fdeductions.github.io%2Fgeoloc.owl.ttl%23%3E%0D%0ACONSTRUCT+%7B%0D%0A++%3FDEPART+%3FP+%3FO+.%0D%0A%7D+WHERE+%7B%0D%0A++GRAPH+%3FG+%7B%0D%0A++++++%3FDEPART+geoloc%3Amobile+%3Fp+%3B%0D%0A++++++++++++++%3FP+%3FO+.%0D%0A++%7D++%7D
+
+
+https://api.myjson.com/bins/yhyrj

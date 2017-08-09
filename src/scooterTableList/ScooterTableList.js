@@ -20,7 +20,8 @@ class ScooterTableList extends React.Component{
         this.selectedRowKeys.splice(this.selectedRowKeys.indexOf(row["name"]), 1);
       }
     }
-    console.log("selected",this.selectedRowKeys);
+    console.log("this.selectedRowKeys",this.selectedRowKeys);
+    this.props.actions.sendCheckedList(this.selectedRowKeys);
   }
   handleSelectAllClick(isSelected, rows){
     this.selectedRowKeys = [];
@@ -29,7 +30,8 @@ class ScooterTableList extends React.Component{
         this.selectedRowKeys.push(rows[i]["name"]);
       }
     }
-    console.log("selected",this.selectedRowKeys);
+    console.log("this.selectedRowKeys",this.selectedRowKeys);
+    this.props.actions.sendCheckedList(this.selectedRowKeys);
   }
   render(){
     const selectRow = {
@@ -38,14 +40,19 @@ class ScooterTableList extends React.Component{
       onSelect : this.handleSelectClick,
       onSelectAll:this.handleSelectAllClick
     };
+    const tableHeight = window.screen.height;
     return(<BootstrapTable
             data={ this.props.scooterTableList }
-            selectRow = {selectRow} ref='table'>
+            selectRow = {selectRow}
+            headerStyle = { { "background-color" : "rgb(142, 194, 231)" } }
+            height = {tableHeight*0.80}
+            ref='table'>
               <TableHeaderColumn
                 dataField="name"
                 isKey
                 dataSort
-                width="70px">
+                width="70px"
+                >
                 Name
               </TableHeaderColumn>
               <TableHeaderColumn

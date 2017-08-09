@@ -14,9 +14,9 @@ class App2 extends Component {
   componentDidMount() {
     this.checkDataSource = setInterval(
       () => {
-        //console.log("window.testValue",window.testValue);
+        ////console.log("window.testValue",window.testValue);
         if(window.treeDataUrl&&(!this.state.treeDataUrl||md5(JSON.stringify(window.treeDataUrl))!==md5(JSON.stringify(this.state.treeDataUrl)))){
-          console.log("differ");
+          //console.log("differ");
           this.setState({treeDataUrl : window.treeDataUrl});
           delete window.treeDataUrl;
           //this.getDataFromUrl(window.treeDataUrl);
@@ -29,7 +29,7 @@ class App2 extends Component {
     var paramsString = this.props.location.search.split("?params=");
     paramsString = paramsString.length>1?paramsString[1]:null;
     var paramsObject = JSON.parse(decodeURIComponent(paramsString));
-    console.log("paramsObject",paramsObject);
+    //console.log("paramsObject",paramsObject);
     var params = paramsObject?Object.keys(paramsObject):null;
     var urlForTree = [];
     if(params&&params.indexOf("treeDataUrl")!==-1){
@@ -37,7 +37,7 @@ class App2 extends Component {
       if(window.treeDataUrl) delete window.treeDataUrl;
     }
     var url = urlForTree.length>0?urlForTree[0]:(window.treeDataUrl?window.treeDataUrl:null);
-    console.log("tree url",url);
+    //console.log("tree url",url);
     return <Tree urlQuery={url}/>;
   }
 }

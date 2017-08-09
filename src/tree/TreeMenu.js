@@ -52,7 +52,7 @@ var TreeMenu = React.createClass({
   render : function () {
 
     var props = this.props;
-    //console.log("Tree Menu this props",props);
+    ////console.log("Tree Menu this props",props);
     return (
       <div className={props.classNamePrefix}>
         {this._getTreeNodes()}
@@ -77,7 +77,7 @@ var TreeMenu = React.createClass({
 
 
     treeData = treeMenuProps.data;
-    //console.log("menu props",treeMenuProps);
+    ////console.log("menu props",treeMenuProps);
 
     var thisComponent = this;
 
@@ -102,7 +102,7 @@ var TreeMenu = React.createClass({
         }
 
         nodeProps = assign(nodeProps, thisComponent.getTreeNodeProps(treeMenuProps, nodeProps, ancestor, isRootNode, i));
-        //console.log("nodeProps",nodeProps);
+        ////console.log("nodeProps",nodeProps);
         return TreeNodeFactory(nodeProps, children);
 
       });

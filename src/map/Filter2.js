@@ -14,7 +14,7 @@ class Filter2 extends Component{
     this.updateName = this.updateName.bind(this);
   }
   componentDidMount(){
-    //console.log("filter mounts, curState:",this.state.curState);
+    ////console.log("filter mounts, curState:",this.state.curState);
     this.updateName(this.state.curState);
   }
   componentWillReceiveProps(nextProps){
@@ -49,15 +49,15 @@ class Filter2 extends Component{
       this.userNames.unshift('All Info');
     }
     this.setState({userList:this.userNames});
-    //console.log("updated userNames",this.userNames);
+    ////console.log("updated userNames",this.userNames);
   }
   componentWillUnmount(){
 
   }
   render(){
-    //console.log("render filter");
-    //console.log("lines:",this.state.userList);
-    //console.log("state:",this.state.curState);
+    ////console.log("render filter");
+    ////console.log("lines:",this.state.userList);
+    ////console.log("state:",this.state.curState);
     var template = (<div className="filterUserLines">
         <hr/>
         <h3>User Search</h3>
@@ -65,7 +65,7 @@ class Filter2 extends Component{
         <select defaultValue="*"
           type="select"
           name="filterUsers"
-          onChange={(e) => {/*console.log(e);*/ this.state.filterUsers(e)}}>
+          onChange={(e) => {/*//console.log(e);*/ this.state.filterUsers(e)}}>
             { /* We render the select's option elements by maping each of the values of subwayLines array to option elements */ }
             {
               this.userNames.map((user, i) => {

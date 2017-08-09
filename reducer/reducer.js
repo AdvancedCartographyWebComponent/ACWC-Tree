@@ -277,7 +277,7 @@ var globalContentSearch = function(rawData,isScooter,isTrajet,checkedItem,keywor
   rawData["@graph"].map((instance,index) =>{
     var timestamp = instance["date"]||instance["http://purl.org/dc/terms/date"]?instance["date"]||instance["http://purl.org/dc/terms/date"]:null;
     var imei = instance["mobile"]?instance["mobile"].split(':')[1]:null;
-    var scooterId = imei?ScooterInfo[parseInt(imei)]:null;
+    var scooterId = instance["name"].replace( /\D+/g, ''),
     timestamp = new Date(timestamp);
     var name = formatString(instance["label"]?linkStringInLabel(instance["label"]):"scooter");
     var subject = formatString(instance["subject"]?instance["subject"]:scooterId?scooterId:"Exclued Data");
@@ -541,7 +541,9 @@ const initialState = {
   nameMap : {},
   tableType : 1,
   mapRef : null,
-  scooterTableList : []
+  scooterTableList : [],
+  checkList : [],
+  session : null
 };
 var reducer = function (state = initialState, action) {
   switch (action.type) {
@@ -694,6 +696,20 @@ var reducer = function (state = initialState, action) {
       console.log("Send Scooter Table List",action.scooterTableList);
       return Object.assign({}, state, {
         scooterTableList : action.scooterTableList
+      })
+    case actionTypes.SendSession:
+      console.log("Send Session",action.session);
+      return Object.assign({}, state, {
+        session : action.session
+      })
+    case actionTypes.SendCheckedList:
+      console.log("Send Check List",action.checkedList);
+      var globalContentSearchResult = globalContentSearch(state.urlDataForMap?state.urlDataForMap:defaultMapData,state.isScooter,state.isTrajet,
+        action.checkedList,state.keyword);
+      return Object.assign({}, state, {
+        checkList : action.checkedList,
+        geoData : globalContentSearchResult[0],
+        checkedItem : action.checkedList,
       })
     default:
       return state;

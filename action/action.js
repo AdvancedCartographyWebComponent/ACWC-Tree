@@ -110,6 +110,18 @@ let actions = {
       type: actionTypes.SendScooterTableList,
       scooterTableList
     }
+  },
+  sendCheckedList(checkedList){
+    return{
+      type: actionTypes.SendCheckedList,
+      checkedList
+    }
+  },
+  sendSession(session){
+    return{
+      type: actionTypes.SendSession,
+      session
+    }
   }
 };
 module.exports = actions;
