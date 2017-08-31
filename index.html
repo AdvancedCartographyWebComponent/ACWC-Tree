@@ -3,12 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
     <!--
       Notice the use of %PUBLIC_URL% in the tag above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -18,39 +13,23 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>CruisR Scooter Admin</title>
+    <title>React App</title>
     <script>
       //mapDataUrl = "https://sementicbus-simonzen.rhcloud.com/data/api/PlateformeWebAlternativeACWC";
       //treeDataUrl = "https://semanticbus.cleverapps.io/data/api/TaxonomiePWA";
-      //treeDataUrl = "http://api.myjson.com/bins/zoyan";
       mapContext = {
         "center":[48.836703,2.334345],
-        "zoom": 10
+        "zoom": 6
       };
       infoKeyForTable=[
-        {"key":"Name","displayValue":"Scooter Id"},
-        {"key":"Date","displayValue":"Date"},
-        {"key":"Time","displayValue":"Time"},
-        {"key":"Mileage","displayValue":"Mileage","config":{"width":"150px"}},
-        {"key":"Address","displayValue":"Address","config":{"width":"400px"}},
-        {"key":'IMEI',"displayValue":"IMEI","config":{"hidden":true}},
-        {"key":'Group',"displayValue":"Group"},
-        {"key":'Phone',"displayValue":"Phone"},
-        {"key":'Status',"displayValue":"Status"},
-        {"key":'Speed',"displayValue":"Speed"}
+        {"key":"Subject","displayValue":"Subject"},
+        {"key":"Name","displayValue":"Name"},
+        {"key":'markerAndIcons',"displayValue":'Icons'}
       ];
       infoKeyForPanel=[
-        {"key":"Name","displayValue":"Scooter Id"},
-        {"key":"Date","displayValue":"Date"},
-        {"key":"Time","displayValue":"Time"},
-        {"key":"Speed","displayValue":"Speed"},
-        {"key":"Mileage","displayValue":"Mileage"},
-        {"key":"Address","displayValue":"Address"},
-        {"key":'Group',"displayValue":"Group"},
-        {"key":'Phone',"displayValue":"Phone"},
-        {"key":'Status',"displayValue":"Status"},
-        {"key":'Speed',"displayValue":"Speed"}
-      ];
+        {"key":"Subject","displayValue":"Subject"},
+        {"key":"Name","displayValue":"Name"},
+        {"key":"Abstract","displayValue":"Abstract"}];
 
       /*var params = {
           "infoKeyForTable":[
@@ -76,45 +55,42 @@
   </head>
   <body>
     <div>
-      <div id="header">
-      </div>
 	     <div id="tree" style="
     	display: inline-block;
     	border: 1px solid gainsboro;
     	margin-top: 10px;
-    	height: 90vh;
+    	height: 95vh;
     	width: 25%;
     	position: relative;"></div>
     	<div id="carte" style="
    	 display: inline-block;
    	 border: 1px solid gainsboro;
    	 margin: 10px;
-   	 height: 90vh;
-     width: 74%;
+   	 height: 95vh;
+     width: 70%;
    	 position: absolute;
      transition : 0.5s;
      z-index : 0;"></div>
      <div id="sidebar" style="
      display: inline-block;
      margin-top: 10px;
-     margin-right : 0px;
-     height: 90vh;
-     width: 26%;
+     height: 95vh;
+     width: 28%;
      position: absolute;
-     right : 0%;
+     right : 0px;
      transition : 0.2s;
      z-index : -1">
      </div>
      <div id="table" style="
-     width: 74%;
+     width: 71%;
      position: absolute;
-     top: 51vh;
-     margin-top:68px;
+     bottom: 29px;
      z-index: 20;
-     margin-left : 10px;
+     left: 26%;
      border: 1px solid gainsboro;
      transition : 0.5s;
-     left : 25%;">
+     right : 0px;
+     background:white">
      </div>
     </div>
 

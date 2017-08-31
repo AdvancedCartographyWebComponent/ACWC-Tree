@@ -10,6 +10,6 @@
 .test.show {
   opacity: 1;
   visibility: visible;
-  width:26%;
+  width:30vh;
   z-index: 1;
 }

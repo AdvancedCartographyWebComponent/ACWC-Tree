@@ -31,32 +31,26 @@ var App = React.createClass({
     var doneTypingInterval = 1000;
     var typingValue = null;  //time in ms, 5 second for example
     var dynamicExample = this._getExamplePanel(this._getDynamicTreeExample());
-    const style = {
-      "width" : "100%"
-    };
-    /*
-    <div className="input-group margin-bottom-sm">
-      <span className="fa fa-search"></span>
-      <input className="global-search " type="text" placeholder="Search"
-        onChange={(e)=>{
-          isTyping?null:this.props.actions.isTyping(true);
-          isTyping = true;
-          typingValue = e.target.value;
-          typingTimer?clearTimeout(typingTimer):null;
-          typingTimer = setTimeout(
-            ()=>{
-            this.props.actions.isTyping(false);
-            isTyping = false;
-            this.props.actions.globalSearch(typingValue);
-          }, doneTypingInterval);
-        }}/>
-    </div>
-    */
-    return <div className="container" style={style}>
-
+    return <div className="container">
+      <div className="input-group margin-bottom-sm col-md-3">
+        <span className="fa fa-search"></span>
+        <input className="global-search " type="text" placeholder="Search"
+          onChange={(e)=>{
+            isTyping?null:this.props.actions.isTyping(true);
+            isTyping = true;
+            typingValue = e.target.value;
+            typingTimer?clearTimeout(typingTimer):null;
+            typingTimer = setTimeout(
+              ()=>{
+              this.props.actions.isTyping(false);
+              isTyping = false;
+              this.props.actions.globalSearch(typingValue);
+            }, doneTypingInterval);
+          }}/>
+      </div>
       <div className="row">
-        <div>
-          <Scrollbars style={{ width: "100%", height: "85vh" }}>{dynamicExample}</Scrollbars>
+        <div className="col-md-4">
+          <Scrollbars style={{ width: "100%", height: "90vh" }}>{dynamicExample}</Scrollbars>
 
         </div>
       </div>

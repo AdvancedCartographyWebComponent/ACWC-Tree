@@ -3,8 +3,6 @@ import L from 'leaflet';
 import 'leaflet.markercluster'
 import serverContext from '../../Context/Server.config.js'
 import mapContext from '../../Context/Map.config.js'
-import CommandModal from '../Command/CommandModal'
-import LoginModal from '../Login/LoginModal'
 import 'leaflet/dist/leaflet.css';
 import 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet.markercluster/dist/MarkerCluster.css'
@@ -36,35 +34,27 @@ class Map extends Component {
       driversFilter: '*',
       numUser: null,
       sidebar:null,
-      isTableMap : false,
-      isCommand : false,
-      isLogin : true,
-      username:"",
-      password:"",
-      isLoginFailed:false,
-      session : null,
-      isRestoring : true
+      isTableMap : false
     };
     this.isServer = this.props.isServer?this.props.isServer:"false";
     this.geojsonDivision = {};
     this.geoPathDivision = {};
-    this.geojsonLayer = null;
     this.mapDataUrl = this.props.mapDataUrl?this.props.mapDataUrl:null;
     this.geoCollection = {};
     this.prevGeoCollection = null;
     this._mapNode = null;
     this.isTyping = false;
+    //this.updateFilter = this.updateFilter.bind(this);
     this.onEachFeature = this.onEachFeature.bind(this);
     this.pointToLayer = this.pointToLayer.bind(this);
     this.filterFeatures = this.filterFeatures.bind(this);
     this.filterGeoJSONLayer = this.filterGeoJSONLayer.bind(this);
+    this.plot = this.plot.bind(this);
+    this.postData = this.postData.bind(this);
+    this.entityShortName = this.entityShortName.bind(this);
+    this.transformToGeoJSON = this.transformToGeoJSON.bind(this);
     this.getDataFromUrl = this.getDataFromUrl.bind(this);
-    this.getScooterDataFromServer = this.getScooterDataFromServer.bind(this);
-    this.updateScooterDataFromServer = this.updateScooterDataFromServer.bind(this);
-    this.formatScooterData = this.formatScooterData.bind(this);
-    this.getScooterDeviceData = this.getScooterDeviceData.bind(this);
-    this.getScooterPositionData = this.getScooterPositionData.bind(this);
-    this.getScooterGroupData = this.getScooterGroupData.bind(this);
+    this.transformSparqlQueryToGeoJSON = this.transformSparqlQueryToGeoJSON.bind(this);
     this.generateIcon = this.generateIcon.bind(this);
     this.showIcons = this.showIcons.bind(this);
     this.hideIcons = this.hideIcons.bind(this);
@@ -72,18 +62,27 @@ class Map extends Component {
     this.updateGeojsonPath = this.updateGeojsonPath.bind(this);
     this.handleTMButtonClick = this.handleTMButtonClick.bind(this);
     this.handleTButtonClick = this.handleTButtonClick.bind(this);
-    this.loginScooterServer = this.loginScooterServer.bind(this);
-    this.restoreSession = this.restoreSession.bind(this);
-
   }
 
   componentDidMount() {
-    this.restoreSession();
+    if(this.isServer !=="false"){
+      this.postData();
+    }else{
+      this.getData();
+    }
     if (!this.state.map) {
       this.init(this._mapNode);
       //var target = document.getElementById('testGlobal');
       //console.log("map init");
-    }
+      this.postDataID = setInterval(
+        () => {
+          if(this.isServer!=="false"){
+            this.postData();
+          }
+        },
+        10000
+      );
+    };
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -135,6 +134,7 @@ class Map extends Component {
 
   componentWillUnmount() {
     this.state.map.remove();
+     clearInterval(this.postDataID);
   }
 
   handleTMButtonClick(event){
@@ -153,7 +153,7 @@ class Map extends Component {
     if(this.mapDataUrl){
       //console.log("before getDataFromUrl",this.mapDataUrl);
       this.getDataFromUrl(this.mapDataUrl);
-      if(window.mapDataUrl) delete window.mapDataUrl;
+      delete window.mapDataUrl;
     }
     this.isTrajet = this.props.isTrajet;
     this.checkDataSource = setInterval(
@@ -176,12 +176,6 @@ class Map extends Component {
           this.isTrajet = window.isTrajet;
           this.props.actions.isTrajet(this.isTrajet);
           delete window.isTrajet;
-        }
-        if(window.isScooter&&window.isScooter!==this.isScooter){
-          //console.log("isScooter differ");
-          this.isScooter = window.isScooter;
-          this.props.actions.isScooter(this.isScooter);
-          delete window.isScooter;
         }
       },
       100
@@ -225,320 +219,108 @@ class Map extends Component {
         cur.props.actions.receiveGeoDataFromUrl(res.data);
     }).catch(function (error) {
       //console.log(error);
-    });
+    });;
   }
-  restoreSession(){
-    let cur = this;
-    axios.defaults.withCredentials = true;
-    let request = {
-      method: 'get',
-      url: "http://vps92599.ovh.net:8082/api/session"
-    };
-    let step1 = new Promise((resolve, reject) => {
-      axios(request).then(function(res) {
-        resolve(res.data);
-      }).catch(function (error) {
-        reject(error);
+
+
+  entityShortName(iri){
+      if (typeof iri === 'undefined') {
+          return true;
+      } else {
+          return iri.split('#')[1];
+      }
+  }
+
+  plot(cur,JSONData){
+      if (typeof JSONData['@graph'] === 'undefined') {
+          if (cur.entityShortName(JSONData['@type']) === 'Driver') {
+              cur.transformToGeoJSON([JSONData],cur);
+          } else {
+          }
+      } else {
+          var points = JSONData['@graph'].filter(function (objet) {return ( cur.entityShortName(objet['@type']) === 'Driver'); });
+          if (points.length > 0) {
+              cur.transformToGeoJSON(points);
+          } else {
+          }
+      }
+  }
+
+  transformToGeoJSON(data){
+    data.map(
+      (value, index)=>
+      {
+
+        var geoFeatures ={
+          "type": "Feature",
+          "geometry" : {
+            "type": "Point",
+            "coordinates": [value["long"], value["lat"]],
+          },
+          "properties" : {
+            "NAME": value["name"],
+            "URL" : value["url"]
+          }
+        }
+        this.geoCollection.features.push(geoFeatures);
       });
-    });
-    step1.then(
-      (value)=>{
-        //console.log("log success",value);
-        this.setState({
-          isLogin:false,
-          session:value,
-          isRestoring:false
-        });
-        cur.props.actions.sendSession(value);
-        cur.updateScooterDataFromServer();
-        cur.updateScooterData = setInterval(()=>{
-          cur.updateScooterDataFromServer();
-        },20000);
-      }
-    ).catch(
-      (value)=>{
-        this.setState({
-          isRestoring:false
-        });
-        //console.log("log failed");
-      }
-    );
   }
-  loginScooterServer(){
-    let cur = this;
-    let email = this.username.value;
-    let password = this.password.value;
-    let data = {
-      email: this.username.value,
-      password: this.password.value,
-      undefined : false
+  transformSparqlQueryToGeoJSON(data){
+    data.map(
+      (value, index)=>
+      {
+
+        var geoFeatures ={
+          "type": "Feature",
+          "geometry" : {
+            "type": "Point",
+            "coordinates": [value["LON"]["value"], value["LAT"]["value"]],
+          },
+          "properties" : {
+            "NAME": value["LAB"]["value"],
+            "URL" : value["LAB"]["value"]
+          }
+        }
+        this.geoCollection.features.push(geoFeatures);
+      });
+  }
+  postData(){
+
+    var current = {
+        "@context": serverContext.ONTOLOGY,
+        "@type": USER_TYPE,
+        "lat": 48.826703 ,
+        "long": 2.344345,
+        "timestamp": Math.round(new Date().getTime()),
+        "@id" : "lalala",
+        "error": 0
+      };
+    var currentPosition = JSON.stringify(current);
+    this.prevGeoCollection = this.geoCollection;
+    this.geoCollection = {
+      "type": "FeatureCollection",
+      "features": []
     };
-    let formData="";
-    axios.defaults.withCredentials = true;
-    for (var i in data) {
-      formData = formData.concat(i,"=",data[i],'&')
-    }
-    formData = formData.substr(0,formData.length-1);
-    let request = {
+    var cur = this;
+    axios({
       method: 'post',
-      url: "http://vps92599.ovh.net:8082/api/session",
-      data: formData
-    };
-    let step1 = new Promise((resolve, reject) => {
-      axios(request).then(function(res) {
-        //console.log("result ",res);
-        resolve(res.data);
-      }).catch(function (error) {
-        reject(error);
-      });
-    });
-    step1.then(
-      (value)=>{
-        //console.log("log success",value);
-        this.setState({
-          isLogin:false,
-          session:value
-        });
-        cur.props.actions.sendSession(value);
-        cur.updateScooterDataFromServer();
-        cur.updateScooterData = setInterval(()=>{
-          cur.updateScooterDataFromServer();
-        },20000);
-      }
-    ).catch(
-      (value)=>{
-        this.setState({
-          isLoginFailed:true
-        });
-        //console.log(value);
-      }
-    );
-  }
-  /*updateScooterDataFromServer(){
-    var cur = this;
-    if(window.mapDataUrl) delete window.mapDataUrl;
-    //console.log("get Scooter Data From Server");
-    this.geoCollection = {
-      "type": "FeatureCollection",
-      "features": []
-    };
-    axios({
-      method: 'get',
-      url: "http://www.mobion.io/lastposition.php"
-    }).then(function(res) {
-      //console.log("result",res.status);
-      if(res.status==200){
-        //cur.getScooterDataFromServer();
-        let Devices = cur.getScooterDeviceData();
-        let Groups = cur.getScooterGroupData();
-        let Positions = cur.getScooterPositionData();
-        Promise.all([Devices, Groups, Positions]).then(values => {
-          //console.log("get data from java server",values);
-          cur.formatScooterDataAll(values);
-        });
-      }
-    }).catch(function (error) {
-      //console.log(error);
-    });;
-  }*/
-  updateScooterDataFromServer(){
-    var cur = this;
-    let Devices = cur.getScooterDeviceData();
-    let Groups = cur.getScooterGroupData();
-    let Positions = cur.getScooterPositionData();
-    Promise.all([Devices, Groups, Positions]).then(values => {
-      //console.log("get data from java server",values);
-      cur.formatScooterDataAll(values);
-    });
-  }
-  getScooterDataFromServer(){
-    var cur = this;
-    //console.log("get Scooter Data From Server");
-    this.geoCollection = {
-      "type": "FeatureCollection",
-      "features": []
-    };
-    axios({
-      method: 'get',
-      url: "http://www.mobion.io/fichier.txt",
+      url: SERVICE_PORT,
+      data: currentPosition,
       headers: {
-          'Accept': 'text/plain',
-          'Content-Type': 'text/plain'
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
       }
     }).then(function(res) {
-      if (res.status==304||res.status==200) {
-        ////console.log("result",res.data);
-        cur.formatScooterData(res.data);
+      cur.plot(cur,res.data);
+      if(md5(JSON.stringify(cur.geoCollection))!==md5(JSON.stringify(cur.prevGeoCollection))){
+        cur.props.actions.updateServerData(cur.geoCollection);
+        cur.setState({
+          numUser: cur.geoCollection.features.length,
+          geojson: cur.geoCollection
+        });
       }
-
-    }).catch(function (error) {
-      //console.log(error);
-    });;
-  }
-  formatScooterData(data){
-    let scooterData = {
-      "@graph":[]
-    }
-    let lines = data.split(/[\r\n]+/g);
-    //console.log("format scooter data ",lines);
-    lines.map((value,index)=>{
-      if(value.length>0){
-        let details = value.split(' | ');
-        //863977030761766 | Scooter79 | Kilometre | 2017-07-13 13:27:35 | 48.8371616666667 | 2.334425 | 74 Avenue Denfert-Rochereau, Paris, Île-de-France, FR
-        let scooterDetails={
-          "mobile":"imei:"+details[0],
-          "mileage" : details[2]+"Km",
-          "date":details[3],
-          "lat":details[4],
-          "long":details[5],
-          "address":details[6]
-        }
-        scooterData["@graph"].push(scooterDetails);
-      }
-    });
-    this.props.actions.isScooter(true);
-    this.props.actions.getDataFromUrlForMap(scooterData);
-    //console.log("formatScooterData",scooterData);
-  }
-  findPositonIndex(id,data){
-    for (var i = 0; i < data.length; i++) {
-      if(data[i]["deviceId"]===id){
-        return i;
-      }
-    }
-    return -1;
-  }
-  findGroupIndex(id,data){
-    for (var i = 0; i < data.length; i++) {
-      if(data[i]["id"]===id){
-
-        return i;
-      }
-    }
-    return -1;
-  }
-  formatScooterDataAll(data){
-    let scooterData = {
-      "@graph":[]
-    }
-    let scooterList = {
-      "@graph":[]
-    }
-    let scooterTableList = [];
-    //[Devices, Groups, Positions]
-    data[0].map((value,index)=>{
-      if(value){
-        let positionIndex = this.findPositonIndex(value["id"],data[2]);
-        let groupIndex = this.findGroupIndex(value["groupId"],data[1]);
-        //console.log("positionIndex",positionIndex);
-        //console.log("positionIndex",groupIndex);
-        //863977030761766 | Scooter79 | Kilometre | 2017-07-13 13:27:35 | 48.8371616666667 | 2.334425 | 74 Avenue Denfert-Rochereau, Paris, Île-de-France, FR
-        let scooterDetails={
-          "mobile":value["uniqueId"]?"imei:"+value["uniqueId"]:"To be getted",
-          "mileage" : positionIndex>=0?(data[2][positionIndex]["attributes"]["totalDistance"]/1000).toFixed(2)+"Km":"To be getted",
-          "date":positionIndex>=0?data[2][positionIndex]["deviceTime"]:"To be getted",
-          "lat":positionIndex>=0?data[2][positionIndex]["latitude"]:null,
-          "long":positionIndex>=0?data[2][positionIndex]["longitude"]:null,
-          "speed":positionIndex>=0?data[2][positionIndex]["speed"]+"Km/h": "To be getted",
-          "address":positionIndex>=0?data[2][positionIndex]["address"]:"To be getted",
-          "attributes":value["attributes"]?value["attributes"]:"To be getted",
-          "category":value["category"]?value["category"]:"To be getted",
-          "contact":value["contact"]?value["contact"]:"To be getted",
-          "geofenceIds":value["geofenceIds"]?value["geofenceIds"]:"To be getted",
-          "groupId":value["groupId"]?value["groupId"]:"To be getted",
-          "group":groupIndex>=0?data[1][groupIndex]["name"]:"Unknown Group",
-          "id":value["id"]?value["id"]:"To be getted",
-          "lastUpdate":value["lastUpdate"]?value["lastUpdate"]:"To be getted",
-          "model":value["model"]?value["model"]:"To be getted",
-          "name":value["name"]?value["name"].replace( /\D+/g, ''):"To be getted",
-          "phone":value["phone"]?value["phone"]:"To be getted",
-          "positionId":value["positionId"]?value["positionId"]:"To be getted",
-          "status" : value["status"]?value["status"]:"To be getted"
-        }
-
-        let scooter = {
-          "@id":value["name"].replace( /\D+/g, ''),
-          "broader" : "ScooterList"
-        }
-        let timeString = null;
-        if(positionIndex>=0){
-          let deviceTime = data[2][positionIndex]["deviceTime"];
-          let updateTime = new Date(deviceTime);
-          let clientTime = new Date();
-          let timeDifs = ((clientTime.getTime()-updateTime.getTime())/60/1000).toFixed(1);
-          timeString = timeDifs?(timeDifs>=60?(timeDifs>=1440?(timeDifs/1440).toFixed(1)+' Days ago':(timeDifs/60).toFixed(1)+' Hours ago'):(timeDifs)+' Minutes ago'):null;
-        }
-        let scooterListTableData = {
-          "name":value["name"].replace( /\D+/g, ''),
-          "updateTime":timeString?timeString:"Unknown",
-          "status":value["status"]?value["status"]:"Not Getted"
-        }
-        //console.log("scooterList",scooterListTableData);
-        scooterData["@graph"].push(scooterDetails);
-        scooterTableList.push(scooterListTableData);
-        scooterList["@graph"].push(scooter);
-        //console.log("scooterDetails",scooterData,scooterList);
-      }
-    });
-    this.props.actions.isScooter(true);
-    this.props.actions.getDataFromUrlForTree(scooterList);
-    this.props.actions.getDataFromUrlForMap(scooterData);
-    this.props.actions.sendScooterTableList(scooterTableList);
-    //console.log("formatScooterDataALL",scooterData,scooterList);
-  }
-  getScooterDeviceData(){
-    let request = {
-      method: 'get',
-      url: "http://vps92599.ovh.net:8082/api/devices",
-      headers: {
-          'Accept': 'application/ld+json, application/json',
-          'Content-Type': 'application/ld+json, application/json'
-      }
-    };
-    return new Promise((resolve, reject) => {
-      axios(request).then(function(res) {
-        resolve(res.data);
-        //console.log("getScooterDeviceData",Devices);
-      }).catch(function (error) {
-        reject(error);
-      });
-    });
-  }
-  getScooterPositionData(){
-    let request = {
-      method: 'get',
-      url: "http://vps92599.ovh.net:8082/api/positions",
-      headers: {
-          'Accept': 'application/ld+json, application/json',
-          'Content-Type': 'application/ld+json, application/json'
-      }
-    };
-    return new Promise((resolve, reject) => {
-      axios(request).then(function(res) {
-        resolve(res.data);
-        //console.log("getScooterDeviceData",Devices);
-      }).catch(function (error) {
-        reject(error);
-      });
-    });
-  }
-
-  getScooterGroupData(){
-    let request = {
-      method: 'get',
-      url: "http://vps92599.ovh.net:8082/api/groups",
-      headers: {
-          'Accept': 'application/ld+json, application/json',
-          'Content-Type': 'application/ld+json, application/json'
-      }
-    };
-    return new Promise((resolve, reject) => {
-      axios(request).then(function(res) {
-        resolve(res.data);
-        //console.log("getScooterDeviceData",Devices);
-      }).catch(function (error) {
-        reject(error);
-      });
+    })
+    .catch(function (error) {
     });
   }
   addGeoJSONLayer(geojson,geojsonForPath) {
@@ -546,7 +328,6 @@ class Map extends Component {
       chunkedLoading: true,
       spiderfyOnMaxZoom : false
     });
-    var geojsonLayer;
     markerCluster.on('clusterclick', function (a) {
        if(a.layer._zoom === mapContext.params.maxZoom){
          if(a.layer.getAllChildMarkers().length>100){
@@ -559,7 +340,7 @@ class Map extends Component {
     });
     if(this.props.isTrajet){
       for (var geojsonIndex in geojson) {
-          geojsonLayer = L.geoJson(geojson[geojsonIndex], {
+        var geojsonLayer = L.geoJson(geojson[geojsonIndex], {
           onEachFeature: this.onEachFeature,
           pointToLayer: this.pointToLayer,
           filter: this.filterFeatures
@@ -569,26 +350,16 @@ class Map extends Component {
       }
     }else{
       //console.log("!isTrajet geojson",geojson);
-        geojsonLayer = _.size(geojson)>0?L.geoJson(geojson, {
+      var geojsonLayer = _.size(geojson)>0?L.geoJson(geojson, {
         onEachFeature: this.onEachFeature,
         pointToLayer: this.pointToLayer,
         filter: this.filterFeatures
       }):null;
-      this.geojsonLayer = geojsonLayer;
-      geojsonLayer&&this.props.isScooter?this.zoomToFeature(this.geojsonLayer):null;
+      this.geojsonDivision = geojsonLayer;
+      //this.zoomToFeature(this.geojsonDivision);
       geojsonLayer?markerCluster.addLayer(geojsonLayer):null;
     }
-    geojsonLayer?geojsonLayer.addTo(this.state.map):null;
-    var cogList = document.getElementsByClassName("fa-cog");
-    //console.log("cogList",cogList);
-    for (var i = 0; i < cogList.length; i++) {
-      cogList[i].parentElement.onclick=(e)=>{
-        e.stopPropagation();
-        this.setState({
-          isCommand : true
-        });
-      }
-    }
+    markerCluster.addTo(this.state.map);
     this.props.isTrajet?this.updateGeojsonPath(geojsonForPath):null;
     //TODO
     this.setState(
@@ -623,11 +394,10 @@ class Map extends Component {
   }
   filterGeoJSONLayer() {
     this.state.markerCluster.clearLayers();
-
     for (var i in this.geoPathDivision) {
       this.state.map.removeLayer(this.geoPathDivision[i]);
     }
-    this.geojsonLayer?this.geojsonLayer.clearLayers():null;
+
     this.geojsonDivision = {};
     this.geoPathDivision = {};
     this.addGeoJSONLayer(this.props.geoData,this.props.geojsonForPath);
@@ -672,8 +442,7 @@ class Map extends Component {
     if(!iconIndex||iconIndex === 0) {
       template['isAnchor'] = true;
     }
-    var iconHTMLElement =  L.MyMarkers.icon(template).createIcon();
-    var outerHTMLElement = iconHTMLElement.outerHTML;
+    var outerHTMLElement = L.MyMarkers.icon(template).createIcon().outerHTML;
     return outerHTMLElement;
   }
   showIcons(marker){
@@ -707,13 +476,11 @@ class Map extends Component {
     var fitBoundsParams = {
       paddingTopLeft: [10,10],
       paddingBottomRight: [10,10],
-      maxZoom : 18
+      maxZoom : 14
     };
     this.state.map.fitBounds(target.getBounds(), fitBoundsParams);
   }
   filterFeatures(feature, layer) {
-    console.log("filterFeatures",feature);
-    if(!feature.geometry.coordinates[0]||!feature.geometry.coordinates[1]) return false;
     return true;
   }
   markerAndIcons(info){
@@ -741,16 +508,17 @@ class Map extends Component {
   pointToLayer(feature, latlng) {
     var cur = this;
     if(feature.geometry.type ==="Point"){
-      var markers = this.markerAndIcons(feature.properties.markerAndIcons?feature.properties.markerAndIcons:null);
+      var Marker1 = this.markerAndIcons(feature.properties.markerAndIcons?feature.properties.markerAndIcons:null);
+      var markers = Marker1;
       var testMarker = L.marker(latlng,{icon: L.divIcon({className: 'markers', html:markers, iconSize:[35,35],iconAnchor : [17,42]}),riseOnHover:true})
                         .on('click',(e)=>{
                           //console.log("click button, show sidebar",cur.props.actions);
                           cur.props.actions.clickMarker(e.target,feature);
-                          document.getElementById('carte').style.width="48%";
+                          document.getElementById('carte').style.width="45%";
                           setTimeout(()=>{
                             this.state.map.invalidateSize();
                             this.state.map.panTo(e.target.getLatLng());
-                          },501);
+                          },250);
 
                         },);
       return testMarker;
@@ -784,10 +552,7 @@ class Map extends Component {
     let map = L.map(id, config.params);
     map.on('click',function () {
       cur.props.actions.closeSideBar();
-      document.getElementById('carte').style.width="74%";
-      setTimeout(()=>{
-        map.invalidateSize();
-      },501);
+      document.getElementById('carte').style.width="71%";
     })
     L.control.zoom({ position: "bottomleft"}).addTo(map);
     L.control.scale({ position: "bottomleft"}).addTo(map);
@@ -799,66 +564,16 @@ class Map extends Component {
 
   render() {
     var cur = this;
-    const buttonGroupStyle ={
-      "margin": "10px",
-      "padding": "0px",
-      "cursor": "pointer",
-      "position":"absolute",
-      "right":"2%"
-    }
     //console.log("render map");
-
     return (
       <div id="mapUI">
         {
           cur.props.isTyping &&
             <LoadingPage/>
         }
-        {
-          cur.state.isCommand &&
-            <CommandModal
-              close={()=>{
-                cur.setState({
-                  isCommand : false
-                });
-              }}
-              show={cur.state.isCommand}/>
-        }
-        {
-          cur.state.isLogin &&
-            <LoginModal
-              close={()=>{
-                cur.setState({
-                  isLogin : false
-                });
-              }}
-              username = {(username)=>{cur.username = username}}
-              password = {(password)=>{cur.password = password}}
-              login = {()=>{cur.loginScooterServer()}}
-              isLoginFailed = {this.state.isLoginFailed}
-              isRestoring = {this.state.isRestoring}
-              show={cur.state.isLogin}/>
-        }
-        <div className="btn-group-vertical btn-group-sm leaflet-control" style={buttonGroupStyle}>
-          <button type="button" className="btn btn-default">
-            <i className="fa fa-crosshairs"></i>
-          </button>
-          <button type="button" className="btn btn-info" disabled = {!this.props.tableData||this.props.tableData.length===0?true:false} onClick = {this.handleTMButtonClick}>
-            <i className="fa fa-map"></i>/
-            <i className="fa fa-table"></i>
-          </button>
-          <button type="button" className="btn btn-primary" disabled = {!this.props.tableData||this.props.tableData.length===0?true:false} onClick = {this.handleTButtonClick}>
-            <i className="fa fa-table"></i>
-          </button>
-          <button type="button" className="btn btn-danger">
-            <i className="fa fa-cog"></i>
-          </button>
-          <button type="button" className="btn btn-success">
-            <i className="fa fa-check"></i>
-          </button>
-          <button type="button" className="btn btn-warning">
-            <i className="fa fa-exclamation-triangle"></i>
-          </button>
+        <div className='maptable'>
+          <button type="button" className='maptableChild btn btn-primary' disabled = {!this.props.tableData?true:false} onClick = {this.handleTMButtonClick}>{this.state.isTableMap?'Map':'Table&Map'}</button>
+          <button type="button" className='maptableChild btn btn-primary' disabled = {!this.props.tableData?true:false} onClick = {this.handleTButtonClick}>Table</button>
         </div>
         <div ref={(node) => { cur._mapNode = node}} id="map" />
       </div>
@@ -873,7 +588,6 @@ const mapStateToProps = state => ({
   geojsonForPath : state.geojsonForPath,
   checkedItem : state.checkedItem,
   isTrajet : state.isTrajet,
-  isScooter : state.isScooter,
   tableData : state.tableData
 })
 

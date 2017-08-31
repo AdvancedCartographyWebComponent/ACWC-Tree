@@ -6,88 +6,51 @@ import { connect } from 'react-redux'
 import actions from '../../action/action';
 import { bindActionCreators } from 'redux';
 
-import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 class Info extends Component {
   constructor(props){
     super(props);
-    this.formatDataForTable = this.formatDataForTable.bind(this);
-  }
-  formatDataForTable(){
-    let tableData = [];
-    console.log(this.props.infoKeyForPanel);
-    if(this.props.infoKeyForPanel,this.props.Info){
-      this.props.infoKeyForPanel.map((value,index)=>{
-        if (value.key==="Address") {
-          let addressString = this.props.Info.properties[value.key];
-          let addressSplit = addressString?addressString.split(','):[];
-          let addressFormatted = "";
-          for (var i = 0; i < addressSplit.length; i++) {
-            addressFormatted=addressFormatted.concat(addressSplit[i],'\r\n');
-          }
-          let template = {
-            "attributes":value.displayValue,
-            "value":addressFormatted
-          };
-          tableData.push(template);
-        }else {
-          let template = {
-            "attributes":value.displayValue,
-            "value":this.props.Info.properties[value.key]
-          };
-          tableData.push(template);
-        }
-      })
-    }
-    return tableData;
   }
   render(){
-    const overStyle={
-    	"border": "1px solid gainsboro"
-    }
-    const leftStyle={
-    	"border-right": "1px solid gainsboro"
-    }
     var classNameParent = "test";
     if(this.props.isInfo){
       classNameParent = classNameParent.concat(" show");
       document.getElementById('sidebar').style.zIndex=1;
     }else{
-      document.getElementById('carte').style.width="74%";
+      document.getElementById('carte').style.width="71%";
       document.getElementById('sidebar').style.zIndex=-1;
     }
-    let data = this.formatDataForTable();
     return (
       (
         <div className={classNameParent}>
             <div className="sidebar-content sidebar-right">
                 <div className="sidebar-pane" id="home">
                     <h1 className="sidebar-header">
-                        Info
+                        Info of POI
                         <span className="sidebar-close"  onClick={()=>this.props.actions.closeSideBar()}><i className="fa fa-caret-right"></i></span>
                     </h1>
-                    <div className="row">
-                      <BootstrapTable
-                        data={ data }
-                        ref='table'>
-                        <TableHeaderColumn
-                          dataField="attributes"
-                          isKey
-                          dataSort
-                          width="70px">
-                          Attributes
-                        </TableHeaderColumn>
-                        <TableHeaderColumn
-                          dataField="value"
-                          dataSort
-                          tdStyle={ { whiteSpace: 'pre-line' } }
-                          width="120px">
-                          Value
-                        </TableHeaderColumn>
-                      </BootstrapTable>
+                    <div>
+                    {
+                      !this.props.infoKeyForPanel?
+                      (
+                        !window.infoKeyForPanel?
+                          (this.props.Info?Object.keys(this.props.Info.properties).map((key, index)=>{
+                            if(key!=="markerAndIcons") return (<p key={key+index}>{key+"\t:\t"+this.props.Info.properties[key]}</p>)
+                          }):null)
+                          :
+                          (this.props.Info?window.infoKeyForPanel.map((value,index)=>{
+                            return (<p key={value.key+index}>{value.displayValue+"\t:\t"+this.props.Info.properties[value.key]}</p>)
+                          }):null)
+                      )
+                      :
+                      (this.props.Info?this.props.infoKeyForPanel.map((value,index)=>{
+                        return (<p key={value.key+index}>{value.displayValue+"\t:\t"+this.props.Info.properties[value.key]}</p>)
+                      }):null)
+
+                    }
                     </div>
                 </div>
             </div>
-      </div>)
+      </div>):null
 
       );
   };

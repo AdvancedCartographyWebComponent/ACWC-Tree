@@ -86,12 +86,6 @@ let actions = {
       trajet
     }
   },
-  isScooter(scooter){
-    return{
-      type: actionTypes.IsScooter,
-      scooter
-    }
-  },
   toggleTable(isTable,tableType){
     return{
       type: actionTypes.ToggleTable,
@@ -103,24 +97,6 @@ let actions = {
     return{
       type: actionTypes.SendMapRef,
       mapRef
-    }
-  },
-  sendScooterTableList(scooterTableList){
-    return{
-      type: actionTypes.SendScooterTableList,
-      scooterTableList
-    }
-  },
-  sendCheckedList(checkedList){
-    return{
-      type: actionTypes.SendCheckedList,
-      checkedList
-    }
-  },
-  sendSession(session){
-    return{
-      type: actionTypes.SendSession,
-      session
     }
   }
 };

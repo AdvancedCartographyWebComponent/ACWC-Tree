@@ -4,8 +4,6 @@ import App_tree from './tree/App2'
 import App_map from './map/App'
 import App_Info from './info/App'
 import App_Table from './table/App'
-import App_header from './header/Header'
-import App_ScooterTableList from './scooterTableList/ScooterTableList'
 import './tree/index.css';
 import './tree/app.css';
 import './tree/tree-view.css';
@@ -22,19 +20,12 @@ const createStore=require('redux').createStore;
 
 var store=createStore(Reducer);
 
-ReactDOM.render(
-  <Provider store={store}>
-    <Router>
-      <Route component={App_header}/>
-    </Router>
-  </Provider>,
-  document.getElementById('header')
-);
+
 
 ReactDOM.render(
   <Provider store={store}>
     <Router>
-      <Route component={App_ScooterTableList}/>
+      <Route component={App_tree}/>
     </Router>
   </Provider>,
   document.getElementById('tree')

@@ -57,14 +57,10 @@ var TreeNode = React.createClass({
       checked : false,
       expandIconClass: "",
       collapseIconClass: "",
-      labelFactory: function (labelClassName, displayLabel, count, iconString, time, status) {
-        let timeString = time?(time>=60?' Updated '+(time/60).toFixed(1)+' Hours ago':' Updated '+(time)+' Minutes ago'):null;
+      labelFactory: function (labelClassName, displayLabel, count, iconString) {
         return (
           <label className={labelClassName}>
-            <label className={labelClassName}></label>
-            <label className = "id">{displayLabel}&#160;&#160;&#160;&#160;</label>
-            <label className = "status">{status}&#160;&#160;&#160;&#160;</label>
-            <label className = "time">{timeString}</label>
+            <label className={labelClassName}>&#160;&#160;&#160;&#160;{displayLabel+':'+count}</label>
             {iconString}
           </label>);
       },
@@ -188,20 +184,9 @@ var TreeNode = React.createClass({
     var count = props.num;
     var markerAndIcons = props.markerAndIcons;
     var iconString = this._iconFormatter(markerAndIcons);
-    var time;
-    var status;
-    if(props.updateTime){
-      let updateTime = new Date(props.updateTime);
-      let clientTime = new Date();
-      time = ((clientTime.getTime()-updateTime.getTime())/60/1000).toFixed(1);
-    }
-    if (props.scooterStatus) {
-      status = props.scooterStatus;
-    }
     if (props.labelFilter) displayLabel = props.labelFilter(displayLabel);
     if (props.nameMap) displayLabel = props.nameMap[displayLabel]?props.nameMap[displayLabel]:displayLabel;
-
-    return this.props.labelFactory(labelClassName, displayLabel,count, iconString, time, status, this._getLineage());
+    return this.props.labelFactory(labelClassName, displayLabel,count, iconString, this._getLineage());
   },
 
   _getCheckboxNode: function () {
